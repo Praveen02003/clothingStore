@@ -1,0 +1,209 @@
+/* mainForm part style */
+.mainForm {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ffffff, #ffffff);
+    animation: fadeInPage ease 1.2s;
+}
+
+/* main part style */
+.main {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    padding: 25px 60px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* inside main h2 tag style */
+.main h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* form part style */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* inside form div part */
+form div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+/* inside form div input part */
+form div input {
+    flex: 1;
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* style all input and select part */
+input,
+select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+/* focus effect for input */
+input:focus,
+select:focus {
+    border-color: #4facfe;
+}
+
+/* label part style */
+label {
+    font-size: 14px;
+    color: #333;
+}
+
+/* terms part style */
+.termsRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1;
+}
+
+.termsRow input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    transform: translateY(-1px);
+    accent-color: #007bff;
+    cursor: pointer;
+}
+
+.termsRow label {
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* style the checked checkbox only */
+.termsRow input,
+input[type="checkbox"] {
+    width: auto;
+    flex: none;
+}
+
+/* inputGroup style part */
+.inputGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.inputGroup label {
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    line-height: 1;
+}
+
+.inputGroup input {
+    flex: 1;
+    margin-top: 0;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+/* mobileError style part */
+#mobileError {
+    margin-top: 4px;
+    font-size: 12px;
+    color: red;
+}
+
+form div:nth-child(4) {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+form div:nth-child(4) input {
+    flex: 1;
+}
+
+form div:nth-last-child(2) input {
+    width: auto;
+}
+
+/* style error message part */
+p {
+    font-size: 12px;
+    color: red;
+    margin-left: 5px;
+    min-height: 14px;
+}
+
+/* button part style */
+button {
+    margin-top: 10px;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* link part */
+.link {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.link a {
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* fade in animation */
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* responsive */
+@media (max-width: 500px) {
+    .main {
+        margin: 10px;
+        padding: 20px;
+    }
+}
