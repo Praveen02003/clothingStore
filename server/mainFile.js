@@ -4,6 +4,9 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
+const product = require('./schemas/ProductSchema');
+const consumer = require('./schemas/consumerSchema');
 
 dotenv.config();
 
@@ -17,20 +20,16 @@ var secretKey = process.env.JWT_SECRET_KEY
 // console.log(secretKey);
 
 
-const url = process.env.dbUrl ||'mongodb://127.0.0.1:27017';
+const url = process.env.dbUrl || 'mongodb://localhost:27017/clothingStore';
 const client = new MongoClient(url);
 
-var db;
-var customers;
 
 // connectDb function
 async function connectDb() {
     try {
-        await client.connect();
-        console.log("connected");
+        await mongoose.connect(url);
 
-        db = client.db('clothingStore');
-        customers = db.collection('customers');
+        console.log("connected");
 
     } catch (err) {
         console.error(err);
@@ -38,6 +37,7 @@ async function connectDb() {
 }
 
 connectDb();
+
 
 // verifyToken function
 function verifyToken(req, res, next) {
@@ -59,8 +59,78 @@ function verifyToken(req, res, next) {
     }
 };
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+
+// admin side
+// getAllProducts
+app.get('/getAllProducts', async (req, res) => {
+    try {
+        const data = await product.find();
+        // console.log(data);
+        return res.json({ data: data, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// getOneProduct
+app.get('/getOneProduct/:id', async (req, res) => {
+    try {
+        var id = req.params.id;
+        const data = await product.findOne({ _id: id });
+        // console.log(data);
+        return res.json({ data: data, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// deleteOneProduct
+app.get('/deleteParticularProduct/:id', async (req, res) => {
+    try {
+        var id = req.params.id;
+        const data = await product.deleteOne({ _id: id });
+        // console.log(data);
+        return res.json({ data: data, message: "Data Deleted" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// getAdminDashBoardDatas
+app.get('/getAdminDashBoardDatas', async (req, res) => {
+    try {
+        const allData = {};
+        const productCount = await product.countDocuments();
+        const consumerCount = await consumer.countDocuments();
+        console.log(productCount);
+        allData['productCount'] = productCount
+        allData['consumerCount'] = consumerCount
+        return res.json({ data: allData, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// getAllConsumers
+app.get('/getAllConsumers', async (req, res) => {
+    try {
+        const allConsumers = await consumer.find();
+        console.log(allConsumers);
+        return res.json({ data: allConsumers, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+// getOneConsumer
+app.get('/getOneConsumer/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const getOneConsumer = await consumer.findOne({ _id: id });
+        console.log(getOneConsumer);
+        return res.json({ data: getOneConsumer, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // addUsers route
@@ -68,13 +138,13 @@ app.post('/addUsers', async (req, res) => {
     const data = req.body.data;
     const saltRounds = 12;
     try {
-        var getData = await customers.findOne({ email: data.email })
+        var getData = await consumer.findOne({ email: data.email })
         // console.log(getData);
         if (!getData) {
             var hashPassword = await bcrypt.hash(data.password, saltRounds);
             // console.log(hashPassword, "===>");
 
-            await customers.insertOne({
+            await consumer.insertOne({
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
@@ -82,7 +152,9 @@ app.post('/addUsers', async (req, res) => {
                 gender: data.gender,
                 password: hashPassword,
                 terms: data.terms,
-                role:"user"
+                role: "user",
+                status: "active",
+                images: "user.jpg"
             })
             return res.json({ message: "Signup Successfully" });
         }
@@ -98,7 +170,7 @@ app.post('/addUsers', async (req, res) => {
 app.post('/loginUser', async (req, res) => {
     const data = req.body.data;
     try {
-        var getData = await customers.findOne({ email: data.email })
+        var getData = await consumer.findOne({ email: data.email })
         // console.log(getData);
         if (getData) {
             var comparePassword = await bcrypt.compare(data.password, getData.password);

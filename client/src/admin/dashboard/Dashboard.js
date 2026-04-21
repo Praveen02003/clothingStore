@@ -1,90 +1,158 @@
-import React from "react";
-import { Navbar } from "../navbar/Navbar";
-import { Link } from "react-router-dom";
+import React, { useContext, useEffect } from "react";
+import "../dashboard/Dashboard.css";
+import { mainContext } from "../../App";
+import { Sidebar } from "../sidebar/Sidebar";
+import axios from "axios";
 
 export const Dashboard = () => {
+
+    const {
+        open,
+        setOpen,
+        getAllAdminDashBoardData,
+        setGetAllAdminDashBoardData
+    } = useContext(mainContext);
+
+    async function getAdminDashBoardData() {
+        try {
+            var getData = await axios.get("http://localhost:5000/getAdminDashBoardDatas")
+            console.log(getData.data.data);
+            setGetAllAdminDashBoardData(getData.data.data);
+
+        } catch (error) {
+            console.log("error");
+
+        }
+    }
+
+    useEffect(() => {
+        try {
+            getAdminDashBoardData();
+        } catch (error) {
+
+        }
+    }, [])
+
     return (
-        <div>
-            {/* navbar */}
-            <Navbar />
+        <div className="flex h-screen">
 
-            {/* cards */}
-            <div className="pt-24 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+            {/* sidebar */}
+            <Sidebar />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col flex-1">
 
-                    <Link className="bg-white border rounded-lg shadow cursor-pointer" to={'/admin/consumers'}>
-                        <div className="p-6 text-center">
-                            <h5 className="mt-3 mb-4 text-lg font-semibold">
-                                Total consumers
-                            </h5>
-                            <h3 className="text-lg font-bold">100</h3>
-                        </div>
-                    </Link>
+                <div className="flex items-center justify-between h-16 bg-white border-b px-4">
 
-                    <div className="bg-white border rounded-lg shadow cursor-pointer">
-                        <div className="p-6 text-center">
-                            <h5 className="mt-3 mb-4 text-lg font-semibold">
-                                Total orders
-                            </h5>
-                            <h3 className="text-lg font-bold">50</h3>
-                        </div>
+                    <div className="flex items-center gap-4">
+
+                        {/* hamburger button */}
+                        <button
+                            onClick={() => setOpen(true)}
+                            className="md:hidden text-xl"
+                        >
+                            <i className="fa-solid fa-bars"></i>
+                        </button>
+
+                        <h2 className="font-semibold">Dashboard Analytics</h2>
+                    </div>
+                </div>
+
+                {/* all cards */}
+                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <h2 className="text-base sm:text-lg font-semibold">Consumers Count</h2>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.consumerCount}</p>
+                        <a className="mt-3 text-blue-600 hover:underline font-bold" href="/admin/consumers">
+                            View
+                        </a>
                     </div>
 
-                    <Link className="bg-white border rounded-lg shadow cursor-pointer" to={"/admin/adminProducts"}>
-                        <div className="p-6 text-center">
-                            <h5 className="mt-3 mb-4 text-lg font-semibold">
-                                Total products
-                            </h5>
-                            <h3 className="text-lg font-bold">25</h3>
-                        </div>
-                    </Link>
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <h2 className="text-base sm:text-lg font-semibold">Products Count</h2>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.productCount}</p>
+                        <a className="mt-30 text-blue-600 hover:underline font-bold" href="/admin/adminProducts">
+                            View
+                        </a>
+                    </div>
 
-                    <div className="bg-white border rounded-lg shadow cursor-pointer">
-                        <div className="p-6 text-center">
-                            <h5 className="mt-3 mb-4 text-lg font-semibold">
-                                Total purchase count
-                            </h5>
-                            <h3 className="text-lg font-bold">
-                                <i className="fa-solid fa-indian-rupee-sign"></i> 5000
-                            </h3>
-                        </div>
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <h2 className="text-base sm:text-lg font-semibold">Orders Count</h2>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
+                        <button className="mt-3 text-blue-600 hover:underline font-bold">
+                            View
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <h2 className="text-base sm:text-lg font-semibold">Total Purchase</h2>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
+                        <button className="mt-3 text-blue-600 hover:underline font-bold">
+                            View
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <h2 className="text-base sm:text-lg font-semibold">Categories Count</h2>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
+                        <button className="mt-3 text-blue-600 hover:underline font-bold">
+                            View
+                        </button>
                     </div>
 
                 </div>
 
-                <h1 className="font-bold text-black text-center p-5 text-3xl">
-                    Our Products
-                </h1>
+                {/* orders table */}
+                <div className="flex items-center h-16 bg-white border-b px-4">
+                    <h2 className="font-semibold">Orders Table</h2>
+                </div>
 
-                <div className="relative overflow-x-auto bg-white shadow rounded border">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-sm bg-gray-100 border-b">
-                            <tr>
-                                <th className="px-6 py-3 font-medium">Product name</th>
-                                <th className="px-6 py-3 font-medium">Category</th>
-                                <th className="px-6 py-3 font-medium">Stock</th>
-                                <th className="px-6 py-3 font-medium">Price</th>
-                                <th className="px-6 py-3 font-medium">Action</th>
-                            </tr>
-                        </thead>
+                <div className="p-4">
+                    <div className="max-h-96 overflow-y-auto overflow-x-auto shadow-md rounded-lg">
 
-                        <tbody>
-                            <tr className="bg-white border-b hover:bg-gray-100">
-                                <th className="px-6 py-4 font-medium whitespace-nowrap">
-                                    Apple Watch
-                                </th>
-                                <td className="px-6 py-4">Watches</td>
-                                <td className="px-6 py-4">No</td>
-                                <td className="px-6 py-4">$199</td>
-                                <td className="flex items-center px-6 py-4">
-                                    <a href="#" className="text-blue-600 hover:underline">Edit</a>
-                                    <a href="#" className="text-red-500 hover:underline ms-3">View</a>
-                                    <a href="#" className="text-red-500 hover:underline ms-3">Remove</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table className="w-full text-sm text-left text-gray-500">
+
+                            <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
+                                <tr>
+                                    <th className="px-6 py-3">S.no</th>
+                                    <th className="px-6 py-3">Name</th>
+                                    <th className="px-6 py-3">Email</th>
+                                    <th className="px-6 py-3">TotalPaid</th>
+                                    <th className="px-6 py-3">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr className="bg-white border-b hover:bg-gray-50">
+
+                                    <td className="px-6 py-4 font-semibold text-gray-900">
+                                        1.
+                                    </td>
+
+                                    <td className="px-6 py-4 font-semibold text-gray-900">
+                                        Praveen
+                                    </td>
+                                    <td className="px-6 py-4 font-semibold text-gray-900">
+                                        praveen@gmail.com
+                                    </td>
+
+
+                                    <td className="px-6 py-4 font-semibold text-gray-900">
+                                        <i class="fa-solid fa-indian-rupee-sign"></i> 5000
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <button className="text-blue-600 hover:underline font-bold">
+                                            View Order
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                    </div>
                 </div>
 
             </div>

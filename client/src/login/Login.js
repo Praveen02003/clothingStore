@@ -81,7 +81,7 @@ export const Login = () => {
         if (result.data.message === "Login Successfully") {
           localStorage.setItem('loginUser', result.data.data)
           setTimeout(() => {
-            navigate('/admin/dashboard');
+            navigate('/admin/dashBoard');
           }, 1000);
         }
       } catch (error) {
