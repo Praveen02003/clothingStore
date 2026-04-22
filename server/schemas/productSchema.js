@@ -13,15 +13,18 @@ const productSchema = new mongoose.Schema(
         },
 
         defaultPrice: {
-            type: Number
+            type: Number,
+            required: true
         },
 
         offer: {
-            type: Number
+            type: Number,
+            required: true
         },
 
         description: {
-            type: String
+            type: String,
+            required: true
         },
 
         stock: {
@@ -29,23 +32,20 @@ const productSchema = new mongoose.Schema(
             default: 0
         },
 
-        colors: [
-            {
-                type: String
-            }
-        ],
+        color: {
+            type: String,
+            required: true
+        },
 
-        sizes: [
-            {
-                type: String
-            }
-        ],
+        size: {
+            type: String,
+            required: true
+        },
 
-        images: [
-            {
-                type: String
-            }
-        ],
+        image: {
+            type: String,
+            required: true
+        },
 
         category: {
             type: String,
@@ -57,5 +57,5 @@ const productSchema = new mongoose.Schema(
     }
 );
 
-const product = mongoose.model("Product", productSchema,"products");
+const product = mongoose.model("Product", productSchema, "products");
 module.exports = product;

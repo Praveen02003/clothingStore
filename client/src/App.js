@@ -6,6 +6,8 @@ import { Products } from './consumer/products/Products';
 import { AdminProducts } from './admin/products/AdminProducts';
 import { Dashboard } from './admin/dashboard/Dashboard';
 import { Consumers } from './admin/consumers/Consumers';
+import { UserDashboard } from './consumer/dashboard/UserDashboard';
+
 import { createContext, useState } from 'react';
 
 export const mainContext = createContext()
@@ -71,11 +73,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* authentication routes */}
-          <Route path='/' element={<Login />} />
+          <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
 
           {/* consumers routes */}
-          <Route path='/customers/products' element={<Products />} />
+          <Route path='/' element={<UserDashboard />} />
+          <Route path='/consumers/products' element={<Products />} />
 
           {/* admin routes */}
           <Route path='/admin/dashBoard' element={<Dashboard />} />

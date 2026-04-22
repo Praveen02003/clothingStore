@@ -79,10 +79,12 @@ export const Login = () => {
         console.log(result.data.message);
         alert(result.data.message);
         if (result.data.message === "Login Successfully") {
-          localStorage.setItem('loginUser', result.data.data)
-          setTimeout(() => {
-            navigate('/admin/dashBoard');
-          }, 1000);
+          var loginUser = result.data.data
+          var loginToken = result.data.token
+          localStorage.setItem('loginUser', JSON.stringify(loginUser))
+          localStorage.setItem('loginToken', loginToken)
+          // console.log(result.data.data);
+          navigate('/');
         }
       } catch (error) {
         alert(error);
@@ -92,9 +94,12 @@ export const Login = () => {
 
 
   function authUser() {
-    var getData = localStorage.getItem('loginUser')
-    if (getData) {
-      navigate('/customers/products');
+    var user = JSON.parse(localStorage.getItem('loginUser'))
+    var token = localStorage.getItem('loginToken')
+    console.log(user);
+
+    if (user && token) {
+      navigate('/');
     }
   }
 

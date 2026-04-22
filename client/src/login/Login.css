@@ -47,11 +47,6 @@ input {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* add focus to input */
-input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-}
 
 /* error message style */
 p {

@@ -1,10 +1,47 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 // import { Navbar } from '../navbar/Navbar'
 import '../products/AdminProducts.css'
 import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 export const AdminProducts = () => {
+
+    var [editErrors, setEditErrors] = useState({
+        nameError: "",
+        defaultPriceError: "",
+        offerError: "",
+        descriptionError: "",
+        stockError: "",
+        colorError: "",
+        sizeError: "",
+        imageError: "",
+        categoryError: ""
+    })
+    var [addErrors, setAddErrors] = useState({
+        nameError: "",
+        defaultPriceError: "",
+        offerError: "",
+        descriptionError: "",
+        stockError: "",
+        colorError: "",
+        sizeError: "",
+        imageError: "",
+        categoryError: ""
+    })
+
+    const [addData, setAddData] = useState({
+        name: "",
+        price: 0,
+        defaultPrice: 0,
+        offer: "",
+        description: "",
+        stock: "",
+        color: "",
+        size: "",
+        image: "",
+        category: ""
+    });
 
     const {
         open,
@@ -25,31 +62,55 @@ export const AdminProducts = () => {
         setParticularProductId
     } = useContext(mainContext);
 
+    const navigate = useNavigate()
+
     async function particularProduct(id) {
         try {
-            const getOneData = await axios.get(`http://localhost:5000/getOneProduct/${id}`)
+            const token = localStorage.getItem('loginToken');
+            const getOneData = await axios.get(`http://localhost:5000/getOneProduct/${id}`, {
+                headers: {
+                    Authorization: token
+                }
+            })
             console.log(getOneData.data.data, "==>");
             setGetParticularProduct(getOneData.data.data)
 
         } catch (error) {
-            console.log("error");
-
+            console.log(error.response.data.message);
+            alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
     async function deleteParticularProduct(id) {
         try {
-            const deleteOneData = await axios.get(`http://localhost:5000/deleteParticularProduct/${id}`)
+            const token = localStorage.getItem('loginToken');
+            const deleteOneData = await axios.get(`http://localhost:5000/deleteParticularProduct/${id}`, {
+                headers: {
+                    Authorization: token
+                }
+            })
             console.log(deleteOneData.data.message, "==>");
             alert(deleteOneData.data.message)
-            if (deleteOneData.data.message === "Data Deleted") {
+            if (deleteOneData.data.message === "Product Deleted Successfully") {
                 closeDeleteModal();
                 getAllProducts();
             }
 
         } catch (error) {
-            console.log("error");
-
+            console.log(error.response.data.message);
+            alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
@@ -89,14 +150,442 @@ export const AdminProducts = () => {
         setAddModal(false)
     }
 
+    // logout function
+    function logOut() {
+        localStorage.removeItem('loginToken')
+        localStorage.removeItem('loginUser')
+        navigate('/login')
+    }
+
+
+    // add product validation functions
+
+    // validateName function
+    function validateName(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, nameError: "Enter Product Name" })
+        }
+        else {
+            setAddErrors({ ...addErrors, nameError: "" })
+        }
+        setAddData({ ...addData, name: inputValue })
+    }
+    // validatePrice function
+    function validateDefaultPrice(inputValue) {
+
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, defaultPriceError: "Enter Product Original Price" })
+        }
+        if (inputValue <= 0) {
+            setAddErrors({ ...addErrors, defaultPriceError: "Enter Product Original Price > 0" })
+        }
+        else {
+            setAddErrors({ ...addErrors, defaultPriceError: "" })
+        }
+        setAddData({ ...addData, defaultPrice: parseInt(inputValue), price: inputValue })
+    }
+    // validateOffer function
+    function validateOffer(inputValue) {
+        let offerPrice = 0;
+        let originalPrice = addData.defaultPrice;
+
+        if (inputValue === "" || inputValue === null) {
+            setAddErrors({ ...addErrors, offerError: "Enter Offer if no offer type 0" });
+        }
+
+        else if (inputValue < 0 || inputValue > 100) {
+            setAddErrors({ ...addErrors, offerError: "Enter Offer between 0 and 100" });
+        }
+
+        else {
+            offerPrice = Math.floor(originalPrice - (originalPrice * inputValue) / 100);
+            setAddErrors({ ...addErrors, offerError: "" });
+        }
+
+        setAddData({ ...addData, offer: inputValue, price: offerPrice });
+    }
+    // validateStock function
+    function validateStock(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, stockError: "Enter Stock" })
+        }
+        else if (inputValue <= 0) {
+            setAddErrors({ ...addErrors, stockError: "Enter Stock > 0" })
+        }
+        else {
+            setAddErrors({ ...addErrors, stockError: "" })
+        }
+        setAddData({ ...addData, stock: inputValue })
+    }
+
+    // validateColor function
+    function validateColor(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, colorError: "Select Color" })
+        }
+        else {
+            setAddErrors({ ...addErrors, colorError: "" })
+        }
+        setAddData({ ...addData, color: inputValue })
+    }
+
+    // validateSize function
+    function validateSize(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, sizeError: "Select Size" })
+        }
+        else {
+            setAddErrors({ ...addErrors, sizeError: "" })
+        }
+        setAddData({ ...addData, size: inputValue })
+    }
+
+    // validateImage function
+    function validateImage(event) {
+        console.log(event, "===>");
+
+        if (event.target.files && event.target.files[0]) {
+            setAddErrors({ ...addErrors, imageError: "" })
+        }
+        else {
+            setAddErrors({ ...addErrors, imageError: "Choose Image" })
+
+        }
+        setAddData({ ...addData, image: event.target.files[0] })
+    }
+
+    // validateCategory function
+    function validateCategory(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, categoryError: "Enter Category" })
+        }
+        else {
+            setAddErrors({ ...addErrors, categoryError: "" })
+        }
+        setAddData({ ...addData, category: inputValue })
+    }
+
+    // validateDescription function
+    function validateDescription(inputValue) {
+        if (!inputValue) {
+            setAddErrors({ ...addErrors, descriptionError: "Enter Description" })
+        }
+        else {
+            setAddErrors({ ...addErrors, descriptionError: "" })
+        }
+        setAddData({ ...addData, description: inputValue })
+
+    }
+
+    async function addProduct(event) {
+        event.preventDefault()
+        var errorObject = {}
+        // console.log(addData);
+        if (!addData.name) {
+            errorObject['nameError'] = "Enter Product Name";
+        }
+        if (!addData.defaultPrice) {
+            errorObject['defaultPriceError'] = "Enter Product Original Price";
+        }
+        if (addData.defaultPrice <= 0) {
+            errorObject['defaultPriceError'] = "Enter Product Original Price > 0";
+        }
+
+        if (!addData.offer && addData.offer !== 0) {
+            errorObject['offerError'] = "Enter Offer if no offer type 0";
+        }
+        if (addData.offer < 0 || addData.offer > 100) {
+            errorObject['offerError'] = "Enter Offer > 0 < 100";
+        }
+        if (!addData.stock) {
+            errorObject['stockError'] = "Enter Stock";
+        }
+        if (addData.stock <= 0) {
+            errorObject['stockError'] = "Enter Stock > 0";
+        }
+        if (!addData.color) {
+            errorObject['colorError'] = "Select Color";
+        }
+        if (!addData.size) {
+            errorObject['sizeError'] = "Select Size";
+        }
+        if (!addData.image) {
+            errorObject['imageError'] = "Choose Image";
+        }
+        if (!addData.category) {
+            errorObject['categoryError'] = "Enter Category";
+        }
+        if (!addData.description) {
+            errorObject['descriptionError'] = "Enter Description";
+        }
+
+        setAddErrors(errorObject);
+
+        var values = Object.values(addErrors);
+        var boolean = values.some((data, index) => data !== "")
+        if (!boolean) {
+            console.log(addData);
+            const formData = new FormData();
+            formData.append("name", addData.name);
+            formData.append("price", addData.price);
+            formData.append("defaultPrice", addData.defaultPrice);
+            formData.append("offer", addData.offer);
+            formData.append("description", addData.description);
+            formData.append("stock", addData.stock);
+            formData.append("color", addData.color);
+            formData.append("size", addData.size);
+            formData.append("category", addData.category);
+            formData.append("image", addData.image);
+            try {
+                const token = localStorage.getItem('loginToken');
+                const dataAdd = await axios.post("http://localhost:5000/addProducts", formData, {
+                    headers: {
+                        Authorization: token
+                    }
+                })
+                alert(dataAdd.data.message)
+                getAllProducts();
+            } catch (error) {
+                console.log(error.response.data.message);
+                alert(error.response.data.message)
+                if (error.response.data.message === "Access denied") {
+                    logOut()
+                }
+                else if (error.response.data.message === "Invalid token") {
+                    logOut()
+                }
+
+            }
+
+        }
+
+    }
+
+
+    function removeImage() {
+        setAddData({ ...addData, image: "" })
+        setAddErrors({ ...addErrors, imageError: "Choose Image" })
+    }
+
+    // edit product validation functions
+
+    // validateName function
+    function editValidateName(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, nameError: "Enter Product Name" })
+        }
+        else {
+            setEditErrors({ ...editErrors, nameError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, name: inputValue })
+    }
+    // validatePrice function
+    function editValidateDefaultPrice(inputValue) {
+
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, defaultPriceError: "Enter Product Original Price" })
+        }
+        else if (inputValue <= 0) {
+            setEditErrors({ ...editErrors, defaultPriceError: "Enter Product Original Price > 0" })
+        }
+        else {
+            setEditErrors({ ...editErrors, defaultPriceError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, defaultPrice: inputValue })
+    }
+    // validateOffer function
+    function editValidateOffer(inputValue) {
+        let offerPrice = getParticularProduct.defaultPrice;
+        let originalPrice = getParticularProduct.defaultPrice;
+
+        if (inputValue === "" || inputValue === null) {
+            setEditErrors({ ...editErrors, offerError: "Enter Offer if no offer type 0" });
+        }
+
+        else if (inputValue < 0 || inputValue > 100) {
+            setEditErrors({ ...editErrors, offerError: "Enter Offer between 0 and 100" });
+        }
+
+        else {
+            offerPrice = Math.floor(originalPrice - (originalPrice * inputValue) / 100);
+            setEditErrors({ ...editErrors, offerError: "" });
+        }
+        setGetParticularProduct({ ...getParticularProduct, offer: inputValue, price: offerPrice })
+    }
+    // validateStock function
+    function editValidateStock(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, stockError: "Enter Stock" })
+        }
+        else if (inputValue <= 0) {
+            setEditErrors({ ...editErrors, stockError: "Enter Stock > 0" })
+        }
+        else {
+            setEditErrors({ ...editErrors, stockError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, stock: inputValue })
+    }
+
+    // validateColor function
+    function editValidateColor(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, colorError: "Select Color" })
+        }
+        else {
+            setEditErrors({ ...editErrors, colorError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, color: inputValue })
+    }
+
+    // validateSize function
+    function editValidateSize(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, sizeError: "Select Size" })
+        }
+        else {
+            setEditErrors({ ...editErrors, sizeError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, size: inputValue })
+    }
+
+    // validateImage function
+    function editValidateImage(event) {
+        console.log(event, "===>");
+
+        if (event.target.files && event.target.files[0]) {
+            setEditErrors({ ...editErrors, imageError: "" })
+        }
+        else {
+            setEditErrors({ ...editErrors, imageError: "Choose Image" })
+
+        }
+        setGetParticularProduct({ ...getParticularProduct, image: event.target.files[0] })
+    }
+
+    // validateCategory function
+    function editValidateCategory(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, categoryError: "Enter Category" })
+        }
+        else {
+            setEditErrors({ ...editErrors, categoryError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, category: inputValue })
+    }
+
+    // validateDescription function
+    function editValidateDescription(inputValue) {
+        if (!inputValue) {
+            setEditErrors({ ...editErrors, descriptionError: "Enter Description" })
+        }
+        else {
+            setEditErrors({ ...editErrors, descriptionError: "" })
+        }
+        setGetParticularProduct({ ...getParticularProduct, description: inputValue })
+    }
+
+    async function updateProduct(event) {
+        event.preventDefault()
+        var errorObject = {}
+        // console.log(addData);
+        if (!getParticularProduct.name) {
+            errorObject['nameError'] = "Enter Product Name";
+        }
+        if (!getParticularProduct.defaultPrice) {
+            errorObject['defaultPriceError'] = "Enter Product Original Price";
+        }
+        if (getParticularProduct.defaultPrice <= 0) {
+            errorObject['defaultPriceError'] = "Enter Product Original Price > 0";
+        }
+
+        if (!getParticularProduct.offer && getParticularProduct.offer !== 0) {
+            errorObject['offerError'] = "Enter Offer if no offer type 0";
+        }
+        if (getParticularProduct.offer < 0 || getParticularProduct.offer > 100) {
+            errorObject['offerError'] = "Enter Offer > 0 < 100";
+        }
+        if (!getParticularProduct.stock) {
+            errorObject['stockError'] = "Enter Stock";
+        }
+        if (getParticularProduct.stock <= 0) {
+            errorObject['stockError'] = "Enter Stock > 0";
+        }
+        if (!getParticularProduct.color) {
+            errorObject['colorError'] = "Select Color";
+        }
+        if (!getParticularProduct.size) {
+            errorObject['sizeError'] = "Select Size";
+        }
+        if (!getParticularProduct.image) {
+            errorObject['imageError'] = "Choose Image";
+        }
+        if (!getParticularProduct.category) {
+            errorObject['categoryError'] = "Enter Category";
+        }
+        if (!getParticularProduct.description) {
+            errorObject['descriptionError'] = "Enter Description";
+        }
+
+        setEditErrors(errorObject);
+
+        var values = Object.values(editErrors);
+        var boolean = values.some((data, index) => data !== "")
+        if (!boolean) {
+            console.log(getParticularProduct);
+            const formData = new FormData();
+            formData.append("name", getParticularProduct.name);
+            formData.append("price", getParticularProduct.price);
+            formData.append("defaultPrice", getParticularProduct.defaultPrice);
+            formData.append("offer", getParticularProduct.offer);
+            formData.append("description", getParticularProduct.description);
+            formData.append("stock", getParticularProduct.stock);
+            formData.append("color", getParticularProduct.color);
+            formData.append("size", getParticularProduct.size);
+            formData.append("category", getParticularProduct.category);
+            formData.append("image", getParticularProduct.image);
+            try {
+                const token = localStorage.getItem('loginToken');
+                const dataEdit = await axios.post("http://localhost:5000/upateProducts", formData, {
+                    headers: {
+                        Authorization: token
+                    }
+                })
+                alert(dataEdit.data.message)
+                getAllProducts();
+            } catch (error) {
+                console.log(error.response.data.message);
+                alert(error.response.data.message)
+                if (error.response.data.message === "Access denied") {
+                    logOut()
+                }
+                else if (error.response.data.message === "Invalid token") {
+                    logOut()
+                }
+            }
+
+        }
+
+    }
+
     async function getAllProducts() {
         try {
-            const getData = await axios.get("http://localhost:5000/getAllProducts")
+            const token = localStorage.getItem('loginToken');
+            const getData = await axios.get("http://localhost:5000/getAllProducts", {
+                headers: {
+                    Authorization: token
+                }
+            })
             console.log(getData.data.data);
             setAllProducts(getData.data.data)
         } catch (error) {
-            console.log("error");
-
+            console.log(error.response.data.message);
+            alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
@@ -121,25 +610,29 @@ export const AdminProducts = () => {
                     <div className="flex items-center gap-4">
 
                         {/* hamburger button */}
-                        <button
-                            onClick={() => setOpen(true)}
-                            className="md:hidden text-xl"
-                        >
+                        <button className="md:hidden text-xl" onClick={() => setOpen(true)}>
                             <i className="fa-solid fa-bars"></i>
                         </button>
 
                         <h2 className="font-semibold">Our Products</h2>
-
                     </div>
+
                     <div className="flex items-center gap-4">
-                        <button className='bg-blue-500 px-4 py-3 rounded text-white font-bold' onClick={() => openAddModal()}>Add Product</button>
+                        <button className="bg-blue-500 px-4 py-2 rounded text-white font-bold" onClick={() => openAddModal()}>
+                            <i class="fa-solid fa-plus"></i> Add Product
+                        </button>
+                        <button className="bg-red-500 px-4 py-2 me-8 rounded text-white font-bold" onClick={() => {
+                            logOut()
+                        }}>
+                            <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                        </button>
                     </div>
                 </div>
 
-                {/* all cards */}
+                {/* cards */}
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg shadow p-4">
-                        <h2 className="text-base sm:text-lg font-semibold">Total Products Count</h2>
+                        <h2 className="text-base sm:text-lg font-semibold"> <i class="fa-solid fa-shirt text-2xl"></i> Total Products Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{allProducts.length}</p>
                     </div>
                 </div>
@@ -209,7 +702,7 @@ export const AdminProducts = () => {
 
                 {/* delete confirmation modal */}
                 {deleteModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-xl p-6">
 
@@ -245,16 +738,18 @@ export const AdminProducts = () => {
 
                 {/* view product modal */}
                 {viewModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[70%] lg:w-[60%] p-6 relative">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {getParticularProduct.image && (
+                                    <img
+                                        src={`http://localhost:5000/uploadingImages/${getParticularProduct.image}`}
+                                        alt="product"
+                                        className="w-full rounded-lg"
+                                    />
+                                )}
 
-                                <img
-                                    src=""
-                                    alt="product"
-                                    className="w-full rounded-lg"
-                                />
 
                                 <div>
                                     <h2 className="text-2xl text-gray-900">
@@ -274,28 +769,15 @@ export const AdminProducts = () => {
                                         <span className='font-bold'>Original Price : </span>
                                         <i class="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.defaultPrice}
                                     </p>
-
-                                    <p className="mt-4 text-black text-lg">
-                                        <ul>
-                                            <span className='font-bold'>colors:</span>
-                                            {getParticularProduct.colors?.map((oneData, oneIndex) => {
-                                                return (
-                                                    <li key={oneIndex}>{oneIndex + 1} . {oneData}</li>
-                                                )
-                                            })}
-                                        </ul>
+                                    <p className="text-xl mt-2 text-gray-900">
+                                        <span className='font-bold'>colors : </span>
+                                        {getParticularProduct.color}
+                                    </p>
+                                    <p className="text-xl mt-2 text-gray-900">
+                                        <span className='font-bold'>Sizes : </span>
+                                        {getParticularProduct.size}
                                     </p>
 
-                                    <p className="mt-4 text-black text-lg">
-                                        <ul>
-                                            <span className='font-bold'>sizes:</span>
-                                            {getParticularProduct.sizes?.map((oneData, oneIndex) => {
-                                                return (
-                                                    <li key={oneIndex}>{oneIndex + 1} . {oneData}</li>
-                                                )
-                                            })}
-                                        </ul>
-                                    </p>
                                     <p className="mt-4 text-black text-lg">
                                         <span className='font-bold'>Description: </span>
                                         {getParticularProduct.description}
@@ -316,7 +798,7 @@ export const AdminProducts = () => {
 
                 {/* edit product modal */}
                 {editModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[50%] p-6 relative">
 
@@ -328,85 +810,158 @@ export const AdminProducts = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+                            <form onSubmit={(event) => { updateProduct(event) }}>
 
-                            <form className="space-y-4">
-
-                                <div>
+                                <div className="block">
                                     <input
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter name"
                                         value={getParticularProduct.name}
+                                        onInput={(event) => {
+                                            editValidateName(event.target.value)
+                                        }}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.nameError}
+                                    </p>
                                 </div>
 
-                                <div>
-                                    <input
-                                        type="number"
-                                        className="w-full border rounded px-3 py-2"
-                                        placeholder="Enter price"
-                                        value={getParticularProduct.price}
-                                    />
-                                </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter default price"
+                                        min="1"
                                         value={getParticularProduct.defaultPrice}
+                                        onInput={(event) => {
+                                            editValidateDefaultPrice(event.target.value)
+                                        }}
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.defaultPriceError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="number"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Enter sale price"
                                         readOnly
+                                        value={getParticularProduct.price}
                                     />
                                 </div>
-                                <div>
+
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter offer"
+                                        min="0"
+                                        onInput={(event) => {
+                                            editValidateOffer(event.target.value)
+                                        }}
                                         value={getParticularProduct.offer}
+
                                     />
+
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.offerError}
+                                    </p>
                                 </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter stock"
+                                        min="1"
+                                        onInput={(event) => {
+                                            editValidateStock(event.target.value)
+                                        }}
                                         value={getParticularProduct.stock}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.stockError}
+                                    </p>
                                 </div>
-                                <div class="sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2">
-                                        <option>Select Color</option>
+                                <div className="block sm:w-100">
+                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                        editValidateColor(event.target.value)
+                                    }} value={getParticularProduct.color}>
+                                        <option value="">Select Color</option>
                                         <option value="blue">blue</option>
                                         <option value="red">red</option>
                                         <option value="green">green</option>
+                                        <option value="yellow">yellow</option>
+                                        <option value="orange">orange</option>
+                                        <option value="white">white</option>
                                     </select>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.colorError}
+                                    </p>
                                 </div>
-                                <div class="sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2">
-                                        <option>Select Size</option>
+                                <div className="block sm:w-100">
+                                    <select className="w-full border rounded px-3 py-2" onChange={(event) => {
+                                        editValidateSize(event.target.value)
+                                    }} value={getParticularProduct.size}>
+                                        <option value="">Select Size</option>
                                         <option value="S">S</option>
                                         <option value="M">M</option>
                                         <option value="L">L</option>
+                                        <option value="L">40</option>
+                                        <option value="L">42</option>
                                         <option value="XL">XL</option>
                                     </select>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.sizeError}
+                                    </p>
                                 </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        onChange={(event) => {
+                                            editValidateImage(event)
+                                        }}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.imageError}
+                                    </p>
+                                    {getParticularProduct.image && (
+                                        <img
+                                            src={
+                                                typeof (getParticularProduct.image) === "string"
+                                                    ? `http://localhost:5000/uploadingImages/${getParticularProduct.image}`
+                                                    : URL.createObjectURL(getParticularProduct.image)
+                                            }
+                                            alt="Thumb"
+                                            className="w-24 h-24 object-cover rounded-lg border shadow"
+                                        />
+                                    )}
                                 </div>
 
-                                <div>
+                                <div className="block">
                                     <input
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter category"
+                                        onInput={(event) => {
+                                            editValidateCategory(event.target.value)
+                                        }}
                                         value={getParticularProduct.category}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.categoryError}
+                                    </p>
                                 </div>
-                                <div>
-                                    <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' value={getParticularProduct.description}></textarea>
+                                <div className="block">
+                                    <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' onInput={(event) => {
+                                        editValidateDescription(event.target.value)
+                                    }} value={getParticularProduct.description}></textarea>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {editErrors.descriptionError}
+                                    </p>
                                 </div>
 
                                 <button
@@ -422,10 +977,9 @@ export const AdminProducts = () => {
                     </div>
                 )}
 
-
                 {/* add product modal */}
                 {addModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[50%] p-6 relative">
 
@@ -438,78 +992,160 @@ export const AdminProducts = () => {
 
                             <h2 className="text-xl font-bold mb-4">Add Product</h2>
 
-                            <form className="space-y-4">
+                            <form onSubmit={(event) => { addProduct(event) }}>
 
-                                <div>
+                                <div className="block">
                                     <input
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter name"
+                                        value={getParticularProduct.name}
+                                        onInput={(event) => {
+                                            validateName(event.target.value)
+                                        }}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.nameError}
+                                    </p>
                                 </div>
 
-                                <div>
-                                    <input
-                                        type="number"
-                                        className="w-full border rounded px-3 py-2"
-                                        placeholder="Enter price"
-                                    />
-                                </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter default price"
+                                        min="1"
+                                        value={addData.defaultPrice}
+                                        onInput={(event) => {
+                                            validateDefaultPrice(event.target.value)
+                                        }}
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.defaultPriceError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="number"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Enter sale price"
                                         readOnly
+                                        value={addData.price}
                                     />
                                 </div>
-                                <div>
+
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter offer"
+                                        min="0"
+                                        onInput={(event) => {
+                                            validateOffer(event.target.value)
+                                        }}
+                                        value={addData.offer}
+
                                     />
+
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.offerError}
+                                    </p>
                                 </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="number"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter stock"
+                                        min="1"
+                                        onInput={(event) => {
+                                            validateStock(event.target.value)
+                                        }}
+                                        value={addData.stock}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.stockError}
+                                    </p>
                                 </div>
-                                <div class="sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2">
-                                        <option>Select Color</option>
+                                <div className="block sm:w-100">
+                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                        validateColor(event.target.value)
+                                    }} value={addData.color}>
+                                        <option value="">Select Color</option>
                                         <option value="blue">blue</option>
                                         <option value="red">red</option>
                                         <option value="green">green</option>
+                                        <option value="yellow">yellow</option>
+                                        <option value="orange">orange</option>
+                                        <option value="white">white</option>
                                     </select>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.colorError}
+                                    </p>
                                 </div>
-                                <div class="sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2">
-                                        <option>Select Size</option>
+                                <div className="block sm:w-100">
+                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                        validateSize(event.target.value)
+                                    }} value={addData.size}>
+                                        <option value="">Select Size</option>
                                         <option value="S">S</option>
                                         <option value="M">M</option>
                                         <option value="L">L</option>
+                                        <option value="L">40</option>
+                                        <option value="L">42</option>
                                         <option value="XL">XL</option>
                                     </select>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.sizeError}
+                                    </p>
                                 </div>
-                                <div>
+                                <div className="block">
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        onChange={(event) => {
+                                            validateImage(event)
+                                        }}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.imageError}
+                                    </p>
+                                    {addData.image && (
+                                        <div className="relative inline-block">
+                                            <img
+                                                src={URL.createObjectURL(addData.image)}
+                                                alt="Thumb"
+                                                className="w-24 h-24 object-cover rounded-lg border shadow"
+                                            />
+                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
+                                                Remove
+                                            </button>
+
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div>
+                                <div className="block">
                                     <input
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter category"
+                                        onInput={(event) => {
+                                            validateCategory(event.target.value)
+                                        }}
+                                        value={addData.category}
                                     />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.categoryError}
+                                    </p>
                                 </div>
-                                <div>
-                                    <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description'></textarea>
+                                <div className="block">
+                                    <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' onInput={(event) => {
+                                        validateDescription(event.target.value)
+                                    }} value={addData.description}></textarea>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {addErrors.descriptionError}
+                                    </p>
                                 </div>
 
                                 <button
@@ -524,6 +1160,7 @@ export const AdminProducts = () => {
                         </div>
                     </div>
                 )}
+                
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ export const Signup = () => {
         genderError: "",
         passwordError: "",
         confirmPasswordError: "",
+        addressError: "",
         termsError: ""
     };
 
@@ -26,7 +27,8 @@ export const Signup = () => {
         gender: "",
         password: "",
         confirmPassword: "",
-        terms: "",
+        address: "",
+        terms: ""
     });
 
     var [error, setError] = useState({
@@ -37,6 +39,7 @@ export const Signup = () => {
         genderError: "",
         passwordError: "",
         confirmPasswordError: "",
+        addressError: "",
         termsError: ""
 
     });
@@ -248,6 +251,22 @@ export const Signup = () => {
         setError(allErrors)
     }
 
+    // validateAddress
+    function validateAddress(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.addressError = 'Enter address';
+        }
+        else {
+            allErrors.addressError = "";
+        }
+
+        setFormData({ ...formData, address: inputvalue })
+
+        setError(allErrors)
+    }
+
     // submitForm function
     async function submitForm(event) {
         event.preventDefault();
@@ -299,8 +318,27 @@ export const Signup = () => {
             allErrors.genderError = "Select Gender";
         }
 
+        if (!formData.password) {
+            allErrors.passwordError = 'Enter Password';
+        }
+
+
+        if (!formData.confirmPassword) {
+            allErrors.confirmPasswordError = 'Enter Confirm-Password';
+        }
+        if (formData.password && formData.confirmPassword) {
+            if (formData.password !== formData.confirmPassword) {
+                allErrors.confirmPasswordError = "Passwords do not match";
+            }
+        }
+
+
         if (!formData.terms) {
             allErrors.termsError = "Accept terms and condition";
+        }
+
+        if (!formData.address) {
+            allErrors.addressError = 'Enter address';
         }
 
         setError(allErrors);
@@ -309,14 +347,14 @@ export const Signup = () => {
 
         if (!checking) {
             if (formData.password === formData.confirmPassword) {
-                console.log(formData);
+                console.log(formData, "===>");
                 try {
                     var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
                     console.log(result.data.message);
                     alert(result.data.message);
                     if (result.data.message = "Signup Successfully") {
                         setTimeout(() => {
-                            navigate('/');
+                            navigate('/login');
                         }, 1000);
                     }
                 } catch (error) {
@@ -327,9 +365,12 @@ export const Signup = () => {
     }
 
     function authUser() {
-        var getData = localStorage.getItem('loginUser')
-        if (getData) {
-            navigate('/customers/products');
+        var user = JSON.parse(localStorage.getItem('loginUser'))
+        var token = localStorage.getItem('loginToken')
+        console.log(user);
+
+        if (user && token) {
+            navigate('/');
         }
     }
 
@@ -361,7 +402,7 @@ export const Signup = () => {
 
                     {/* mobile */}
                     <div className="inputGroup">
-                        <label for="mobile">+1</label>
+                        <span for="mobile">+1</span>
                         <input type="tel" placeholder="Mobile" id="mobile" value={formData.mobile} onInput={(event) => { validateMobileNumber(event.target.value, event) }} />
                     </div>
                     <p id="mobileError">{error.mobileError}</p>
@@ -382,6 +423,10 @@ export const Signup = () => {
                     <input type="password" placeholder="Confirm Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
                     <p id="confirmPasswordError">{error.confirmPasswordError}</p>
 
+                    {/* address */}
+                    <textarea placeholder="Enter address" id="address" value={formData.address} onInput={(event) => { validateAddress(event.target.value) }} ></textarea>
+                    <p id="addressError">{error.addressError}</p>
+
                     {/* terms */}
                     <div className="termsRow">
                         <input type="checkbox" id="terms" checked={formData.terms} onChange={(event) => { validateTerms(event.target.checked) }} />
@@ -399,7 +444,7 @@ export const Signup = () => {
                 {/* link */}
                 <div className="link">
                     Already have an account?
-                    <Link to='/'>Login</Link>
+                    <Link to='/login'>Login</Link>
                 </div>
 
             </div>

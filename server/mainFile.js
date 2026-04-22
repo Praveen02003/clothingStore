@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
 const product = require('./schemas/ProductSchema');
 const consumer = require('./schemas/consumerSchema');
+const multer = require("multer");
+
 
 dotenv.config();
 
@@ -39,6 +41,19 @@ async function connectDb() {
 connectDb();
 
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploadingImages/");
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+const upload = multer({ storage });
+
+app.use("/uploadingImages", express.static("uploadingImages"));
+
 // verifyToken function
 function verifyToken(req, res, next) {
     const token = req.header('Authorization');
@@ -48,7 +63,7 @@ function verifyToken(req, res, next) {
     else {
         try {
             const decoded = jwt.verify(token, secretKey);
-            // console.log(decoded, "===>");
+            console.log(decoded, "===>");
 
             req.userId = decoded.userId;
             next();
@@ -62,7 +77,7 @@ function verifyToken(req, res, next) {
 
 // admin side
 // getAllProducts
-app.get('/getAllProducts', async (req, res) => {
+app.get('/getAllProducts', verifyToken, async (req, res) => {
     try {
         const data = await product.find();
         // console.log(data);
@@ -73,7 +88,7 @@ app.get('/getAllProducts', async (req, res) => {
 });
 
 // getOneProduct
-app.get('/getOneProduct/:id', async (req, res) => {
+app.get('/getOneProduct/:id', verifyToken, async (req, res) => {
     try {
         var id = req.params.id;
         const data = await product.findOne({ _id: id });
@@ -85,19 +100,19 @@ app.get('/getOneProduct/:id', async (req, res) => {
 });
 
 // deleteOneProduct
-app.get('/deleteParticularProduct/:id', async (req, res) => {
+app.get('/deleteParticularProduct/:id', verifyToken, async (req, res) => {
     try {
         var id = req.params.id;
         const data = await product.deleteOne({ _id: id });
         // console.log(data);
-        return res.json({ data: data, message: "Data Deleted" });
+        return res.json({ data: data, message: "Product Deleted Successfully" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
 
 // getAdminDashBoardDatas
-app.get('/getAdminDashBoardDatas', async (req, res) => {
+app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
     try {
         const allData = {};
         const productCount = await product.countDocuments();
@@ -112,7 +127,7 @@ app.get('/getAdminDashBoardDatas', async (req, res) => {
 });
 
 // getAllConsumers
-app.get('/getAllConsumers', async (req, res) => {
+app.get('/getAllConsumers', verifyToken, async (req, res) => {
     try {
         const allConsumers = await consumer.find();
         console.log(allConsumers);
@@ -122,7 +137,7 @@ app.get('/getAllConsumers', async (req, res) => {
     }
 });
 // getOneConsumer
-app.get('/getOneConsumer/:id', async (req, res) => {
+app.get('/getOneConsumer/:id', verifyToken, async (req, res) => {
     try {
         const id = req.params.id
         const getOneConsumer = await consumer.findOne({ _id: id });
@@ -130,6 +145,72 @@ app.get('/getOneConsumer/:id', async (req, res) => {
         return res.json({ data: getOneConsumer, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
+    }
+});
+
+// addproduct route
+app.post('/addProducts', verifyToken, upload.single("image"), async (req, res) => {
+    const data = req.body;
+    const imageFile = req.file;
+    try {
+        const getData = await product.findOne({ name: data.name })
+        if (getData) {
+            return res.json({ message: "Product Alreday Added" })
+        }
+        else {
+            await product.insertOne({
+                name: data.name,
+                price: data.price,
+                defaultPrice: data.defaultPrice,
+                offer: data.offer,
+                description: data.description,
+                stock: data.stock,
+                color: data.color,
+                size: data.size,
+                image: imageFile.originalname,
+                category: data.category
+            });
+        }
+        return res.json({ message: "Product Added Successfully" })
+    } catch (error) {
+        return res.json({ message: error })
+    }
+});
+
+// updateproduct route
+app.post('/upateProducts', verifyToken, upload.single("image"), async (req, res) => {
+    const data = req.body;
+    const imageFile = req.file;
+
+    try {
+        const getData = await product.findOne({ name: data.name });
+
+        if (!getData) {
+            return res.json({ message: "Product not found" });
+        }
+
+        let checkData = {
+            name: data.name,
+            price: data.price,
+            defaultPrice: data.defaultPrice,
+            offer: data.offer,
+            description: data.description,
+            stock: data.stock,
+            color: data.color,
+            size: data.size,
+            category: data.category
+        };
+
+        if (imageFile) {
+            checkData.image = imageFile.originalname;
+        }
+
+        await product.updateOne({ name: data.name }, checkData);
+
+        return res.json({ message: "Product Updated Successfully" });
+
+    } catch (error) {
+        return res.json({ message: error });
     }
 });
 
@@ -154,7 +235,8 @@ app.post('/addUsers', async (req, res) => {
                 terms: data.terms,
                 role: "user",
                 status: "active",
-                images: "user.jpg"
+                images: "",
+                address: data.address
             })
             return res.json({ message: "Signup Successfully" });
         }
@@ -179,7 +261,7 @@ app.post('/loginUser', async (req, res) => {
                 var generateToken = jwt.sign({ userId: getData._id }, secretKey, {
                     expiresIn: '1h',
                 });
-                return res.json({ message: "Login Successfully", data: generateToken });
+                return res.json({ message: "Login Successfully", data: getData, token: generateToken });
             }
             else {
                 return res.json({ message: "Password Mismatch" });
