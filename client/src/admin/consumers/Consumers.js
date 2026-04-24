@@ -1,10 +1,11 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 // import { Navbar } from '../navbar/Navbar'
 import '../products/AdminProducts.css'
 import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AdminFooter } from '../footer/Footer';
 export const Consumers = () => {
 
     const {
@@ -87,9 +88,41 @@ export const Consumers = () => {
         }
     }
 
+
+    function authUser() {
+        var user = JSON.parse(localStorage.getItem('loginUser'))
+        var token = localStorage.getItem('loginToken')
+        console.log(user, "===>");
+
+        if (user && token) {
+            if (user.role.toLowerCase() !== "admin") {
+                navigate("/");
+            }
+            else if (user.role.toLowerCase() === "admin") {
+                getAllConsumers();
+            }
+        }
+        else {
+            navigate('/login')
+        }
+    }
+
+    // pagination functionality
+    const itemsPerPage = 5;
+    const [currentPage, setCurrentPage] = useState(1);
+    const totalPagesArrray = [];
+    const totalPages = Math.ceil(allConsumers.length / itemsPerPage);
+    for (let index = 0; index < totalPages; index++) {
+        totalPagesArrray.push(index)
+    }
+    const lastItem = currentPage * itemsPerPage;
+    const firstItem = lastItem - itemsPerPage;
+
+    const currentItems = allConsumers.slice(firstItem, lastItem);
+
     useEffect(() => {
         try {
-            getAllConsumers();
+            authUser()
         } catch (error) {
             console.log("error");
         }
@@ -103,16 +136,16 @@ export const Consumers = () => {
 
             <div className="flex flex-col flex-1">
 
-                <div className="flex items-center justify-between h-16 bg-white border-b px-4">
+                <div className="flex items-center justify-between h-16 bg-gray-700 border-b px-4">
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 p-5">
 
                         {/* hamburger button */}
-                        <button className="md:hidden text-xl" onClick={() => setOpen(true)}>
+                        <button className="text-white text-xl" onClick={() => setOpen(true)}>
                             <i className="fa-solid fa-bars"></i>
                         </button>
 
-                        <h2 className="font-semibold text-sm md:text-base">
+                        <h2 className="font-semibold text-sm text-white md:text-base">
                             Our Consumers
                         </h2>
                     </div>
@@ -157,7 +190,7 @@ export const Consumers = () => {
                             </thead>
 
                             <tbody>
-                                {allConsumers.map((data, index) => {
+                                {currentItems.map((data, index) => {
                                     return (
                                         <tr className="bg-white border-b hover:bg-gray-50" key={index}>
 
@@ -194,6 +227,48 @@ export const Consumers = () => {
                         </table>
 
                     </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t bg-white px-4 py-3">
+
+                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-between">
+
+                        {/* pagination */}
+                        {currentItems.length > 0 && (
+                            <div className="flex items-center gap-1 mt-4">
+
+                                <button
+                                    className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    disabled={currentPage === 1}>
+                                    Previous
+                                </button>
+
+                                {totalPagesArrray.map((data, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentPage(index + 1)}
+                                        className={`px-3 py-1 rounded ${currentPage === index + 1
+                                            ? "bg-blue-600 text-white"
+                                            : "border"
+                                            }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
+
+                                <button
+                                    className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}>
+                                    Next
+                                </button>
+
+                            </div>
+                        )}
+
+                    </div>
+
                 </div>
 
                 {/* view product modal */}
@@ -245,6 +320,10 @@ export const Consumers = () => {
                         </div>
                     </div>
                 )}
+
+
+                {/* footer section */}
+                <AdminFooter />
             </div>
         </div>
     );

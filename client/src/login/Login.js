@@ -83,8 +83,13 @@ export const Login = () => {
           var loginToken = result.data.token
           localStorage.setItem('loginUser', JSON.stringify(loginUser))
           localStorage.setItem('loginToken', loginToken)
-          // console.log(result.data.data);
-          navigate('/');
+          console.log(loginUser);
+          if (loginUser.role.toLowerCase() === "admin") {
+            navigate('/admin/dashBoard');
+          }
+          else {
+            navigate("/");
+          }
         }
       } catch (error) {
         alert(error);
@@ -96,10 +101,15 @@ export const Login = () => {
   function authUser() {
     var user = JSON.parse(localStorage.getItem('loginUser'))
     var token = localStorage.getItem('loginToken')
-    console.log(user);
+    console.log(user, "===>");
 
     if (user && token) {
-      navigate('/');
+      if (user.role.toLowerCase() === "admin") {
+        navigate('/admin/dashBoard');
+      }
+      else {
+        navigate("/");
+      }
     }
   }
 

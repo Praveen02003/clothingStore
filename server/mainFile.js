@@ -112,12 +112,18 @@ app.get('/deleteParticularProduct/:id', verifyToken, async (req, res) => {
 });
 
 // getAdminDashBoardDatas
-app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
+app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
     try {
         const allData = {};
         const productCount = await product.countDocuments();
         const consumerCount = await consumer.countDocuments();
-        console.log(productCount);
+        console.log(consumerCount);
+
+        // const findConsumer = await consumer.findOne({
+        //     createdAt : "2026-04-24T05:06:06.584+00:00"
+        // })
+        // console.log(findConsumer);
+
         allData['productCount'] = productCount
         allData['consumerCount'] = consumerCount
         return res.json({ data: allData, message: "Data Fetched" });
@@ -214,6 +220,42 @@ app.post('/upateProducts', verifyToken, upload.single("image"), async (req, res)
     }
 });
 
+// consumer routes
+// getFewData route
+app.get('/getFewData', async (req, res) => {
+    try {
+        const data = await product.find().limit(6);
+        // console.log(data);
+        return res.json({ data: data, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+})
+
+// getSpecificProduct route
+app.get('/getSpecificProduct/:id', async (req, res) => {
+    try {
+        var id = req.params.id;
+        const data = await product.findOne({ _id: id });
+        // console.log(data);
+        return res.json({ data: data, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+})
+
+// getAllProducts route
+app.get('/getAllProduct', async (req, res) => {
+    try {
+        const data = await product.find();
+        // console.log(data);
+        return res.json({ data: data, message: "Data Fetched" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+})
+
+
 // addUsers route
 app.post('/addUsers', async (req, res) => {
     const data = req.body.data;
@@ -229,7 +271,7 @@ app.post('/addUsers', async (req, res) => {
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
-                mobile: "+91" + data.mobile,
+                mobile: data.mobile,
                 gender: data.gender,
                 password: hashPassword,
                 terms: data.terms,

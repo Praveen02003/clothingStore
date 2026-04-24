@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Login } from './login/Login';
 import { Signup } from './signup/Signup';
 import { Products } from './consumer/products/Products';
+import { Cart } from './consumer/cart/Cart';
 import { AdminProducts } from './admin/products/AdminProducts';
 import { Dashboard } from './admin/dashboard/Dashboard';
 import { Consumers } from './admin/consumers/Consumers';
@@ -16,6 +17,7 @@ function App() {
 
   // sidebar open
   const [open, setOpen] = useState(false)
+  const [sideBarOpen, setSideBarOpen] = useState(false)
 
   // modal opens
   const [viewModal, setViewModal] = useState(false);
@@ -41,6 +43,9 @@ function App() {
     <mainContext.Provider value={{
       open,
       setOpen,
+
+      sideBarOpen,
+      setSideBarOpen,
 
       viewModal,
       setViewModal,
@@ -79,6 +84,7 @@ function App() {
           {/* consumers routes */}
           <Route path='/' element={<UserDashboard />} />
           <Route path='/consumers/products' element={<Products />} />
+          {/* <Route path='/consumers/cart' element={<Cart />} /> */}
 
           {/* admin routes */}
           <Route path='/admin/dashBoard' element={<Dashboard />} />

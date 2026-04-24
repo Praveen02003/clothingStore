@@ -347,6 +347,8 @@ export const Signup = () => {
 
         if (!checking) {
             if (formData.password === formData.confirmPassword) {
+                var replacedNumber = formData.mobile.replace(/\D/g, "")
+                setFormData({ ...formData, mobile: replacedNumber })
                 console.log(formData, "===>");
                 try {
                     var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
@@ -367,10 +369,15 @@ export const Signup = () => {
     function authUser() {
         var user = JSON.parse(localStorage.getItem('loginUser'))
         var token = localStorage.getItem('loginToken')
-        console.log(user);
+        console.log(user, "===>");
 
         if (user && token) {
-            navigate('/');
+            if (user.role.toLowerCase() === "admin") {
+                navigate('/admin/dashBoard');
+            }
+            else {
+                navigate("/");
+            }
         }
     }
 

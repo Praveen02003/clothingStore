@@ -1,6 +1,5 @@
 /* mainForm part style */
 #mainForm {
-    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -9,6 +8,7 @@
     padding: 15px;
     box-sizing: border-box;
     animation: fadeInPage ease 1.2s;
+    margin-top: 8rem;
 }
 
 /* loginform style */
@@ -106,8 +106,8 @@ button:active {
     .loginForm {
         margin: 10px;
         padding: 20px;
+        max-width: 70%;
     }
-
     input {
         font-size: 15px;
     }

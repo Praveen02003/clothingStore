@@ -1,14 +1,55 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { Sidebar } from '../../consumer/sidebar/Sidebar';
+import { mainContext } from '../../App';
+import banner1 from '../../assets/banner1.jpg'
+import banner2 from '../../assets/banner2.jpg'
+import banner3 from '../../assets/banner3.jpg'
+import axios from 'axios';
+import { Footer } from '../footer/Footer';
 
 export const UserDashboard = () => {
-  const [open, setOpen] = useState(false);
 
-  const [auth, setAuth] = useState(false);
+  const {
+    sideBarOpen,
+    setSideBarOpen
+  } = useContext(mainContext);
 
-  const [loginUser, setLoginUser] = useState({});
+  const navigate = useNavigate()
 
-  const navigate = useNavigate();
+  const [fewDatas, setFewDatas] = useState([])
+
+  const [particularProduct, setParticularProduct] = useState({})
+
+  const [loginUser, setLoginUser] = useState(null)
+
+  const defaultSlides = [
+    { image: banner1 },
+    { image: banner2 },
+    { image: banner3 }
+  ]
+  const [slide, setSlide] = useState(0)
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
+  // openViewModal function
+  function openViewModal(id) {
+    setViewModalOpen(true)
+    getOneProduct(id)
+  }
+
+  // closeViewModal function
+  function closeViewModal() {
+    setViewModalOpen(false)
+  }
+
+  // logout function
+  function logOut() {
+    localStorage.removeItem('loginToken')
+    localStorage.removeItem('loginUser')
+    setLoginUser(null)
+    navigate('/login')
+  }
 
   // goToLoginPage function
   function goToLoginPage() {
@@ -20,186 +61,227 @@ export const UserDashboard = () => {
     navigate('/signup')
   }
 
-  // logout function
-  function logOut() {
-    localStorage.removeItem('loginToken')
-    localStorage.removeItem('loginUser')
-    navigate('/login')
+  async function getOneProduct(id) {
+    try {
+
+      const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
+      console.log(getOneData.data.data, "==>");
+      setParticularProduct(getOneData.data.data)
+
+    } catch (error) {
+      console.log("error");
+    }
   }
 
-  // goToSignupPage function
-  function getAuth() {
+  async function getFewProduct() {
+    try {
+      var getData = await axios.get(`http://localhost:5000/getFewData`)
+      console.log(getData.data.data);
+      setFewDatas(getData.data.data)
+    } catch (error) {
+      console.log("error");
+    }
+  }
+
+  function authUser() {
     var user = JSON.parse(localStorage.getItem('loginUser'))
     var token = localStorage.getItem('loginToken')
-    console.log(user);
+    console.log(user, "===>");
 
     if (user && token) {
-      setAuth(true)
       setLoginUser(user)
     }
-    else {
-      navigate('/login')
-    }
+    getFewProduct()
   }
 
   useEffect(() => {
-    getAuth()
+    try {
+      authUser()
+    } catch (error) {
+      console.log("error");
+
+    }
   }, [])
+
   return (
+    <div className="flex h-screen">
 
-    <div>
-      <header className="bg-white shadow">
-        <div className="flex justify-between items-center px-4 py-3">
+      {/* sidebar */}
+      <Sidebar />
 
-          <h1 className="text-lg font-bold">Cartify</h1>
+      <div className="flex flex-col flex-1">
 
-          <div className="hidden md:flex gap-6">
-            <a href="#" className="font-medium">Home</a>
-            <a href="#" className="font-medium">Products</a>
-            <a href="#" className="font-medium">Cart</a>
-            {loginUser.role?.toLowerCase() === "admin" ? <a href="/admin/dashBoard" className="font-bold text-blue-900">Admin</a> : ""}
+        <div className="flex items-center justify-between p-6 bg-gray-700 border-b px-4">
 
+          <div className="flex items-center gap-4">
+
+            {/* hamburger button */}
+            <button
+              onClick={() => setSideBarOpen(true)}
+              className="text-xl text-white"
+            >
+              <i className="fa-solid fa-bars"></i>
+            </button>
+
+            <h1 className="text-white font-bold"> <i className="fa-solid fa-truck-fast text-2xl"></i> Cartify</h1>
           </div>
 
-          <div className='flex flex-cols'>
-
-            {!auth && (
+          {/* logout button */}
+          <div className="flex items-center gap-2">
+            {!loginUser && (
               <div>
-                <button className="hidden md:block bg-blue-500 text-white px-4 py-2 rounded me-3" onClick={() => {
+                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
+                  goToSignupPage()
+                }}>
+                  <i class="fa-solid fa-user-plus"></i> Signup
+                </button>
+                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
                   goToLoginPage()
                 }}>
                   Login
                 </button>
-                <button className="hidden md:block bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
-                  goToSignupPage()
+              </div>
+            )}
+            {loginUser && (
+              <div>
+                <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
+                  logOut()
                 }}>
-                  Signup
+                  <i className="fa-solid fa-right-from-bracket"></i> Log Out
                 </button>
               </div>
             )}
-            {auth && (
-              <button className="hidden md:block bg-red-600 text-white px-4 py-2 rounded ms-3" onClick={() => {
-                logOut()
-              }}>
-                <i className="fa-solid fa-right-from-bracket"></i> Log Out
-              </button>
-            )}
+          </div>
+        </div>
+
+
+        <div className="w-full relative">
+
+          {/* Slides */}
+          <div className="flex overflow-hidden">
+
+            <img className="w-full flex-shrink-0 bg-indigo-100 h-80 flex items-center justify-center rounded-xl" src={defaultSlides[slide].image} />
+
           </div>
 
+          <button
+            className={`absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow ${slide === 0 ? "hidden" : ""}`}
+            onClick={() => setSlide(slide - 1)}
+            disabled={slide === 0}
+          >
+            previous
+          </button>
 
-          <button className="md:hidden text-xl" onClick={() => setOpen(!open)}>
-            <i className="fa-solid fa-bars"></i>
+          <button
+            className={`absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow ${slide === defaultSlides.length - 1 ? "hidden" : ""}`}
+            onClick={() => setSlide(slide + 1)}
+            disabled={slide === defaultSlides.length - 1}
+          >
+            next
           </button>
 
         </div>
 
-        {open && (
-          <div className="md:hidden flex flex-col gap-4 px-4 pb-4">
-            <a href="#">Home</a>
-            <a href="#">Products</a>
-            <a href="#">Cart</a>
-            {loginUser.role.toLowerCase() === "admin" ? <a href="#">Admin</a> : ""}
-
-
-            {!auth && (
-              <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
-                goToLoginPage()
-              }}>
-                Login
-              </button>
-            )}
-            {!auth && (
-              <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
-                goToSignupPage()
-              }}>
-                Signup
-              </button>
-            )}
-            {auth && (
-              <button className="bg-red-600 text-white px-4 py-2 rounded" onClick={() => {
-                logOut()
-              }}>
-                <i className="fa-solid fa-right-from-bracket"></i> Log Out
-              </button>
-            )}
+        {/* Product Grid */}
+        <div className="bg-white p-10">
+          <div className='relative grid grid-cols-2'>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Our Products
+            </h2>
+            <a href='/consumers/products' className="absolute top-0 right-0 font-bold text-blue-600 mb-6 hover:underline cursor-pointer">
+              see more
+            </a>
           </div>
-        )}
-      </header>
 
-      
-      <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Our Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            <div className="group relative">
-              <img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-01.jpg" alt="Front of men&#039;s Basic Tee in black." className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
-              <div className="mt-4 flex justify-between">
+            {/* Product Card */}
+
+            {fewDatas.map((data, index) => {
+              return (
                 <div>
-                  <h3 className="text-sm text-gray-700">
-                    <a href="#">
-                      <span aria-hidden="true" className="absolute inset-0"></span>
-                      Basic Tee
-                    </a>
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">Black</p>
+                  <img
+                    src={`http://localhost:5000/uploadingImages/${data.image}`}
+                    className="w-full h-60 object-contain bg-gray-100 rounded-md"
+                  />
+
+                  <div className="mt-3 flex justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold hover:underline cursor-pointer" onClick={() => {
+                        openViewModal(data._id)
+                      }}>{data.name}</h3>
+                      <p className="text-sm text-gray-500 font-bold">{data.color}</p>
+                    </div>
+                    <p className="text-sm font-bold text-blue-600"> <i class="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-gray-900">$35</p>
-              </div>
-            </div>
-            <div className="group relative">
-              <img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-02.jpg" alt="Front of men&#039;s Basic Tee in white." className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
-              <div className="mt-4 flex justify-between">
-                <div>
-                  <h3 className="text-sm text-gray-700">
-                    <a href="#">
-                      <span aria-hidden="true" className="absolute inset-0"></span>
-                      Basic Tee
-                    </a>
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">Aspen White</p>
-                </div>
-                <p className="text-sm font-medium text-gray-900">$35</p>
-              </div>
-            </div>
-            <div className="group relative">
-              <img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-03.jpg" alt="Front of men&#039;s Basic Tee in dark gray." className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
-              <div className="mt-4 flex justify-between">
-                <div>
-                  <h3 className="text-sm text-gray-700">
-                    <a href="#">
-                      <span aria-hidden="true" className="absolute inset-0"></span>
-                      Basic Tee
-                    </a>
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">Charcoal</p>
-                </div>
-                <p className="text-sm font-medium text-gray-900">$35</p>
-              </div>
-            </div>
-            <div className="group relative">
-              <img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/product-page-01-related-product-04.jpg" alt="Front of men&#039;s Artwork Tee in peach with white and brown dots forming an isometric cube." className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
-              <div className="mt-4 flex justify-between">
-                <div>
-                  <h3 className="text-sm text-gray-700">
-                    <a href="#">
-                      <span aria-hidden="true" className="absolute inset-0"></span>
-                      Artwork Tee
-                    </a>
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">Iso Dots</p>
-                </div>
-                <p className="text-sm font-medium text-gray-900">$35</p>
-              </div>
-            </div>
+              )
+            })}
+
           </div>
         </div>
+
+
+        {/* view modal */}
+
+        {viewModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+
+            <div className="bg-white w-[90%] md:w-[600px] p-6 rounded-lg relative">
+
+              <button
+                onClick={() => closeViewModal()}
+                className="absolute top-3 right-3 text-gray-500"
+              >
+                <i className="fa-solid fa-x"></i>
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-4">
+                <img
+                  src={`http://localhost:5000/uploadingImages/${particularProduct.image}`}
+                  className="w-full md:w-1/2 rounded"
+                />
+                <div className="flex-1">
+
+                  <h2 className="text-xl font-bold">
+                    {particularProduct.name}
+                  </h2>
+
+                  <p className="text-lg font-semibold mt-2">
+                    <i class="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                  </p>
+
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Description : <span className='text-gray-500'>{particularProduct.description} </span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Offer : <span className='text-blue-500'>{particularProduct.offer} <i class="fa-solid fa-percent"></i></span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Color : <span className='text-blue-500'>{particularProduct.color}</span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Size : <span className='text-gray-500'>{particularProduct.size}</span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Category : <span className='text-green-600'>{particularProduct.category}</span></p>
+                  </div>
+
+                  <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded">
+                    Add to Cart
+                  </button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* footer section */}
+        <Footer />
       </div>
 
+
     </div>
-
-
-
-
   )
 }

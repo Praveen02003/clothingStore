@@ -5,6 +5,7 @@ import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AdminFooter } from '../footer/Footer';
 export const AdminProducts = () => {
 
     var [editErrors, setEditErrors] = useState({
@@ -589,9 +590,40 @@ export const AdminProducts = () => {
         }
     }
 
+    // pagination functionality
+    const itemsPerPage = 5;
+    const [currentPage, setCurrentPage] = useState(1);
+    const totalPagesArrray = [];
+    const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+    for (let index = 0; index < totalPages; index++) {
+        totalPagesArrray.push(index)
+    }
+    const lastItem = currentPage * itemsPerPage;
+    const firstItem = lastItem - itemsPerPage;
+
+    const currentItems = allProducts.slice(firstItem, lastItem);
+
+    function authUser() {
+        var user = JSON.parse(localStorage.getItem('loginUser'))
+        var token = localStorage.getItem('loginToken')
+        console.log(user, "===>");
+
+        if (user && token) {
+            if (user.role.toLowerCase() !== "admin") {
+                navigate("/");
+            }
+            else if (user.role.toLowerCase() === "admin") {
+                getAllProducts();
+            }
+        }
+        else {
+            navigate('/login')
+        }
+    }
+
     useEffect(() => {
         try {
-            getAllProducts();
+            authUser();
         } catch (error) {
             console.log("error");
         }
@@ -605,26 +637,26 @@ export const AdminProducts = () => {
 
             <div className="flex flex-col flex-1">
 
-                <div className="flex items-center justify-between h-16 bg-white border-b px-4">
+                <div className="flex items-center justify-between h-16 bg-gray-700 border-b px-4">
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 p-5">
 
                         {/* hamburger button */}
-                        <button className="md:hidden text-xl" onClick={() => setOpen(true)}>
+                        <button className="text-xl text-white" onClick={() => setOpen(true)}>
                             <i className="fa-solid fa-bars"></i>
                         </button>
 
-                        <h2 className="font-semibold">Our Products</h2>
+                        <h2 className="font-semibold text-white">Our Products</h2>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <button className="bg-blue-500 px-4 py-2 rounded text-white font-bold" onClick={() => openAddModal()}>
-                            <i class="fa-solid fa-plus"></i> Add Product
+                            <i className="fa-solid fa-plus"></i> Add Product
                         </button>
                         <button className="bg-red-500 px-4 py-2 me-8 rounded text-white font-bold" onClick={() => {
                             logOut()
                         }}>
-                            <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                            <i className="fa-solid fa-right-from-bracket"></i> Log Out
                         </button>
                     </div>
                 </div>
@@ -632,7 +664,7 @@ export const AdminProducts = () => {
                 {/* cards */}
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg shadow p-4">
-                        <h2 className="text-base sm:text-lg font-semibold"> <i class="fa-solid fa-shirt text-2xl"></i> Total Products Count</h2>
+                        <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-shirt text-2xl"></i> Total Products Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{allProducts.length}</p>
                     </div>
                 </div>
@@ -658,7 +690,7 @@ export const AdminProducts = () => {
                             </thead>
 
                             <tbody>
-                                {allProducts.map((data, index) => {
+                                {currentItems.length > 0 ? (currentItems.map((data, index) => {
                                     return (
                                         <tr className="bg-white border-b hover:bg-gray-50" key={index}>
 
@@ -691,7 +723,7 @@ export const AdminProducts = () => {
                                             </td>
                                         </tr>
                                     )
-                                })}
+                                })) : (<p className='text-red-600'>No Products</p>)}
 
                             </tbody>
 
@@ -699,6 +731,49 @@ export const AdminProducts = () => {
 
                     </div>
                 </div>
+
+                <div className="flex items-center justify-between border-t bg-white px-4 py-3">
+
+                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-between">
+
+                        {/* pagination */}
+                        {currentItems.length > 0 && (
+                            <div className="flex items-center gap-1 mt-4">
+
+                                <button
+                                    className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    disabled={currentPage === 1}>
+                                    Previous
+                                </button>
+
+                                {totalPagesArrray.map((data, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentPage(index + 1)}
+                                        className={`px-3 py-1 rounded ${currentPage === index + 1
+                                            ? "bg-blue-600 text-white"
+                                            : "border"
+                                            }`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
+
+                                <button
+                                    className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}>
+                                    Next
+                                </button>
+
+                            </div>
+                        )}
+
+                    </div>
+
+                </div>
+
 
                 {/* delete confirmation modal */}
                 {deleteModal && (
@@ -759,15 +834,15 @@ export const AdminProducts = () => {
 
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>Offer : </span>
-                                        {getParticularProduct.offer} <i class="fa-solid fa-percent"></i> off
+                                        {getParticularProduct.offer} <i className="fa-solid fa-percent"></i> off
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>Sale Price : </span>
-                                        <i class="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.price}
+                                        <i className="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.price}
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>Original Price : </span>
-                                        <i class="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.defaultPrice}
+                                        <i className="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.defaultPrice}
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>colors : </span>
@@ -806,7 +881,7 @@ export const AdminProducts = () => {
                                 onClick={() => closeEditModal()}
                                 className="absolute top-4 right-4 text-gray-500 hover:text-black"
                             >
-                                <i class="fa-solid fa-circle-xmark"></i>
+                                <i className="fa-solid fa-circle-xmark"></i>
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Edit Product</h2>
@@ -886,7 +961,7 @@ export const AdminProducts = () => {
                                     </p>
                                 </div>
                                 <div className="block sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                    <select className="w-full border rounded px-3 py-2" onChange={(event) => {
                                         editValidateColor(event.target.value)
                                     }} value={getParticularProduct.color}>
                                         <option value="">Select Color</option>
@@ -987,7 +1062,7 @@ export const AdminProducts = () => {
                                 onClick={() => closeAddModal()}
                                 className="absolute top-4 right-4 text-gray-500 hover:text-black"
                             >
-                                <i class="fa-solid fa-circle-xmark"></i>
+                                <i className="fa-solid fa-circle-xmark"></i>
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Add Product</h2>
@@ -1068,7 +1143,7 @@ export const AdminProducts = () => {
                                     </p>
                                 </div>
                                 <div className="block sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                    <select className="w-full border rounded px-3 py-2" onChange={(event) => {
                                         validateColor(event.target.value)
                                     }} value={addData.color}>
                                         <option value="">Select Color</option>
@@ -1084,7 +1159,7 @@ export const AdminProducts = () => {
                                     </p>
                                 </div>
                                 <div className="block sm:w-100">
-                                    <select class="w-full border rounded px-3 py-2" onChange={(event) => {
+                                    <select className="w-full border rounded px-3 py-2" onChange={(event) => {
                                         validateSize(event.target.value)
                                     }} value={addData.size}>
                                         <option value="">Select Size</option>
@@ -1160,7 +1235,10 @@ export const AdminProducts = () => {
                         </div>
                     </div>
                 )}
-                
+
+                {/* footer section */}
+                <AdminFooter />
+
             </div>
         </div>
     );
