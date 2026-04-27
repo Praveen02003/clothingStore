@@ -137,7 +137,7 @@ app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
             }).countDocuments()
             // console.log(productCount);
             allData['productCount'] = productCount
-            // productCount
+            // consumerCount
             var consumerCount = await consumer.find({
                 $and: [
                     { addedOn: { $lte: date } },
@@ -162,7 +162,7 @@ app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
             }).countDocuments()
             // console.log(productCount);
             allData['productCount'] = productCount
-            // productCount
+            // consumerCount
             var consumerCount = await consumer.find({
                 $and: [
                     { addedOn: { $lte: date } },
