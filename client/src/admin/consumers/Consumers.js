@@ -6,6 +6,7 @@ import { mainContext } from '../../App';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AdminFooter } from '../footer/Footer';
+import { AdminNavbar } from '../navbar/AdminNavbar';
 export const Consumers = () => {
 
     const {
@@ -22,6 +23,10 @@ export const Consumers = () => {
     } = useContext(mainContext);
 
     const navigate = useNavigate();
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(null);
+
 
     async function particularConsumer(id) {
         try {
@@ -68,13 +73,16 @@ export const Consumers = () => {
     async function getAllConsumers() {
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get("http://localhost:5000/getAllConsumers", {
+            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}`, {
                 headers: {
                     Authorization: token
                 }
             })
-            console.log(getData.data.data);
-            setAllConsumers(getData.data.data)
+            console.log(getData.data.totalPage);
+            var allData = getData.data.data
+            var totalPages = getData.data.totalPage / 5
+            setAllConsumers(allData)
+            setTotalPages(totalPages)
         } catch (error) {
             console.log(error.response.data.message);
             alert(error.response.data.message)
@@ -107,18 +115,30 @@ export const Consumers = () => {
         }
     }
 
-    // pagination functionality
-    const itemsPerPage = 5;
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalPagesArrray = [];
-    const totalPages = Math.ceil(allConsumers.length / itemsPerPage);
-    for (let index = 0; index < totalPages; index++) {
-        totalPagesArrray.push(index)
-    }
-    const lastItem = currentPage * itemsPerPage;
-    const firstItem = lastItem - itemsPerPage;
 
-    const currentItems = allConsumers.slice(firstItem, lastItem);
+    // pagination functionality
+    var totalPagesArrray = [];
+
+    function pagination() {
+        for (let index = 0; index < totalPages; index++) {
+            totalPagesArrray.push(index)
+        }
+    }
+
+    pagination()
+
+    // next function
+    function next() {
+        setCurrentPage(currentPage + 1)
+    }
+
+    // previous function
+    function previous() {
+        setCurrentPage(currentPage - 1)
+    }
+
+
+
 
     useEffect(() => {
         try {
@@ -126,7 +146,7 @@ export const Consumers = () => {
         } catch (error) {
             console.log("error");
         }
-    }, [])
+    }, [currentPage])
 
     return (
         <div className="flex h-screen">
@@ -136,34 +156,15 @@ export const Consumers = () => {
 
             <div className="flex flex-col flex-1">
 
-                <div className="flex items-center justify-between h-16 bg-gray-700 border-b px-4">
-
-                    <div className="flex items-center gap-4 p-5">
-
-                        {/* hamburger button */}
-                        <button className="text-white text-xl" onClick={() => setOpen(true)}>
-                            <i className="fa-solid fa-bars"></i>
-                        </button>
-
-                        <h2 className="font-semibold text-sm text-white md:text-base">
-                            Our Consumers
-                        </h2>
-                    </div>
-
-                    {/* logout button */}
-                    <div className="flex items-center gap-2">
-                        <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                            logOut()
-                        }}>
-                            <i class="fa-solid fa-right-from-bracket"></i> Log Out
-                        </button>
-                    </div>
-
+                <AdminNavbar />
+                <div className="flex justify-between items-center p-4">
+                    <h2 className="text-lg font-semibold"> <i className="fa-solid fa-users"></i> Consumers</h2>
                 </div>
+
                 {/* cards */}
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg shadow p-4">
-                        <h2 className="text-base sm:text-lg font-semibold"> <i class="fa-solid fa-user text-2xl"></i> Total Consumers Count</h2>
+                        <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-user text-2xl"></i> Total Consumers Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{allConsumers.length}</p>
                     </div>
                 </div>
@@ -190,7 +191,7 @@ export const Consumers = () => {
                             </thead>
 
                             <tbody>
-                                {currentItems.map((data, index) => {
+                                {allConsumers.map((data, index) => {
                                     return (
                                         <tr className="bg-white border-b hover:bg-gray-50" key={index}>
 
@@ -231,15 +232,15 @@ export const Consumers = () => {
 
                 <div className="flex items-center justify-between border-t bg-white px-4 py-3">
 
-                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-end">
 
                         {/* pagination */}
-                        {currentItems.length > 0 && (
+                        {allConsumers.length > 0 && (
                             <div className="flex items-center gap-1 mt-4">
 
                                 <button
                                     className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    onClick={() => previous()}
                                     disabled={currentPage === 1}>
                                     Previous
                                 </button>
@@ -247,7 +248,7 @@ export const Consumers = () => {
                                 {totalPagesArrray.map((data, index) => (
                                     <button
                                         key={index}
-                                        onClick={() => setCurrentPage(index + 1)}
+                                        onClick={() => { setCurrentPage(index + 1) }}
                                         className={`px-3 py-1 rounded ${currentPage === index + 1
                                             ? "bg-blue-600 text-white"
                                             : "border"
@@ -259,7 +260,7 @@ export const Consumers = () => {
 
                                 <button
                                     className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    onClick={() => next()}
                                     disabled={currentPage === totalPages}>
                                     Next
                                 </button>
@@ -271,17 +272,23 @@ export const Consumers = () => {
 
                 </div>
 
-                {/* view product modal */}
+                {/* view consumer modal */}
                 {viewModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[70%] lg:w-[60%] p-6 relative">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                <button className="absolute top-4 right-4 justify-end text-black" onClick={() => {
+                                    closeViewModal()
+                                }}>
+                                    <i className="fa-solid fa-circle-xmark"></i>
+                                </button>
                                 {getParticularConsumer.images ? (
                                     <img
                                         src={`http://localhost:5000/uploadingImages/${getParticularConsumer.images}`}
                                         alt="user"
-                                        className="w-full rounded-lg"
+                                        className="w-80 rounded-lg h-80"
                                     />
                                 ) : (<p className='text-red-600 font-bold'>No Image</p>)}
 
@@ -307,12 +314,6 @@ export const Consumers = () => {
                                     <p className="text-xl mt-2 text-gray-700">
                                         <span className='font-bold'>Address :</span> {getParticularConsumer.address}
                                     </p>
-
-                                    <button className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-indigo-700" onClick={() => {
-                                        closeViewModal()
-                                    }}>
-                                        Close
-                                    </button>
                                 </div>
 
                             </div>

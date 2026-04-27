@@ -5,6 +5,7 @@ import { Sidebar } from "../sidebar/Sidebar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AdminFooter } from "../footer/Footer";
+import { AdminNavbar } from "../navbar/AdminNavbar";
 
 export const Dashboard = () => {
 
@@ -17,7 +18,12 @@ export const Dashboard = () => {
 
     const navigate = useNavigate();
 
-    const [dropDownOpen, setDropDownOpen] = useState(false)
+    // logout function
+    function logOut() {
+        localStorage.removeItem('loginToken')
+        localStorage.removeItem('loginUser')
+        navigate('/login')
+    }
 
     async function getAdminDashBoardData(sort = "") {
         try {
@@ -42,17 +48,7 @@ export const Dashboard = () => {
         }
     }
 
-    // logout function
-    function logOut() {
-        localStorage.removeItem('loginToken')
-        localStorage.removeItem('loginUser')
-        navigate('/login')
-    }
 
-    // openDropdown function
-    function openDropdown() {
-        setDropDownOpen(!dropDownOpen)
-    }
 
 
     function authUser() {
@@ -91,54 +87,15 @@ export const Dashboard = () => {
 
             <div className="flex flex-col flex-1">
 
-                <div className="flex items-center justify-between h-16 bg-gray-700 border-b px-4">
+                <AdminNavbar />
 
-                    <div className="flex items-center gap-4 p-5">
+                <div className="flex justify-between items-center p-4">
+                    <h2 className="text-lg font-semibold"> <i className="fa-solid fa-gauge-high"></i> Dashboard Analytics</h2>
 
-                        {/* hamburger button */}
-                        <button
-                            onClick={() => setOpen(true)}
-                            className="text-xl text-white"
-                        >
-                            <i className="fa-solid fa-bars"></i>
-                        </button>
-
-                        <h2 className="font-semibold text-white"> <i className="fa-solid fa-gauge-high text-2xl"></i> Dashboard Analytics</h2>
-                    </div>
-                    {/* logout button */}
-                    <div className="flex items-center gap-2">
-                        <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                            logOut()
-                        }}>
-                            <i className="fa-solid fa-right-from-bracket"></i> Log Out
-                        </button>
-                    </div>
-                </div>
-
-                <div className="relative inline-block">
-
-                    {/* Button */}
-                    <button className="bg-gray-600 text-white absolute right-0 mt-2 me-10 flex items-center gap-2 px-3 py-2 border rounded-md" onClick={() => { openDropdown() }}>
-                        Sort by month
-                    </button>
-
-
-                    {dropDownOpen && (
-                        <div className="absolute right-0 top-12 mt-2 me-5 w-40 border rounded shadow">
-
-                            <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => {
-                                getAdminDashBoardData("this")
-                            }}>
-                                This month
-                            </button>
-                            <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => {
-                                getAdminDashBoardData("previous")
-                            }}>
-                                Previous month
-                            </button>
-                        </div>
-                    )}
-
+                    <select className="w-60 border border-black rounded-md px-3 py-2 text-sm" onChange={(event) => { getAdminDashBoardData(event.target.value) }}>
+                        <option value="this">This Month</option>
+                        <option value="last">Last Month</option>
+                    </select>
                 </div>
 
 
@@ -147,7 +104,7 @@ export const Dashboard = () => {
 
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-user-tie"></i> Consumers Count</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.consumerCount}</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.consumerCount || 0}</p>
                         <a className="mt-3 text-blue-600 hover:underline font-bold" href="/admin/consumers">
                             View
                         </a>
@@ -155,7 +112,7 @@ export const Dashboard = () => {
 
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-shirt"></i> Products Count</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.productCount}</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.productCount || 0}</p>
                         <a className="mt-30 text-blue-600 hover:underline font-bold" href="/admin/adminProducts">
                             View
                         </a>
@@ -174,7 +131,7 @@ export const Dashboard = () => {
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
                     </div>
                 </div>
-                
+
                 {/* footer section */}
                 <AdminFooter />
             </div>

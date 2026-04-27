@@ -77,15 +77,22 @@ function verifyToken(req, res, next) {
 
 // admin side
 // getAllProducts
-app.get('/getAllProducts', verifyToken, async (req, res) => {
+app.get('/getAllProducts', async (req, res) => {
+    var page = parseInt(req.query.page) || 1;
+    var limitItem = 5;
+
+    const skipPage = (page - 1) * limitItem;
     try {
-        const data = await product.find();
+        const data = await product.find().skip(skipPage).limit(limitItem);
         // console.log(data);
-        return res.json({ data: data, message: "Data Fetched" });
+        var totalProducts = await product.countDocuments();
+        console.log(totalProducts);
+
+        return res.json({ data: data, totalPage: totalProducts, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
-});
+})
 
 // getOneProduct
 app.get('/getOneProduct/:id', verifyToken, async (req, res) => {
@@ -114,18 +121,58 @@ app.get('/deleteParticularProduct/:id', verifyToken, async (req, res) => {
 // getAdminDashBoardDatas
 app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
     try {
+        console.log(req.params.sort);
+        var paramsData = req.params.sort
         const allData = {};
-        const productCount = await product.countDocuments();
-        const consumerCount = await consumer.countDocuments();
-        console.log(consumerCount);
+        if (paramsData === "this") {
+            var startDate = new Date("2026-03-31T00:00:00Z")
+            var date = new Date();
 
-        // const findConsumer = await consumer.findOne({
-        //     createdAt : "2026-04-24T05:06:06.584+00:00"
-        // })
-        // console.log(findConsumer);
+            // productCount
+            var productCount = await product.find({
+                $and: [
+                    { addedOn: { $lte: date } },
+                    { addedOn: { $gt: startDate } },
+                ]
+            }).countDocuments()
+            // console.log(productCount);
+            allData['productCount'] = productCount
+            // productCount
+            var consumerCount = await consumer.find({
+                $and: [
+                    { addedOn: { $lte: date } },
+                    { addedOn: { $gt: startDate } },
+                ]
+            }).countDocuments()
+            // console.log(productCount);
+            allData['consumerCount'] = consumerCount
 
-        allData['productCount'] = productCount
-        allData['consumerCount'] = consumerCount
+        }
+        else if (paramsData === "last") {
+            const startDate = new Date("2026-03-01T00:00:00Z");
+            const date = new Date("2026-04-01T00:00:00Z");
+
+
+            // productCount
+            var productCount = await product.find({
+                $and: [
+                    { addedOn: { $lte: date } },
+                    { addedOn: { $gt: startDate } },
+                ]
+            }).countDocuments()
+            // console.log(productCount);
+            allData['productCount'] = productCount
+            // productCount
+            var consumerCount = await consumer.find({
+                $and: [
+                    { addedOn: { $lte: date } },
+                    { addedOn: { $gt: startDate } },
+                ]
+            }).countDocuments()
+            console.log(consumerCount);
+            allData['consumerCount'] = consumerCount
+
+        }
         return res.json({ data: allData, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -134,10 +181,15 @@ app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
 
 // getAllConsumers
 app.get('/getAllConsumers', verifyToken, async (req, res) => {
+    var page = parseInt(req.query.page) || 1;
+    var limitItem = 5;
+
+    const skipPage = (page - 1) * limitItem;
     try {
-        const allConsumers = await consumer.find();
+        const allConsumers = await consumer.find().skip(skipPage).limit(limitItem);
+        const totalConsumers = await consumer.countDocuments();
         console.log(allConsumers);
-        return res.json({ data: allConsumers, message: "Data Fetched" });
+        return res.json({ data: allConsumers, totalPage: totalConsumers, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -157,6 +209,7 @@ app.get('/getOneConsumer/:id', verifyToken, async (req, res) => {
 // addproduct route
 app.post('/addProducts', verifyToken, upload.single("image"), async (req, res) => {
     const data = req.body;
+    const date = new Date();
     const imageFile = req.file;
     try {
         const getData = await product.findOne({ name: data.name })
@@ -174,7 +227,9 @@ app.post('/addProducts', verifyToken, upload.single("image"), async (req, res) =
                 color: data.color,
                 size: data.size,
                 image: imageFile.originalname,
-                category: data.category
+                category: data.category,
+                addedOn: date,
+                editedOn: date
             });
         }
         return res.json({ message: "Product Added Successfully" })
@@ -186,6 +241,7 @@ app.post('/addProducts', verifyToken, upload.single("image"), async (req, res) =
 // updateproduct route
 app.post('/upateProducts', verifyToken, upload.single("image"), async (req, res) => {
     const data = req.body;
+    const date = new Date();
     const imageFile = req.file;
 
     try {
@@ -204,7 +260,8 @@ app.post('/upateProducts', verifyToken, upload.single("image"), async (req, res)
             stock: data.stock,
             color: data.color,
             size: data.size,
-            category: data.category
+            category: data.category,
+            editedOn: date
         };
 
         if (imageFile) {
@@ -246,19 +303,55 @@ app.get('/getSpecificProduct/:id', async (req, res) => {
 
 // getAllProducts route
 app.get('/getAllProduct', async (req, res) => {
+
     try {
-        const data = await product.find();
+        var categorySort = {}
+        var priceSort = {}
+
+        var page = parseInt(req.query.page) || 1;
+        var limitItem = 5;
+        const skipPage = (page - 1) * limitItem;
+
+        var category = req.query.category;
+        // console.log(category, "====>");
+        if (category !== null && category) {
+            categorySort.category = category
+        }
+        var price = req.query.price;
+        // console.log(price);
+        if (price === "lowest") {
+            priceSort.price = 1
+        }
+        else if (price === "highest") {
+            priceSort.price = -1
+        }
+
+        var searchData = req.query.search;
+        console.log(searchData, "====>");
+
+        if (searchData) {
+            categorySort.$or = [
+                { name: { $regex: searchData, $options: "i" } },
+                { category: { $regex: searchData, $options: "i" } }
+            ];
+        }
+
+
+        const data = await product.find(categorySort).sort(priceSort).skip(skipPage).limit(limitItem);
         // console.log(data);
-        return res.json({ data: data, message: "Data Fetched" });
+        var totalProducts = await product.countDocuments(categorySort);
+        console.log(totalProducts);
+
+        return res.json({ data: data, totalPage: totalProducts, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 })
 
-
 // addUsers route
 app.post('/addUsers', async (req, res) => {
     const data = req.body.data;
+    const date = new Date();
     const saltRounds = 12;
     try {
         var getData = await consumer.findOne({ email: data.email })
@@ -278,7 +371,9 @@ app.post('/addUsers', async (req, res) => {
                 role: "user",
                 status: "active",
                 images: "",
-                address: data.address
+                address: data.address,
+                addedOn: date,
+                editedOn: date
             })
             return res.json({ message: "Signup Successfully" });
         }
@@ -316,6 +411,7 @@ app.post('/loginUser', async (req, res) => {
         return res.json({ message: error });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`server running at port ${port}`);

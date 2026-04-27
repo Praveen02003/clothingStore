@@ -5,6 +5,10 @@ import axios from 'axios';
 
 export const Signup = () => {
 
+    const [openAlert, setOpenAlert] = useState(false)
+    const [alertColor, setAlertColor] = useState(null)
+    const [alertContent, setAlertContent] = useState(null)
+
     var allErrors = {
         firstNameError: "",
         lastNameError: "",
@@ -353,10 +357,23 @@ export const Signup = () => {
                 try {
                     var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
                     console.log(result.data.message);
-                    alert(result.data.message);
-                    if (result.data.message = "Signup Successfully") {
+                    if (result.data.message === "Signup Successfully") {
+
+                        setAlertColor('green')
+                        setAlertContent(result.data.message)
+                        setOpenAlert(true)
+
                         setTimeout(() => {
+                            setOpenAlert(false)
                             navigate('/login');
+                        }, 1500);
+                    }
+                    else {
+                        setAlertColor('red')
+                        setAlertContent(result.data.message)
+                        setOpenAlert(true)
+                        setTimeout(() => {
+                            setOpenAlert(false)
                         }, 1000);
                     }
                 } catch (error) {
@@ -455,6 +472,12 @@ export const Signup = () => {
                 </div>
 
             </div>
+
+            {openAlert && (
+                <div className={`fixed top-4 right-4 flex items-center bg-${alertColor}-700 text-white text-sm font-bold px-4 py-4 rounded`} role="alert">
+                    <p className='text-white text-sm'>{alertContent}</p>
+                </div>
+            )}
         </div>
     )
 }

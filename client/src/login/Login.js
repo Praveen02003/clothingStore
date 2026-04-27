@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import '../login/Login.css'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios';
 
 export const Login = () => {
   var navigate = useNavigate();
+
+  const [openAlert, setOpenAlert] = useState(false)
+  const [alertColor, setAlertColor] = useState(null)
+  const [alertContent, setAlertContent] = useState(null)
 
   var allErrors = {
     emailError: "",
@@ -77,19 +81,39 @@ export const Login = () => {
       try {
         var result = await axios.post("http://localhost:5000/loginUser", { data: formData });
         console.log(result.data.message);
-        alert(result.data.message);
+        // alert(result.data.message);
+
         if (result.data.message === "Login Successfully") {
+
+          setAlertColor('green')
+          setAlertContent(result.data.message)
+          setOpenAlert(true)
+
+
           var loginUser = result.data.data
           var loginToken = result.data.token
           localStorage.setItem('loginUser', JSON.stringify(loginUser))
           localStorage.setItem('loginToken', loginToken)
           console.log(loginUser);
-          if (loginUser.role.toLowerCase() === "admin") {
-            navigate('/admin/dashBoard');
-          }
-          else {
-            navigate("/");
-          }
+
+          setTimeout(() => {
+            setOpenAlert(false)
+            if (loginUser.role.toLowerCase() === "admin") {
+              navigate('/admin/dashBoard');
+            }
+            else {
+              navigate("/");
+            }
+          }, 1500);
+
+        }
+        else {
+          setAlertColor('red')
+          setAlertContent(result.data.message)
+          setOpenAlert(true)
+          setTimeout(() => {
+            setOpenAlert(false)
+          }, 1000);
         }
       } catch (error) {
         alert(error);
@@ -145,13 +169,26 @@ export const Login = () => {
 
         {/* link */}
         <div className="link">
+          Forget Password?
+          <a href='/consumer/resetPassword'>
+            Reset Password
+          </a>
+        </div>
+        {/* link */}
+        <div className="link">
           Don't have an account?
-          <Link to='/signup'>
+          <a href='/signup'>
             Sign Up
-          </Link>
+          </a>
         </div>
 
       </div>
+
+      {openAlert && (
+        <div className={`fixed top-4 right-4 flex items-center bg-${alertColor}-700 text-white text-sm font-bold px-4 py-4 rounded`} role="alert">
+          <p className='text-white text-sm'>{alertContent}</p>
+        </div>
+      )}
     </div>
   )
 }

@@ -7,12 +7,15 @@ import banner2 from '../../assets/banner2.jpg'
 import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
+import { Navbar } from '../navbar/Navbar';
 
 export const UserDashboard = () => {
 
   const {
     sideBarOpen,
-    setSideBarOpen
+    setSideBarOpen,
+    loginUser,
+    setLoginUser
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -20,8 +23,6 @@ export const UserDashboard = () => {
   const [fewDatas, setFewDatas] = useState([])
 
   const [particularProduct, setParticularProduct] = useState({})
-
-  const [loginUser, setLoginUser] = useState(null)
 
   const defaultSlides = [
     { image: banner1 },
@@ -43,23 +44,7 @@ export const UserDashboard = () => {
     setViewModalOpen(false)
   }
 
-  // logout function
-  function logOut() {
-    localStorage.removeItem('loginToken')
-    localStorage.removeItem('loginUser')
-    setLoginUser(null)
-    navigate('/login')
-  }
 
-  // goToLoginPage function
-  function goToLoginPage() {
-    navigate('/login')
-  }
-
-  // goToSignupPage function
-  function goToSignupPage() {
-    navigate('/signup')
-  }
 
   async function getOneProduct(id) {
     try {
@@ -111,49 +96,8 @@ export const UserDashboard = () => {
 
       <div className="flex flex-col flex-1">
 
-        <div className="flex items-center justify-between p-6 bg-gray-700 border-b px-4">
-
-          <div className="flex items-center gap-4">
-
-            {/* hamburger button */}
-            <button
-              onClick={() => setSideBarOpen(true)}
-              className="text-xl text-white"
-            >
-              <i className="fa-solid fa-bars"></i>
-            </button>
-
-            <h1 className="text-white font-bold"> <i className="fa-solid fa-truck-fast text-2xl"></i> Cartify</h1>
-          </div>
-
-          {/* logout button */}
-          <div className="flex items-center gap-2">
-            {!loginUser && (
-              <div>
-                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  goToSignupPage()
-                }}>
-                  <i class="fa-solid fa-user-plus"></i> Signup
-                </button>
-                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  goToLoginPage()
-                }}>
-                  Login
-                </button>
-              </div>
-            )}
-            {loginUser && (
-              <div>
-                <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  logOut()
-                }}>
-                  <i className="fa-solid fa-right-from-bracket"></i> Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
+        {/* navbar section */}
+        <Navbar />
 
         <div className="w-full relative">
 
@@ -169,7 +113,7 @@ export const UserDashboard = () => {
             onClick={() => setSlide(slide - 1)}
             disabled={slide === 0}
           >
-            previous
+            <i className="fa-solid fa-arrow-left"></i>
           </button>
 
           <button
@@ -177,7 +121,7 @@ export const UserDashboard = () => {
             onClick={() => setSlide(slide + 1)}
             disabled={slide === defaultSlides.length - 1}
           >
-            next
+            <i className="fa-solid fa-arrow-right"></i>
           </button>
 
         </div>
@@ -188,9 +132,6 @@ export const UserDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Our Products
             </h2>
-            <a href='/consumers/products' className="absolute top-0 right-0 font-bold text-blue-600 mb-6 hover:underline cursor-pointer">
-              see more
-            </a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -212,14 +153,18 @@ export const UserDashboard = () => {
                       }}>{data.name}</h3>
                       <p className="text-sm text-gray-500 font-bold">{data.color}</p>
                     </div>
-                    <p className="text-sm font-bold text-blue-600"> <i class="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+                    <p className="text-sm font-bold text-blue-600"> <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
                   </div>
                 </div>
               )
             })}
 
+
           </div>
         </div>
+        <a href='/consumers/products' className="justify-center text-center items-center font-bold text-blue-600 mb-6 hover:underline cursor-pointer">
+          see more
+        </a>
 
 
         {/* view modal */}
@@ -248,14 +193,14 @@ export const UserDashboard = () => {
                   </h2>
 
                   <p className="text-lg font-semibold mt-2">
-                    <i class="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                    <i className="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
                   </p>
 
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Description : <span className='text-gray-500'>{particularProduct.description} </span></p>
                   </div>
                   <div className="mt-4">
-                    <p className="font-bold text-black text-xl">Offer : <span className='text-blue-500'>{particularProduct.offer} <i class="fa-solid fa-percent"></i></span></p>
+                    <p className="font-bold text-black text-xl">Offer : <span className='text-blue-500'>{particularProduct.offer} <i className="fa-solid fa-percent"></i></span></p>
                   </div>
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Color : <span className='text-blue-500'>{particularProduct.color}</span></p>

@@ -45,12 +45,17 @@ const consumerSchema = new mongoose.Schema(
 
         images: {
             type: String
+        },
+        addedOn: {
+            type: Date,
+            default: null
+        },
+        editedOn: {
+            type: Date,
+            default: null
         }
-    },
-    {
-        timestamps: true
     }
 );
 
-const consumer = mongoose.model("Consumer", consumerSchema, "consumers");
+const consumer = mongoose.model("Consumer", consumerSchema);
 module.exports = consumer;

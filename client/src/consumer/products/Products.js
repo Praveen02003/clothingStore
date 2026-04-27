@@ -7,12 +7,15 @@ import banner2 from '../../assets/banner2.jpg'
 import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
+import { Navbar } from '../navbar/Navbar';
 
 export const Products = () => {
 
   const {
     sideBarOpen,
-    setSideBarOpen
+    setSideBarOpen,
+    loginUser,
+    setLoginUser
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -21,11 +24,15 @@ export const Products = () => {
 
   const [particularProduct, setParticularProduct] = useState({})
 
-  const [loginUser, setLoginUser] = useState(null)
-
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
-  const [dropDownOpen, setDropDownOpen] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(null);
+
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [searchData, setSearchData] = useState("");
 
   // openViewModal function
   function openViewModal(id) {
@@ -36,24 +43,6 @@ export const Products = () => {
   // closeViewModal function
   function closeViewModal() {
     setViewModalOpen(false)
-  }
-
-  // logout function
-  function logOut() {
-    localStorage.removeItem('loginToken')
-    localStorage.removeItem('loginUser')
-    setLoginUser(null)
-    navigate('/login')
-  }
-
-  // goToLoginPage function
-  function goToLoginPage() {
-    navigate('/login')
-  }
-
-  // goToSignupPage function
-  function goToSignupPage() {
-    navigate('/signup')
   }
 
   async function getOneProduct(id) {
@@ -69,9 +58,15 @@ export const Products = () => {
 
   async function getAllProducts() {
     try {
-      var getData = await axios.get(`http://localhost:5000/getAllProduct`)
-      console.log(getData.data.data);
-      setAllDatas(getData.data.data)
+      var getData = await axios.get(`http://localhost:5000/getAllProduct?page=${currentPage}&category=${category}&price=${price}&search=${searchData}`)
+
+      var allData = getData.data.data
+      var totalPage = Math.ceil(getData.data.totalPage / 5)
+      console.log(allData);
+      console.log(totalPage);
+
+      setAllDatas(allData)
+      setTotalPages(totalPage)
     } catch (error) {
       console.log(error);
     }
@@ -88,31 +83,64 @@ export const Products = () => {
     getAllProducts()
   }
 
-  // openDropdown function
-  function openDropdown() {
-    setDropDownOpen(!dropDownOpen)
-  }
-
-  // filterData function
-  function filterData(value) {
-    var filteredData = allDatas.filter((data, index) => data.category === value)
-    console.log(filteredData);
-    setAllDatas(filterData)
-  }
-
-
   // pagination functionality
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPagesArrray = [];
-  const totalPages = Math.ceil(allDatas.length / itemsPerPage);
-  for (let index = 0; index < totalPages; index++) {
-    totalPagesArrray.push(index)
-  }
-  const lastItem = currentPage * itemsPerPage;
-  const firstItem = lastItem - itemsPerPage;
+  var totalPagesArrray = [];
 
-  const currentItems = allDatas.slice(firstItem, lastItem);
+  function pagination() {
+    console.log(totalPages,"---->");
+    
+    for (let index = 0; index < totalPages; index++) {
+      totalPagesArrray.push(index)
+    }
+  }
+
+  pagination()
+
+  // next function
+  function next() {
+    setCurrentPage(currentPage + 1)
+  }
+
+  // previous function
+  function previous() {
+    setCurrentPage(currentPage - 1)
+  }
+
+  // search function
+  function search(inputValue) {
+    setTimeout(() => {
+      setCategory("")
+      setPrice("")
+      setSearchData(inputValue)
+    }, 1500);
+  }
+
+  // priceApply function
+  function priceApply(inputValue) {
+    setCategory("")
+    setSearchData("")
+    setPrice(inputValue)
+  }
+
+  // categoryApply function
+  function categoryApply(inputValue) {
+    setPrice("")
+    setSearchData("")
+    setCategory(inputValue)
+  }
+
+  // ratings function
+  function ratings(loopValue) {
+    var ratingsArray = []
+    for (let index = 0; index < loopValue; index++) {
+      var fontAwesomeStars = <i className="fa-solid fa-star text-yellow-600" key={index}></i>
+      ratingsArray.push(fontAwesomeStars)
+    }
+    
+    return ratingsArray;
+  }
+
+
 
   useEffect(() => {
     try {
@@ -121,7 +149,7 @@ export const Products = () => {
       console.log("error");
 
     }
-  }, [])
+  }, [currentPage, category, price, searchData])
 
   return (
     <div className="flex h-screen">
@@ -131,99 +159,62 @@ export const Products = () => {
 
       <div className="flex flex-col flex-1">
 
-        <div className="flex items-center justify-between p-6 bg-gray-700 border-b px-4">
+        <Navbar />
 
-          <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4">
 
-            {/* hamburger button */}
-            <button
-              onClick={() => setSideBarOpen(true)}
-              className="text-xl text-white"
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <i className="fa-brands fa-product-hunt"></i>
+            Our Products
+          </h2>
+
+          {/* Right Side Controls */}
+          <div className="flex flex-wrap items-center gap-3">
+
+            {/* search */}
+            <input
+              type="text"
+              placeholder="search by name,category"
+              className="w-48 border border-black rounded px-3 py-2 text-sm"
+              onInput={(event) => { search(event.target.value) }}
+            />
+
+            {/* category select */}
+            <select
+              className="w-40 border border-black rounded-md px-3 py-2 text-sm"
+              onChange={(event) => categoryApply(event.target.value)}
             >
-              <i className="fa-solid fa-bars"></i>
-            </button>
+              <option value="">Select Category</option>
+              <option value="kurti">Kurti</option>
+              <option value="tshirt">T-Shirt</option>
+              <option value="jeans">Jeans</option>
+              <option value="shirt">Shirt</option>
+              <option value="hoodie">Hoodie</option>
+              <option value="pants">Pants</option>
+              <option value="jacket">Jacket</option>
+            </select>
 
-            <h1 className="text-white font-bold"> <i className="fa-solid fa-truck-fast text-2xl"></i> Cartify</h1>
+            {/* price select */}
+            <select
+              className="w-40 border border-black rounded-md px-3 py-2 text-sm"
+              onChange={(event) => priceApply(event.target.value)}
+            >
+              <option value="">Select Price</option>
+              <option value="lowest">Lowest</option>
+              <option value="highest">Highest</option>
+            </select>
+
           </div>
 
-          {/* logout button */}
-          <div className="flex items-center gap-2">
-            {!loginUser && (
-              <div>
-                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  goToSignupPage()
-                }}>
-                  <i class="fa-solid fa-user-plus"></i> Signup
-                </button>
-                <button className="bg-blue-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  goToLoginPage()
-                }}>
-                  Login
-                </button>
-              </div>
-            )}
-            {loginUser && (
-              <div>
-                <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
-                  logOut()
-                }}>
-                  <i className="fa-solid fa-right-from-bracket"></i> Log Out
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Product Grid */}
         <div className="bg-white p-10">
-
-          <div className="flex items-center justify-between mb-6">
-
-            {/* Title */}
-            <h2 className="text-2xl font-bold text-gray-900">
-              Our Products
-            </h2>
-
-            {/* Dropdown */}
-            <div className='flex'>
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    openDropdown()
-                  }}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                >
-                  Sort by category
-                </button>
-
-                {/* Dropdown Menu */}
-                {dropDownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow">
-                    <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={(event) => {
-                      filterData("men")
-                    }}>
-                      men
-                    </button>
-                    <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={(event) => {
-                      filterData("women")
-                    }}>
-                      women
-                    </button>
-                  </div>
-                )}
-
-              </div>
-            </div>
-
-          </div>
-
-
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Product Card */}
 
-            {currentItems.map((data, index) => {
+            {allDatas.length > 0 ? (allDatas.map((data, index) => {
               return (
                 <div key={index}>
                   <img
@@ -238,18 +229,20 @@ export const Products = () => {
                       }}>{data.name}</h3>
                       <p className="text-sm text-gray-500 font-bold mb-2">{data.color}</p>
                       <div className='flex'>
-                        <i class="fa-solid fa-star text-yellow-600"></i>
-                        <i class="fa-solid fa-star text-yellow-600"></i>
-                        <i class="fa-solid fa-star text-yellow-600"></i>
-                        <i class="fa-solid fa-star text-yellow-600"></i>
-                        <i class="fa-solid fa-star text-yellow-600"></i>
+                        {ratings(data.rating)}
                       </div>
                     </div>
-                    <p className="text-sm font-bold text-blue-600"> <i class="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+                    <p className="text-sm font-bold text-blue-600"> <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
                   </div>
                 </div>
               )
-            })}
+            })) : (
+              <div className="flex items-center w-full">
+                <p className="text-red-600 font-bold text-lg">
+                  No Product Found
+                </p>
+              </div>
+            )}
 
           </div>
         </div>
@@ -259,12 +252,12 @@ export const Products = () => {
           <div className="sm:flex sm:flex-1 sm:items-center sm:justify-center">
 
             {/* pagination */}
-            {currentItems.length > 0 && (
+            {totalPagesArrray.length > 0 && (
               <div className="flex items-center gap-1 mt-4">
 
                 <button
                   className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() => previous()}
                   disabled={currentPage === 1}>
                   Previous
                 </button>
@@ -284,7 +277,7 @@ export const Products = () => {
 
                 <button
                   className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() => next()}
                   disabled={currentPage === totalPages}>
                   Next
                 </button>
@@ -323,14 +316,14 @@ export const Products = () => {
                   </h2>
 
                   <p className="text-lg font-semibold mt-2">
-                    <i class="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                    <i className="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
                   </p>
 
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Description : <span className='text-gray-500'>{particularProduct.description} </span></p>
                   </div>
                   <div className="mt-4">
-                    <p className="font-bold text-black text-xl">Offer : <span className='text-blue-500'>{particularProduct.offer} <i class="fa-solid fa-percent"></i></span></p>
+                    <p className="font-bold text-black text-xl">Offer : <span className='text-blue-500'>{particularProduct.offer} <i className="fa-solid fa-percent"></i></span></p>
                   </div>
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Color : <span className='text-blue-500'>{particularProduct.color}</span></p>

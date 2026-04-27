@@ -6,6 +6,7 @@ import { mainContext } from '../../App';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AdminFooter } from '../footer/Footer';
+import { AdminNavbar } from '../navbar/AdminNavbar';
 export const AdminProducts = () => {
 
     var [editErrors, setEditErrors] = useState({
@@ -64,6 +65,9 @@ export const AdminProducts = () => {
     } = useContext(mainContext);
 
     const navigate = useNavigate()
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(null);
 
     async function particularProduct(id) {
         try {
@@ -144,7 +148,7 @@ export const AdminProducts = () => {
     }
 
     // add modal
-    function openAddModal(id) {
+    function openAddModal() {
         setAddModal(true)
     }
     function closeAddModal() {
@@ -362,10 +366,16 @@ export const AdminProducts = () => {
 
     }
 
-
+    // add image removeImage function
     function removeImage() {
         setAddData({ ...addData, image: "" })
         setAddErrors({ ...addErrors, imageError: "Choose Image" })
+    }
+
+    // edit image removeImage function
+    function removeEditImage(product) {
+        setGetParticularProduct({ ...getParticularProduct, image: "" })
+        setEditErrors({ ...editErrors, imageError: "Choose Image" })
     }
 
     // edit product validation functions
@@ -571,13 +581,18 @@ export const AdminProducts = () => {
     async function getAllProducts() {
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get("http://localhost:5000/getAllProducts", {
+            const getData = await axios.get(`http://localhost:5000/getAllProducts?page=${currentPage}`, {
                 headers: {
                     Authorization: token
                 }
             })
-            console.log(getData.data.data);
-            setAllProducts(getData.data.data)
+            var allData = getData.data.data
+            var totalPages = getData.data.totalPage / 5
+            console.log(allData);
+            console.log(totalPages);
+            
+            setAllProducts(allData)
+            setTotalPages(totalPages)
         } catch (error) {
             console.log(error.response.data.message);
             alert(error.response.data.message)
@@ -590,18 +605,28 @@ export const AdminProducts = () => {
         }
     }
 
-    // pagination functionality
-    const itemsPerPage = 5;
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalPagesArrray = [];
-    const totalPages = Math.ceil(allProducts.length / itemsPerPage);
-    for (let index = 0; index < totalPages; index++) {
-        totalPagesArrray.push(index)
-    }
-    const lastItem = currentPage * itemsPerPage;
-    const firstItem = lastItem - itemsPerPage;
 
-    const currentItems = allProducts.slice(firstItem, lastItem);
+    // pagination functionality
+    var totalPagesArrray = [];
+
+    function pagination() {
+        for (let index = 0; index < totalPages; index++) {
+            totalPagesArrray.push(index)
+        }
+    }
+
+    pagination()
+
+    // next function
+    function next() {
+        setCurrentPage(currentPage + 1)
+    }
+
+    // previous function
+    function previous() {
+        setCurrentPage(currentPage - 1)
+    }
+
 
     function authUser() {
         var user = JSON.parse(localStorage.getItem('loginUser'))
@@ -627,7 +652,7 @@ export const AdminProducts = () => {
         } catch (error) {
             console.log("error");
         }
-    }, [])
+    }, [currentPage])
 
     return (
         <div className="flex h-screen">
@@ -637,28 +662,15 @@ export const AdminProducts = () => {
 
             <div className="flex flex-col flex-1">
 
-                <div className="flex items-center justify-between h-16 bg-gray-700 border-b px-4">
+                <AdminNavbar />
 
-                    <div className="flex items-center gap-4 p-5">
-
-                        {/* hamburger button */}
-                        <button className="text-xl text-white" onClick={() => setOpen(true)}>
-                            <i className="fa-solid fa-bars"></i>
-                        </button>
-
-                        <h2 className="font-semibold text-white">Our Products</h2>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <button className="bg-blue-500 px-4 py-2 rounded text-white font-bold" onClick={() => openAddModal()}>
-                            <i className="fa-solid fa-plus"></i> Add Product
-                        </button>
-                        <button className="bg-red-500 px-4 py-2 me-8 rounded text-white font-bold" onClick={() => {
-                            logOut()
-                        }}>
-                            <i className="fa-solid fa-right-from-bracket"></i> Log Out
-                        </button>
-                    </div>
+                <div className="flex justify-between items-center p-4">
+                    <h2 className="text-lg font-semibold"> <i className="fa-brands fa-product-hunt"></i> Products</h2>
+                    <button className="text-white bg-blue-500 font-bold px-3 py-3 rounded" onClick={() => {
+                        openAddModal()
+                    }}>
+                        <i className="fa-solid fa-plus"></i> Add Product
+                    </button>
                 </div>
 
                 {/* cards */}
@@ -683,14 +695,15 @@ export const AdminProducts = () => {
                                 <tr>
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">Name</th>
-                                    <th className="px-6 py-3">price</th>
-                                    <th className="px-6 py-3">stock</th>
+                                    <th className="px-6 py-3">Price</th>
+                                    <th className="px-6 py-3">Stock</th>
+                                    <th className="px-6 py-3">Category</th>
                                     <th className="px-6 py-3">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {currentItems.length > 0 ? (currentItems.map((data, index) => {
+                                {allProducts.length > 0 ? (allProducts.map((data, index) => {
                                     return (
                                         <tr className="bg-white border-b hover:bg-gray-50" key={index}>
 
@@ -708,6 +721,9 @@ export const AdminProducts = () => {
 
                                             <td className="px-6 py-4 font-semibold text-gray-900">
                                                 {data.stock}
+                                            </td>
+                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                                {data.category}
                                             </td>
 
                                             <td className="px-6 py-4">
@@ -734,15 +750,15 @@ export const AdminProducts = () => {
 
                 <div className="flex items-center justify-between border-t bg-white px-4 py-3">
 
-                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div className="sm:flex sm:flex-1 sm:justify-end">
 
                         {/* pagination */}
-                        {currentItems.length > 0 && (
+                        {totalPagesArrray.length > 0 && (
                             <div className="flex items-center gap-1 mt-4">
 
                                 <button
                                     className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    onClick={() => previous()}
                                     disabled={currentPage === 1}>
                                     Previous
                                 </button>
@@ -762,7 +778,7 @@ export const AdminProducts = () => {
 
                                 <button
                                     className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    onClick={() => next()}
                                     disabled={currentPage === totalPages}>
                                     Next
                                 </button>
@@ -816,6 +832,11 @@ export const AdminProducts = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
 
                         <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[70%] lg:w-[60%] p-6 relative">
+                            <button className="absolute top-4 right-4 justify-end text-black" onClick={() => {
+                                closeViewModal()
+                            }}>
+                                <i className="fa-solid fa-circle-xmark"></i>
+                            </button>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {getParticularProduct.image && (
                                     <img
@@ -824,8 +845,6 @@ export const AdminProducts = () => {
                                         className="w-full rounded-lg"
                                     />
                                 )}
-
-
                                 <div>
                                     <h2 className="text-2xl text-gray-900">
                                         <span className='font-bold'>Name : </span>
@@ -852,17 +871,15 @@ export const AdminProducts = () => {
                                         <span className='font-bold'>Sizes : </span>
                                         {getParticularProduct.size}
                                     </p>
+                                    <p className="text-xl mt-2 text-gray-900">
+                                        <span className='font-bold'>Category : </span>
+                                        {getParticularProduct.category}
+                                    </p>
 
                                     <p className="mt-4 text-black text-lg">
                                         <span className='font-bold'>Description: </span>
                                         {getParticularProduct.description}
                                     </p>
-
-                                    <button className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-indigo-700" onClick={() => {
-                                        closeViewModal()
-                                    }}>
-                                        Close
-                                    </button>
                                 </div>
 
                             </div>
@@ -1004,15 +1021,21 @@ export const AdminProducts = () => {
                                         {editErrors.imageError}
                                     </p>
                                     {getParticularProduct.image && (
-                                        <img
-                                            src={
+                                        <div className="relative inline-block">
+                                            <img src={
                                                 typeof (getParticularProduct.image) === "string"
                                                     ? `http://localhost:5000/uploadingImages/${getParticularProduct.image}`
                                                     : URL.createObjectURL(getParticularProduct.image)
                                             }
-                                            alt="Thumb"
-                                            className="w-24 h-24 object-cover rounded-lg border shadow"
-                                        />
+                                                alt="Thumb"
+                                                className="w-24 h-24 object-cover rounded-lg border shadow"
+                                            />
+                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularProduct) }}>
+                                                Remove
+                                            </button>
+
+                                        </div>
+
                                     )}
                                 </div>
 

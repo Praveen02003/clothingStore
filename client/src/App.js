@@ -10,14 +10,15 @@ import { Consumers } from './admin/consumers/Consumers';
 import { UserDashboard } from './consumer/dashboard/UserDashboard';
 
 import { createContext, useState } from 'react';
+import { ForgetPassword } from './forget/ForgetPassword';
 
 export const mainContext = createContext()
 
 function App() {
 
   // sidebar open
-  const [open, setOpen] = useState(false)
-  const [sideBarOpen, setSideBarOpen] = useState(false)
+  const [open, setOpen] = useState(true)
+  const [sideBarOpen, setSideBarOpen] = useState(true)
 
   // modal opens
   const [viewModal, setViewModal] = useState(false);
@@ -38,6 +39,9 @@ function App() {
 
   // admin dashboard page
   const [getAllAdminDashBoardData, setGetAllAdminDashBoardData] = useState({});
+
+  // consumer
+  const [loginUser, setLoginUser] = useState(null)
   return (
     // routes
     <mainContext.Provider value={{
@@ -72,7 +76,10 @@ function App() {
       setParticularConsumerId,
 
       getAllAdminDashBoardData,
-      setGetAllAdminDashBoardData
+      setGetAllAdminDashBoardData,
+
+      loginUser,
+      setLoginUser
 
     }}>
       <BrowserRouter>
@@ -84,6 +91,7 @@ function App() {
           {/* consumers routes */}
           <Route path='/' element={<UserDashboard />} />
           <Route path='/consumers/products' element={<Products />} />
+          <Route path='/consumer/resetPassword' element={<ForgetPassword />} />
           {/* <Route path='/consumers/cart' element={<Cart />} /> */}
 
           {/* admin routes */}

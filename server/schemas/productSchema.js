@@ -50,12 +50,20 @@ const productSchema = new mongoose.Schema(
         category: {
             type: String,
             required: true
+        },
+        rating: {
+            type: Number
+        },
+        addedOn: {
+            type: Date,
+            default: null
+        },
+        editedOn: {
+            type: Date,
+            default: null
         }
-    },
-    {
-        timestamps: true
     }
 );
 
-const product = mongoose.model("Product", productSchema, "products");
+const product = mongoose.model("Product", productSchema);
 module.exports = product;
