@@ -25,6 +25,7 @@ function App() {
   const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
+  const [userProductAddModal, setUserProductAddModal] = useState(false);
 
   // admin
   // admin products page
@@ -59,6 +60,8 @@ function App() {
       setDeleteModal,
       addModal,
       setAddModal,
+      userProductAddModal,
+      setUserProductAddModal,
 
 
       allProducts,
@@ -92,7 +95,7 @@ function App() {
           <Route path='/' element={<UserDashboard />} />
           <Route path='/consumers/products' element={<Products />} />
           <Route path='/consumer/resetPassword' element={<ForgetPassword />} />
-          {/* <Route path='/consumers/cart' element={<Cart />} /> */}
+          <Route path='/consumers/cart' element={<Cart />} />
 
           {/* admin routes */}
           <Route path='/admin/dashBoard' element={<Dashboard />} />

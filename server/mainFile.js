@@ -78,14 +78,43 @@ function verifyToken(req, res, next) {
 // admin side
 // getAllProducts
 app.get('/getAllProducts', async (req, res) => {
-    var page = parseInt(req.query.page) || 1;
-    var limitItem = 5;
 
-    const skipPage = (page - 1) * limitItem;
     try {
-        const data = await product.find().skip(skipPage).limit(limitItem);
+        var categorySort = {}
+        var priceSort = {}
+
+        var page = parseInt(req.query.page) || 1;
+        var limitItem = parseInt(req.query.count) || 5;
+        const skipPage = (page - 1) * limitItem;
+
+        var category = req.query.category;
+        // console.log(category, "====>");
+        if (category !== null && category) {
+            categorySort.category = category
+        }
+        var price = req.query.price;
+        // console.log(price);
+        if (price === "lowest") {
+            priceSort.price = 1
+        }
+        else if (price === "highest") {
+            priceSort.price = -1
+        }
+
+        var searchData = req.query.search;
+        console.log(searchData, "====>");
+
+        if (searchData) {
+            categorySort.$or = [
+                { name: { $regex: searchData, $options: "i" } },
+                { category: { $regex: searchData, $options: "i" } }
+            ];
+        }
+
+
+        const data = await product.find(categorySort).sort(priceSort).skip(skipPage).limit(limitItem);
         // console.log(data);
-        var totalProducts = await product.countDocuments();
+        var totalProducts = await product.countDocuments(categorySort);
         console.log(totalProducts);
 
         return res.json({ data: data, totalPage: totalProducts, message: "Data Fetched" });
@@ -93,6 +122,7 @@ app.get('/getAllProducts', async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 })
+
 
 // getOneProduct
 app.get('/getOneProduct/:id', verifyToken, async (req, res) => {
@@ -119,60 +149,37 @@ app.get('/deleteParticularProduct/:id', verifyToken, async (req, res) => {
 });
 
 // getAdminDashBoardDatas
-app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
+app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
+
     try {
-        console.log(req.params.sort);
-        var paramsData = req.params.sort
+        var paramsData = req.query.startDate
+        var startDate = new Date(paramsData)
+        console.log(startDate);
+        var todayDate = new Date();
         const allData = {};
-        if (paramsData === "this") {
-            var startDate = new Date("2026-03-31T00:00:00Z")
-            var date = new Date();
 
-            // productCount
-            var productCount = await product.find({
-                $and: [
-                    { addedOn: { $lte: date } },
-                    { addedOn: { $gt: startDate } },
-                ]
-            }).countDocuments()
-            // console.log(productCount);
-            allData['productCount'] = productCount
-            // consumerCount
-            var consumerCount = await consumer.find({
-                $and: [
-                    { addedOn: { $lte: date } },
-                    { addedOn: { $gt: startDate } },
-                ]
-            }).countDocuments()
-            // console.log(productCount);
-            allData['consumerCount'] = consumerCount
+        // productCount
+        var productCount = await product.find({
+            $and: [
+                { addedOn: { $gte: startDate } },
+                { addedOn: { $lte: todayDate } }
+            ]
+        }).countDocuments()
+        // console.log(productCount);
+        allData['productCount'] = productCount
 
-        }
-        else if (paramsData === "last") {
-            const startDate = new Date("2026-03-01T00:00:00Z");
-            const date = new Date("2026-04-01T00:00:00Z");
+        // consumerCount
+        var consumerCount = await consumer.find({
+            $and: [
+                { addedOn: { $gte: startDate } },
+                { addedOn: { $lte: todayDate } }
+            ]
+        }).countDocuments()
+
+        allData['consumerCount'] = consumerCount
+        console.log(allData);
 
 
-            // productCount
-            var productCount = await product.find({
-                $and: [
-                    { addedOn: { $lte: date } },
-                    { addedOn: { $gt: startDate } },
-                ]
-            }).countDocuments()
-            // console.log(productCount);
-            allData['productCount'] = productCount
-            // consumerCount
-            var consumerCount = await consumer.find({
-                $and: [
-                    { addedOn: { $lte: date } },
-                    { addedOn: { $gt: startDate } },
-                ]
-            }).countDocuments()
-            console.log(consumerCount);
-            allData['consumerCount'] = consumerCount
-
-        }
         return res.json({ data: allData, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -182,18 +189,31 @@ app.get('/getAdminDashBoardDatas/:sort', verifyToken, async (req, res) => {
 // getAllConsumers
 app.get('/getAllConsumers', verifyToken, async (req, res) => {
     var page = parseInt(req.query.page) || 1;
-    var limitItem = 5;
+    var limitItem = parseInt(req.query.count) || 5;
+
+    var searchData = req.query.search;
+    console.log(searchData, "====>");
+
+    var categorySort = { role: "user" }; 
+
+    if (searchData) {
+        categorySort.$or = [
+            { firstName: { $regex: searchData, $options: "i" } },
+            { email: { $regex: searchData, $options: "i" } }
+        ];
+    }
 
     const skipPage = (page - 1) * limitItem;
     try {
-        const allConsumers = await consumer.find().skip(skipPage).limit(limitItem);
-        const totalConsumers = await consumer.countDocuments();
+        const allConsumers = await consumer.find(categorySort).skip(skipPage).limit(limitItem);
+        const totalConsumers = await consumer.countDocuments(categorySort);
         console.log(allConsumers);
         return res.json({ data: allConsumers, totalPage: totalConsumers, message: "Data Fetched" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
+
 // getOneConsumer
 app.get('/getOneConsumer/:id', verifyToken, async (req, res) => {
     try {
@@ -214,7 +234,7 @@ app.post('/addProducts', verifyToken, upload.single("image"), async (req, res) =
     try {
         const getData = await product.findOne({ name: data.name })
         if (getData) {
-            return res.json({ message: "Product Alreday Added" })
+            return res.json({ message: "Product Already Added" })
         }
         else {
             await product.insertOne({
@@ -309,7 +329,7 @@ app.get('/getAllProduct', async (req, res) => {
         var priceSort = {}
 
         var page = parseInt(req.query.page) || 1;
-        var limitItem = 5;
+        var limitItem = parseInt(req.query.count) || 5;
         const skipPage = (page - 1) * limitItem;
 
         var category = req.query.category;
@@ -384,6 +404,42 @@ app.post('/addUsers', async (req, res) => {
         return res.json({ message: error });
     }
 });
+// addUser route
+app.post('/addUser', async (req, res) => {
+    const data = req.body.data;
+    const date = new Date();
+    const saltRounds = 12;
+    try {
+        var getData = await consumer.findOne({ email: data.email })
+        // console.log(getData);
+        if (!getData) {
+            var hashPassword = await bcrypt.hash(data.password, saltRounds);
+            // console.log(hashPassword, "===>");
+
+            await consumer.insertOne({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                mobile: data.mobile,
+                gender: data.gender,
+                password: hashPassword,
+                terms: data.terms,
+                role: "user",
+                status: "active",
+                images: "",
+                address: data.address,
+                addedOn: date,
+                editedOn: date
+            })
+            return res.json({ message: "New User Added Successfully" });
+        }
+        else {
+            return res.json({ message: "User Already Exists" });
+        }
+    } catch (error) {
+        return res.json({ message: error });
+    }
+});
 
 // loginUser route
 app.post('/loginUser', async (req, res) => {
@@ -412,6 +468,50 @@ app.post('/loginUser', async (req, res) => {
     }
 });
 
+// forgetPassword route
+app.post('/forgetPassword', async (req, res) => {
+    const data = req.body.data;
+    console.log(data);
+    const saltRounds = 12;
+    try {
+        if (data.email && data.securityQuestion && data.password && data.confirmPassword) {
+            const user = await consumer.findOne({ email: data.email });
+            if (!user) {
+                return res.json({ message: "Invalid credentials" });
+            }
+
+            if (user.lastName.toLowerCase() === data.securityQuestion.toLowerCase()) {
+                var hashPassword = await bcrypt.hash(data.password, saltRounds)
+                const updatePassword = await consumer.updateOne({ email: data.email }, { $set: { password: hashPassword } });
+                return res.json({ message: "Password reset success" });
+            } else {
+                return res.json({ message: "Invalid lastName" });
+            }
+        }
+        else if (data.email && data.securityQuestion) {
+            const user = await consumer.findOne({ email: data.email });
+            if (!user) {
+                return res.json({ message: "Invalid credentials" });
+            }
+            if (user.lastName.toLowerCase() === data.securityQuestion.toLowerCase()) {
+                return res.json({ message: "Validate success" });
+            } else {
+                return res.json({ message: "Invalid lastName" });
+            }
+        }
+        else if (data.email) {
+            const user = await consumer.findOne({ email: data.email });
+            if (user) {
+                return res.json({ message: "Data present" });
+            } else {
+                return res.json({ message: "Invalid credentials" });
+            }
+        }
+
+    } catch (error) {
+        return res.json({ message: "server error" });
+    }
+});
 
 app.listen(port, () => {
     console.log(`server running at port ${port}`);

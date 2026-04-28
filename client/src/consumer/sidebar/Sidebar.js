@@ -29,52 +29,49 @@ export const Sidebar = () => {
     return (
         <div>
             {/* sidebar */}
-            {sideBarOpen && (
-                <div className={`flex-1 transition-all duration-300 md:ml-64`}>
-                    <div className={`fixed top-0 left-0 h-full w-64 bg-gray-800 z-50 
-                        transform transition-transform duration-300 
-                        ${sideBarOpen ? "translate-x-0" : "-translate-x-full"}
-                        md:translate-x-0`}>
-                        <div className="flex items-center justify-between px-4 h-16 bg-gray-900">
-                            <h1 className="text-white font-bold"> <i className="fa-solid fa-truck-fast text-2xl"></i> Cartify</h1>
+            <div className={`fixed top-0 left-0 h-full bg-gray-800 z-50 
+                transition-all duration-300 
+                ${sideBarOpen ? "w-64" : "w-16"}`}>
 
-                            {/* hamburger button */}
-                            <button
-                                onClick={() => setSideBarOpen(!sideBarOpen)}
-                                className="text-xl text-white"
-                            >
-                                <i className="fa-solid fa-bars"></i>
-                            </button>
-                        </div>
+                <div className={`flex items-center px-4 h-16 bg-gray-900  ${sideBarOpen ? "justify-between" : "justify-center"}`}>
 
-                        {/* sidebar menu */}
-                        <nav className="p-4 space-y-2">
-                            <a href="/" className="block px-4 py-2 text-white hover:bg-gray-700 rounded">
-                                <i className="fa-solid fa-house text-2xl"></i> Home
-                            </a>
-                            <a href="/consumers/products" className="block px-4 py-2 text-white hover:bg-gray-700 rounded">
-                                <i className="fa-solid fa-shirt text-2xl"></i> Products
-                            </a>
-                            {loginUser && (
-                                <a href="#" className="block px-4 py-2 text-white hover:bg-gray-700 rounded">
-                                    <i className="fa-solid fa-cart-shopping text-2xl"></i> Cart
-                                </a>
-                            )}
-                            {loginUser && (
-                                <a href="#" className="block px-4 py-2 text-white hover:bg-gray-700 rounded">
-                                    <i className="fa-solid fa-ranking-star text-2xl"></i> My Orders
-                                </a>
-                            )}
-                            {loginUser?.role?.toLowerCase() === "admin" && (
-                                <a href="/admin/dashBoard" className="block px-4 py-2 text-white hover:bg-gray-700 rounded">
-                                    <i className="fa-solid fa-chart-column text-2xl"></i> Admin Dashboard
-                                </a>
-                            )}
-                        </nav>
-                    </div>
+                    {sideBarOpen && (
+                        <h1 className="text-white font-bold flex items-center gap-2">
+                            <i className="fa-solid fa-truck-fast text-2xl"></i>
+                            Cartify
+                        </h1>
+                    )}
+
+                    {/* hamburger button */}
+                    <button
+                        onClick={() => setSideBarOpen(!sideBarOpen)}
+                        className="text-xl text-white"
+                    >
+                        <i className="fa-solid fa-bars"></i>
+                    </button>
+
                 </div>
-            )
-            }
-        </div >
+
+                {/* sidebar menus */}
+                <nav className="p-2 space-y-2">
+                    <a href="/" className="flex items-center gap-3 px-2 py-2 text-white hover:bg-gray-700 rounded">
+                        <i className="fa-solid fa-house text-2xl"></i>
+                        {sideBarOpen && "Home"}
+                    </a>
+
+                    <a href="/consumers/products" className="flex items-center gap-3 px-2 py-2 text-white hover:bg-gray-700 rounded">
+                        <i className="fa-solid fa-shirt text-2xl"></i>
+                        {sideBarOpen && "Products"}
+                    </a>
+
+                    {loginUser && (
+                        <a href="/consumers/cart" className="flex items-center gap-3 px-2 py-2 text-white hover:bg-gray-700 rounded">
+                            <i className="fa-solid fa-cart-shopping text-2xl"></i>
+                            {sideBarOpen && "Cart"}
+                        </a>
+                    )}
+                </nav>
+            </div>
+        </div>
     )
 }

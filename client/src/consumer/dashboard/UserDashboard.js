@@ -89,7 +89,8 @@ export const UserDashboard = () => {
   }, [])
 
   return (
-    <div className="flex h-screen">
+    <div className={`flex-1 transition-all duration-300 
+        ${sideBarOpen ? "ml-64" : "ml-16"}`}>
 
       {/* sidebar */}
       <Sidebar />
@@ -109,7 +110,7 @@ export const UserDashboard = () => {
           </div>
 
           <button
-            className={`absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow ${slide === 0 ? "hidden" : ""}`}
+            className={`absolute left-2 top-1/2 bg-white p-2 rounded-full shadow ${slide === 0 ? "hidden" : ""}`}
             onClick={() => setSlide(slide - 1)}
             disabled={slide === 0}
           >
@@ -117,7 +118,7 @@ export const UserDashboard = () => {
           </button>
 
           <button
-            className={`absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow ${slide === defaultSlides.length - 1 ? "hidden" : ""}`}
+            className={`absolute right-2 top-1/2 bg-white p-2 rounded-full shadow ${slide === defaultSlides.length - 1 ? "hidden" : ""}`}
             onClick={() => setSlide(slide + 1)}
             disabled={slide === defaultSlides.length - 1}
           >
@@ -162,8 +163,8 @@ export const UserDashboard = () => {
 
           </div>
         </div>
-        <a href='/consumers/products' className="justify-center text-center items-center font-bold text-blue-600 mb-6 hover:underline cursor-pointer">
-          see more
+        <a href='/consumers/products' className="justify-center bg-blue-500 px-4 py-4 text-center items-center font-bold text-white mb-6">
+          see more <i class="fa-solid fa-arrow-right-long"></i>
         </a>
 
 

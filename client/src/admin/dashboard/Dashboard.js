@@ -26,9 +26,11 @@ export const Dashboard = () => {
     }
 
     async function getAdminDashBoardData(sort = "") {
+        // console.log(sort);
+        
         try {
             const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getAdminDashBoardDatas/${sort}`, {
+            var getData = await axios.get(`http://localhost:5000/getAdminDashBoardDatas?startDate=${sort}`, {
                 headers: {
                     Authorization: token
                 }
@@ -61,7 +63,9 @@ export const Dashboard = () => {
                 navigate("/");
             }
             else if (user.role.toLowerCase() === "admin") {
-                getAdminDashBoardData("this");
+                var date = new Date().toISOString().slice(0, 10); 
+                console.log(date);
+                getAdminDashBoardData(date);
             }
         }
         else {
@@ -80,7 +84,8 @@ export const Dashboard = () => {
     }, [])
 
     return (
-        <div className="flex h-screen">
+        <div className={`flex-1 transition-all duration-300 
+            ${open ? "ml-64" : "ml-16"}`}>
 
             {/* sidebar */}
             <Sidebar />
@@ -92,10 +97,7 @@ export const Dashboard = () => {
                 <div className="flex justify-between items-center p-4">
                     <h2 className="text-lg font-semibold"> <i className="fa-solid fa-gauge-high"></i> Dashboard Analytics</h2>
 
-                    <select className="w-60 border border-black rounded-md px-3 py-2 text-sm" onChange={(event) => { getAdminDashBoardData(event.target.value) }}>
-                        <option value="this">This Month</option>
-                        <option value="last">Last Month</option>
-                    </select>
+                    <input type="date" className="w-60 border border-black rounded-md px-3 py-2 text-sm" onChange={(event) => { getAdminDashBoardData(event.target.value) }} />
                 </div>
 
 

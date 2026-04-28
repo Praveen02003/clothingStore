@@ -9,6 +9,8 @@ export const Signup = () => {
     const [alertColor, setAlertColor] = useState(null)
     const [alertContent, setAlertContent] = useState(null)
 
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
+
     var allErrors = {
         firstNameError: "",
         lastNameError: "",
@@ -274,6 +276,7 @@ export const Signup = () => {
     // submitForm function
     async function submitForm(event) {
         event.preventDefault();
+        setSpinnerLoader(true)
 
         let allErrors = { ...error };
 
@@ -358,23 +361,19 @@ export const Signup = () => {
                     var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
                     console.log(result.data.message);
                     if (result.data.message === "Signup Successfully") {
-
-                        setAlertColor('green')
-                        setAlertContent(result.data.message)
-                        setOpenAlert(true)
-
+                        setSpinnerLoader(false)
                         setTimeout(() => {
                             setOpenAlert(false)
                             navigate('/login');
-                        }, 1500);
+                        }, 1000);
                     }
                     else {
-                        setAlertColor('red')
+                        setSpinnerLoader(false)
                         setAlertContent(result.data.message)
                         setOpenAlert(true)
                         setTimeout(() => {
                             setOpenAlert(false)
-                        }, 1000);
+                        }, 2000);
                     }
                 } catch (error) {
                     alert(error);
@@ -406,6 +405,12 @@ export const Signup = () => {
             <div className="main">
 
                 <h2 className='font-bold text-2xl'>Sign Up</h2>
+
+                {openAlert && (
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="font-bold block sm:inline">{alertContent}</span>
+                    </div>
+                )}
 
                 {/* signup form */}
                 <form id="signupForm" onSubmit={(event) => {
@@ -444,7 +449,7 @@ export const Signup = () => {
                     <p id="passwordError">{error.passwordError}</p>
 
                     {/* confirm-password */}
-                    <input type="password" placeholder="Confirm Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
+                    <input type="password" placeholder="Confirm-Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
                     <p id="confirmPasswordError">{error.confirmPasswordError}</p>
 
                     {/* address */}
@@ -459,8 +464,19 @@ export const Signup = () => {
                     <p id="termsError">{error.termsError}</p>
 
                     {/* submit button */}
-                    <button type="submit">
-                        <i className="fa-solid fa-arrow-right-to-bracket"></i> Register
+                    <button
+                        type="submit"
+                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded"
+                        disabled={spinnerLoader}
+                    >
+                        {spinnerLoader ? (
+                            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                        ) : (
+                            <div>
+                                <i className="fa-solid fa-arrow-right-to-bracket"></i>
+                                Register
+                            </div>
+                        )}
                     </button>
 
                 </form>
@@ -472,12 +488,6 @@ export const Signup = () => {
                 </div>
 
             </div>
-
-            {openAlert && (
-                <div className={`fixed top-4 right-4 flex items-center bg-${alertColor}-700 text-white text-sm font-bold px-4 py-4 rounded`} role="alert">
-                    <p className='text-white text-sm'>{alertContent}</p>
-                </div>
-            )}
         </div>
     )
 }

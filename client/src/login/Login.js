@@ -10,6 +10,8 @@ export const Login = () => {
   const [alertColor, setAlertColor] = useState(null)
   const [alertContent, setAlertContent] = useState(null)
 
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
+
   var allErrors = {
     emailError: "",
     passwordError: ""
@@ -63,6 +65,7 @@ export const Login = () => {
 
   async function submitForm(event) {
     event.preventDefault();
+    setSpinnerLoader(true)
 
     var allErrors = { ...error }
 
@@ -84,12 +87,6 @@ export const Login = () => {
         // alert(result.data.message);
 
         if (result.data.message === "Login Successfully") {
-
-          setAlertColor('green')
-          setAlertContent(result.data.message)
-          setOpenAlert(true)
-
-
           var loginUser = result.data.data
           var loginToken = result.data.token
           localStorage.setItem('loginUser', JSON.stringify(loginUser))
@@ -98,22 +95,23 @@ export const Login = () => {
 
           setTimeout(() => {
             setOpenAlert(false)
+            setSpinnerLoader(false)
             if (loginUser.role.toLowerCase() === "admin") {
               navigate('/admin/dashBoard');
             }
             else {
               navigate("/");
             }
-          }, 1500);
+          }, 1000);
 
         }
         else {
-          setAlertColor('red')
+          setSpinnerLoader(false)
           setAlertContent(result.data.message)
           setOpenAlert(true)
           setTimeout(() => {
             setOpenAlert(false)
-          }, 1000);
+          }, 2000);
         }
       } catch (error) {
         alert(error);
@@ -144,8 +142,14 @@ export const Login = () => {
     <div id='mainForm'>
       <div className="loginForm">
 
-        {/* heading */}
         <h2 className='font-bold text-2xl'>Login</h2>
+
+        {/* alert */}
+        {openAlert && (
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="font-bold block sm:inline">{alertContent}</span>
+          </div>
+        )}
 
         {/* login form */}
         <form id="loginForm" onSubmit={(event) => {
@@ -161,15 +165,25 @@ export const Login = () => {
           <p id="passwordError">{error.passwordError}</p>
 
           {/* submit button */}
-          <button type="submit">
-            <i className="fa-solid fa-right-to-bracket"></i> Login
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded"
+            disabled={spinnerLoader}
+          >
+            {spinnerLoader ? (
+              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+            ) : (
+              <div>
+                <i className="fa-solid fa-right-to-bracket"></i>
+                Login
+              </div>
+            )}
           </button>
 
         </form>
 
         {/* link */}
         <div className="link">
-          Forget Password?
           <a href='/consumer/resetPassword'>
             Reset Password
           </a>
@@ -183,12 +197,6 @@ export const Login = () => {
         </div>
 
       </div>
-
-      {openAlert && (
-        <div className={`fixed top-4 right-4 flex items-center bg-${alertColor}-700 text-white text-sm font-bold px-4 py-4 rounded`} role="alert">
-          <p className='text-white text-sm'>{alertContent}</p>
-        </div>
-      )}
     </div>
   )
 }

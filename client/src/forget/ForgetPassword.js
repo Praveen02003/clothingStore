@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import '../forget/ForgetPassword.css'
-import { useNavigate } from 'react-router-dom'
+import { data, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 
 export const ForgetPassword = () => {
     var navigate = useNavigate();
+
+    const [count, setCount] = useState(1)
+    const [presentedData, setPresentedData] = useState({})
+
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
 
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState(null)
@@ -12,17 +17,23 @@ export const ForgetPassword = () => {
 
     var allErrors = {
         emailError: "",
-        passwordError: ""
+        passwordError: "",
+        confirmPasswordError: "",
+        securityQuestionError: ""
     };
 
     var [formData, setFormData] = useState({
         email: "",
-        password: ""
+        password: "",
+        confirmPassword: "",
+        securityQuestion: ""
     });
 
     var [error, setError] = useState({
         emailError: "",
-        passwordError: ""
+        passwordError: "",
+        confirmPasswordError: "",
+        securityQuestionError: ""
     });
 
     var [boolean, setBoolean] = useState(false);
@@ -39,6 +50,22 @@ export const ForgetPassword = () => {
         }
         else {
             allErrors.emailError = "";
+        }
+        setError(allErrors)
+    }
+
+    // validateSecurityQuestion function
+    function validateSecurityQuestion(value) {
+        var allErrors = { ...error }
+        var inputValue = value;
+
+        setFormData({ ...formData, securityQuestion: inputValue })
+
+        if (!inputValue) {
+            allErrors.securityQuestionError = 'Enter Second Name';
+        }
+        else {
+            allErrors.securityQuestionError = "";
         }
         setError(allErrors)
     }
@@ -90,64 +117,121 @@ export const ForgetPassword = () => {
 
     async function submitForm(event) {
         event.preventDefault();
+        setSpinnerLoader(true)
 
-        var allErrors = { ...error }
-
-        if (!formData.email) {
-            allErrors.emailError = "Enter Email";
-        }
-
-        if (!formData.password) {
-            allErrors.passwordError = "Enter Password";
-        }
-
-        setError(allErrors);
-
-        if (formData.email && formData.password) {
-            console.log(formData);
-            try {
-                var result = await axios.post("http://localhost:5000/loginUser", { data: formData });
-                console.log(result.data.message);
-                // alert(result.data.message);
-
-                if (result.data.message === "Login Successfully") {
-
-                    setAlertColor('green')
-                    setAlertContent(result.data.message)
-                    setOpenAlert(true)
-
-
-                    var loginUser = result.data.data
-                    var loginToken = result.data.token
-                    localStorage.setItem('loginUser', JSON.stringify(loginUser))
-                    localStorage.setItem('loginToken', loginToken)
-                    console.log(loginUser);
-
-                    setTimeout(() => {
-                        setOpenAlert(false)
-                        if (loginUser.role.toLowerCase() === "admin") {
-                            navigate('/admin/dashBoard');
-                        }
-                        else {
-                            navigate("/");
-                        }
-                    }, 1500);
-
+        try {
+            if (count === 1) {
+                if (!formData.email) {
+                    setSpinnerLoader(false)
+                    setError({ ...error, emailError: "Enter Email" });
+                    return;
                 }
-                else {
-                    setAlertColor('red')
-                    setAlertContent(result.data.message)
+
+                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                    data: formData
+                });
+
+                if (res.data.message === "Data present") {
+                    setCount(2);
+                } else {
+                    console.log(res.data.message);
+                    setAlertContent(res.data.message)
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
                     }, 1000);
                 }
-            } catch (error) {
-                alert(error);
+                setSpinnerLoader(false)
             }
+
+            else if (count === 2) {
+                if (!formData.securityQuestion) {
+                    setSpinnerLoader(false)
+                    setError({ ...error, securityQuestionError: "Enter Second Name" });
+                    return;
+                }
+
+                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                    data: formData
+                });
+
+                if (res.data.message === "Validate success") {
+                    setCount(3);
+                } else {
+                    setAlertContent(res.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 1000);
+                }
+                setSpinnerLoader(false)
+            }
+
+            else if (count === 3) {
+
+                let allErrors = { ...error };
+
+                if (!formData.password) {
+                    allErrors.passwordError = "Enter Password";
+                }
+                else if (formData.password.length < 8) {
+                    allErrors.passwordError = "Password must be at least 8 characters";
+                }
+                else if (!/\d/.test(formData.password)) {
+                    
+                    allErrors.passwordError = "Password must contain at least one number";
+                }
+                else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+                    
+                    allErrors.passwordError = "Password must contain at least one special character";
+                }
+                else {
+                    
+                    allErrors.passwordError = "";
+                }
+
+                if (!formData.confirmPassword) {
+                    allErrors.confirmPasswordError = "Enter Confirm-Password";
+                }
+                else if (formData.password !== formData.confirmPassword) {
+                    allErrors.confirmPasswordError = "Passwords do not match";
+                }
+                else {
+                    allErrors.confirmPasswordError = "";
+                }
+
+                setError(allErrors);
+
+                if (allErrors.passwordError || allErrors.confirmPasswordError) {
+                    setSpinnerLoader(false)
+                    return;
+                }
+
+                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                    data: formData,
+                });
+
+
+                if (res.data.message === "Password reset success") {
+                    setSpinnerLoader(false)
+                    setTimeout(() => {
+                        navigate("/login");
+                    }, 1500);
+                }
+                else {
+                    setSpinnerLoader(false)
+                    setAlertContent(res.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 1000);
+                }
+            }
+
+        } catch (err) {
+            console.log(err);
         }
     }
-
 
     function authUser() {
         var user = JSON.parse(localStorage.getItem('loginUser'))
@@ -171,8 +255,13 @@ export const ForgetPassword = () => {
         <div id='mainForm'>
             <div className="resetForm">
 
-                {/* heading */}
                 <h2 className='font-bold text-2xl'>Reset Password</h2>
+                {openAlert && (
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="font-bold block sm:inline">{alertContent}</span>
+                    </div>
+                )}
+
 
                 {/* reset form */}
                 <form id="resetForm" onSubmit={(event) => {
@@ -180,23 +269,54 @@ export const ForgetPassword = () => {
                 }}>
 
                     {/* email */}
-                    <input type="email" placeholder="Enter Email" id="email" value={formData.email} onInput={(event) => { validateEmail(event.target.value) }} />
-                    <p id="emailError">{error.emailError}</p>
+
+                    {count === 1 && (
+                        <input type="email" placeholder="Enter Email" id="email" value={formData.email} onInput={(event) => { validateEmail(event.target.value) }} />
+                    )}
+                    {count === 1 && (
+                        <p id="emailError">{error.emailError}</p>
+                    )}
+
+                    {/* security question */}
+                    {count === 2 && (
+                        <div className='grid grid-col-2'>
+                            <label className='font-bold' for="securityQuestion">What is your second name ?</label>
+                            <input type="text" placeholder="Enter Second Name" id="securityQuestion" value={formData.securityQuestion} onInput={(event) => { validateSecurityQuestion(event.target.value) }} />
+                            <p id="securityQuestionError">{error.securityQuestionError}</p>
+                        </div>
+                    )}
 
                     {/* password */}
-                    <input type="password" placeholder="Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
-                    <p id="passwordError">{error.passwordError}</p>
+
+                    {count === 3 && (
+                        <input type="password" placeholder="Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
+                    )}
+                    {count === 3 && (
+                        <p id="passwordError">{error.passwordError}</p>
+                    )}
 
                     {/* confirm-password */}
-                    <input type="password" placeholder="Confirm Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
-                    <p id="confirmPasswordError">{error.confirmPasswordError}</p>
 
-                    {/* second name */}
-                    <input type="text" placeholder="Enter your second name" id="secondName" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
+                    {count === 3 && (
+                        <input type="password" placeholder="Confirm Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
+                    )}
+                    {count === 3 && (
+                        <p id="confirmPasswordError">{error.confirmPasswordError}</p>
+                    )}
 
                     {/* submit button */}
-                    <button type="submit">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Reset
+                    <button
+                        type="submit"
+                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded"
+                        disabled={spinnerLoader}
+                    >
+                        {spinnerLoader ? (
+                            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                        ) : (
+                            <div>
+                                Next
+                            </div>
+                        )}
                     </button>
 
                 </form>
@@ -210,12 +330,6 @@ export const ForgetPassword = () => {
                 </div>
 
             </div>
-
-            {openAlert && (
-                <div className={`fixed top-4 right-4 flex items-center bg-${alertColor}-700 text-white text-sm font-bold px-4 py-4 rounded`} role="alert">
-                    <p className='text-white text-sm'>{alertContent}</p>
-                </div>
-            )}
         </div>
     )
 }

@@ -22,10 +22,418 @@ export const Consumers = () => {
         setParticularConsumerId,
     } = useContext(mainContext);
 
+    var allErrors = {
+        firstNameError: "",
+        lastNameError: "",
+        emailError: "",
+        mobileError: "",
+        genderError: "",
+        passwordError: "",
+        confirmPasswordError: "",
+        addressError: "",
+        termsError: ""
+    };
+
     const navigate = useNavigate();
+
+    var [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        mobile: "",
+        gender: "",
+        password: "",
+        confirmPassword: "",
+        address: "",
+        terms: ""
+    });
+
+    var [error, setError] = useState({
+        firstNameError: "",
+        lastNameError: "",
+        emailError: "",
+        mobileError: "",
+        genderError: "",
+        passwordError: "",
+        confirmPasswordError: "",
+        addressError: "",
+        termsError: ""
+
+    });
+
+
+    // validateFirstName function
+    function validateFirstName(value) {
+
+        var allErrors = { ...error }
+        var inputValue = value;
+
+        setFormData({ ...formData, firstName: inputValue })
+
+        if (!inputValue) {
+            allErrors.firstNameError = 'Enter First Name';
+        }
+        else {
+            allErrors.firstNameError = "";
+        }
+        setError(allErrors)
+    }
+
+
+    // validateLastName function
+    function validateLastName(value) {
+
+        var allErrors = { ...error }
+        var inputValue = value;
+
+        setFormData({ ...formData, lastName: inputValue })
+
+        if (!inputValue) {
+            allErrors.lastNameError = 'Enter Last Name';
+        }
+        else {
+            allErrors.lastNameError = "";
+        }
+        setError(allErrors)
+    }
+
+
+    // validateEmail function
+    function validateEmail(value) {
+        let allErrors = { ...error };
+        let inputValue = value;
+
+        setFormData({ ...formData, email: inputValue })
+
+        if (!inputValue) {
+            allErrors.emailError = 'Enter Email';
+        }
+        else if (inputValue && !inputValue.includes('@')) {
+            allErrors.emailError = 'Email must contain @';
+        }
+        else if (inputValue && inputValue.includes(" ")) {
+            allErrors.emailError = "Email should not contain space";
+        }
+        else if (inputValue.indexOf('@') !== inputValue.lastIndexOf('@')) {
+            allErrors.emailError = "Email must contain only one '@'";
+        }
+        else {
+            let split_email = inputValue.split("@");
+
+            if (!split_email[0]) {
+                allErrors.emailError = "Email should not start with '@'";
+            }
+            else if (!split_email[1]) {
+                allErrors.emailError = "Enter domain name after '@'";
+            }
+            else if (!split_email[1].includes(".")) {
+                allErrors.emailError = "Domain must contain '.'";
+            }
+            else if (split_email[0].startsWith(".")) {
+                allErrors.emailError = "Email should not start with '.'";
+            }
+            else if (split_email[1].startsWith(".") || split_email[1].endsWith(".")) {
+                allErrors.emailError = "Invalid domain format";
+            }
+            else {
+                let domainparts = split_email[1].split(".");
+                let extension = domainparts[domainparts.length - 1];
+
+                if (!extension) {
+                    allErrors.emailError = "Extension cannot be empty";
+                }
+                else {
+                    allErrors.emailError = "";
+                }
+            }
+        }
+
+        setError(allErrors);
+    }
+
+    // validateMobileNumber function
+    function validateMobileNumber(inputvalue, event) {
+
+        let allErrors = { ...error };
+
+
+        var finalnumber = "";
+        var formattednumber = "";
+
+        if (!inputvalue) {
+            allErrors.mobileError = "Enter Mobile Number";
+            setError(allErrors)
+            setFormData({ ...formData, mobile: formattednumber })
+            return;
+        }
+
+        let numbers = inputvalue.split("").filter(item => (item >= '0') && (item <= '9')).join("");
+
+        finalnumber = numbers.slice(0, 10);
+
+        if (finalnumber.length > 6) {
+            formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3, 6) + "-" + finalnumber.slice(6);
+        }
+        else if (finalnumber.length > 3) {
+            formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3);
+        }
+        else {
+            formattednumber = finalnumber;
+        }
+
+        if (inputvalue && finalnumber.length < 10) {
+            allErrors.mobileError = "Mobile Number must be 10 digits";
+        } else {
+            allErrors.mobileError = "";
+        }
+
+        setFormData({ ...formData, mobile: formattednumber })
+
+        setError(allErrors)
+    }
+
+    // validateGender function
+    function validateGender(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.genderError = "Select Gender";
+        }
+        else {
+            allErrors.genderError = "";
+        }
+
+        setFormData({ ...formData, gender: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // validateTerms
+    function validateTerms(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.termsError = "Accept terms and condition";
+        }
+        else {
+            allErrors.termsError = "";
+        }
+
+        setFormData({ ...formData, terms: inputvalue })
+
+        setError(allErrors)
+    }
+
+
+    // validatePassword function
+    function validatePassword(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.passwordError = 'Enter Password';
+        }
+        else if (inputvalue && inputvalue.length < 8) {
+            allErrors.passwordError = 'Password must be at least 8 characters';
+        }
+        else if (!/\d/.test(inputvalue)) {
+            allErrors.passwordError = "Password must contain at least one number";
+        }
+        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputvalue)) {
+            allErrors.passwordError = "Password must contain at least one special character";
+        }
+        else {
+            allErrors.passwordError = "";
+        }
+        setFormData({ ...formData, password: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // validateConfirmPassword
+    function validateConfirmPassword(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.confirmPasswordError = 'Enter Confirm-Password';
+        }
+        else if (formData.password !== inputvalue) {
+            allErrors.confirmPasswordError = "Passwords do not match";
+        }
+        else {
+            allErrors.confirmPasswordError = "";
+        }
+
+        setFormData({ ...formData, confirmPassword: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // validateAddress
+    function validateAddress(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.addressError = 'Enter address';
+        }
+        else {
+            allErrors.addressError = "";
+        }
+
+        setFormData({ ...formData, address: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // submitForm function
+    async function submitForm(event) {
+        event.preventDefault();
+
+        let allErrors = { ...error };
+
+        if (!formData.firstName) {
+            allErrors.firstNameError = "Enter First Name";
+        }
+
+        if (!formData.lastName) {
+            allErrors.lastNameError = "Enter Last Name";
+        }
+
+        const email = formData.email;
+
+        if (!email) {
+            allErrors.emailError = "Enter Email";
+        } else if (!email.includes("@")) {
+            allErrors.emailError = "Email must contain @";
+        } else if (email.includes(" ")) {
+            allErrors.emailError = "Email should not contain space";
+        } else if (email.indexOf("@") !== email.lastIndexOf("@")) {
+            allErrors.emailError = "Only one @ allowed";
+        } else {
+            const parts = email.split("@");
+
+            if (!parts[0]) {
+                allErrors.emailError = "Invalid email format";
+            } else if (!parts[1] || !parts[1].includes(".")) {
+                allErrors.emailError = "Invalid domain";
+            } else {
+                allErrors.emailError = "";
+            }
+        }
+
+        if (!formData.mobile) {
+            allErrors.mobileError = "Enter Mobile Number";
+        } else {
+            const digits = formData.mobile.replace(/\D/g, "");
+            if (digits.length < 10) {
+                allErrors.mobileError = "Mobile must be 10 digits";
+            } else {
+                allErrors.mobileError = "";
+            }
+        }
+
+        if (!formData.gender) {
+            allErrors.genderError = "Select Gender";
+        }
+
+        if (!formData.password) {
+            allErrors.passwordError = 'Enter Password';
+        }
+
+
+        if (!formData.confirmPassword) {
+            allErrors.confirmPasswordError = 'Enter Confirm-Password';
+        }
+        if (formData.password && formData.confirmPassword) {
+            if (formData.password !== formData.confirmPassword) {
+                allErrors.confirmPasswordError = "Passwords do not match";
+            }
+        }
+
+
+        if (!formData.terms) {
+            allErrors.termsError = "Accept terms and condition";
+        }
+
+        if (!formData.address) {
+            allErrors.addressError = 'Enter address';
+        }
+
+        setError(allErrors);
+
+        const checking = Object.values(allErrors).some(err => err !== "");
+
+        if (!checking) {
+            if (formData.password === formData.confirmPassword) {
+                var replacedNumber = formData.mobile.replace(/\D/g, "")
+                setFormData({ ...formData, mobile: replacedNumber })
+                console.log(formData, "===>");
+                try {
+                    var result = await axios.post("http://localhost:5000/addUser", { data: formData });
+                    console.log(result.data.message);
+                    if (result.data.message === "New User Added Successfully") {
+                        getAllConsumers()
+                    }
+                    setAlertContent(result.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+                } catch (error) {
+                    alert(error);
+                }
+            }
+        }
+    }
+
+    const [consumerModal, setConsumerModal] = useState(false)
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(null);
+    const [dynamicPageNumber, setDynamicPageNumber] = useState(5);
+    const [totalDataCount, setTotalDataCount] = useState(0);
+    const [startValue, setStartValue] = useState(0);
+    const [endValue, setEndValue] = useState(0);
+
+    const [searchData, setSearchData] = useState("");
+
+    // alert
+    const [openAlert, setOpenAlert] = useState(false)
+    const [alertColor, setAlertColor] = useState("")
+    const [alertContent, setAlertContent] = useState("")
+
+
+    // add modal
+    function openAddModal() {
+        setConsumerModal(true)
+    }
+
+    function closeAddModal() {
+        setConsumerModal(false)
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            mobile: "",
+            gender: "",
+            password: "",
+            confirmPassword: "",
+            address: "",
+            terms: ""
+        })
+
+        setError({
+            firstNameError: "",
+            lastNameError: "",
+            emailError: "",
+            mobileError: "",
+            genderError: "",
+            passwordError: "",
+            confirmPasswordError: "",
+            addressError: "",
+            termsError: ""
+
+        })
+    }
 
 
     async function particularConsumer(id) {
@@ -73,16 +481,26 @@ export const Consumers = () => {
     async function getAllConsumers() {
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}`, {
+            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}`, {
                 headers: {
                     Authorization: token
                 }
             })
             console.log(getData.data.totalPage);
+
+            // pagination concept
             var allData = getData.data.data
-            var totalPages = getData.data.totalPage / 5
+            var totalNumberOfData = getData.data.totalPage
+            var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
+
+            var calculateStart = (currentPage - 1) * dynamicPageNumber + 1
+            var calculateEnd = (parseInt(calculateStart) + parseInt(dynamicPageNumber)) - 1
+
+            setStartValue(calculateStart)
+            setEndValue(calculateEnd)
             setAllConsumers(allData)
-            setTotalPages(totalPages)
+            setTotalPages(totalPagesData)
+            setTotalDataCount(totalNumberOfData)
         } catch (error) {
             console.log(error.response.data.message);
             alert(error.response.data.message)
@@ -115,18 +533,6 @@ export const Consumers = () => {
         }
     }
 
-
-    // pagination functionality
-    var totalPagesArrray = [];
-
-    function pagination() {
-        for (let index = 0; index < totalPages; index++) {
-            totalPagesArrray.push(index)
-        }
-    }
-
-    pagination()
-
     // next function
     function next() {
         setCurrentPage(currentPage + 1)
@@ -137,7 +543,13 @@ export const Consumers = () => {
         setCurrentPage(currentPage - 1)
     }
 
-
+    // search function
+    function search(inputValue) {
+        setCurrentPage(1)
+        setTimeout(() => {
+            setSearchData(inputValue)
+        }, 1500);
+    }
 
 
     useEffect(() => {
@@ -146,10 +558,11 @@ export const Consumers = () => {
         } catch (error) {
             console.log("error");
         }
-    }, [currentPage])
+    }, [currentPage, dynamicPageNumber, searchData])
 
     return (
-        <div className="flex h-screen">
+        <div className={`flex-1 transition-all duration-300 
+            ${open ? "ml-64" : "ml-16"}`}>
 
             {/* sidebar */}
             <Sidebar />
@@ -157,21 +570,29 @@ export const Consumers = () => {
             <div className="flex flex-col flex-1">
 
                 <AdminNavbar />
-                <div className="flex justify-between items-center p-4">
+
+
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+
                     <h2 className="text-lg font-semibold"> <i className="fa-solid fa-users"></i> Consumers</h2>
-                </div>
 
-                {/* cards */}
-                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-user text-2xl"></i> Total Consumers Count</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{allConsumers.length}</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* search */}
+                        <input
+                            type="search"
+                            placeholder="Search by name, email"
+                            className="w-48 border border-black rounded px-3 py-2 text-sm"
+                            onInput={(event) => { search(event.target.value) }}
+                        />
+
+                        <button className="text-white bg-green-700 font-bold px-3 py-2 rounded" onClick={() => {
+                            openAddModal()
+                        }}>
+                            <i className="fa-solid fa-plus"></i> Add Consumer
+                        </button>
+
                     </div>
-                </div>
 
-                {/* products table */}
-                <div className="flex items-center h-16 bg-white border-b px-4">
-                    <h2 className="font-semibold">Consumers Table</h2>
                 </div>
 
                 <div className="p-4">
@@ -180,7 +601,7 @@ export const Consumers = () => {
                         <table className="w-full text-sm text-left text-gray-500">
 
                             <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
-                                <tr>
+                                <tr className='text-center'>
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">First Name</th>
                                     <th className="px-6 py-3">Last Name</th>
@@ -191,37 +612,46 @@ export const Consumers = () => {
                             </thead>
 
                             <tbody>
-                                {allConsumers.map((data, index) => {
-                                    return (
-                                        <tr className="bg-white border-b hover:bg-gray-50" key={index}>
+                                {allConsumers.length > 0 ?
+                                    (allConsumers.map((data, index) => {
+                                        return (
+                                            <tr className="bg-white text-center border-b hover:bg-gray-50" key={index}>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {index + 1}
-                                            </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                    {index + 1}
+                                                </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.firstName}
-                                            </td>
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.lastName}
-                                            </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                    {data.firstName}
+                                                </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                    {data.lastName}
+                                                </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.email}
-                                            </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                    {data.email}
+                                                </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.status}
-                                            </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                    {data.status}
+                                                </td>
 
-                                            <td className="px-6 py-4">
-                                                <button className="text-blue-500 me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
-                                                    View
-                                                </button>
+                                                <td className="px-6 py-4">
+                                                    <button className="text-black me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
+                                                        <i className="fa-solid fa-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })) :
+                                    (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-6 text-red-600 font-bold text-xl">
+                                                No Consumers Found
                                             </td>
                                         </tr>
-                                    )
-                                })}
+
+                                    )}
 
                             </tbody>
 
@@ -230,47 +660,42 @@ export const Consumers = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t bg-white px-4 py-3">
+                {/* pagination */}
+                {allConsumers.length > 0 && (
 
-                    <div className="sm:flex sm:flex-1 sm:items-center sm:justify-end">
+                    <div className="flex justify-between items-center border-t p-4 bg-white">
 
-                        {/* pagination */}
-                        {allConsumers.length > 0 && (
-                            <div className="flex items-center gap-1 mt-4">
+                        <div className="sm:flex justify-between items-center w-full">
+                            <h2 className="flex items-center gap-1 whitespace-nowrap">
+                                showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
+                            </h2>
+                            <div className="flex items-center gap-6">
 
-                                <button
-                                    className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => previous()}
-                                    disabled={currentPage === 1}>
-                                    Previous
-                                </button>
+                                <select className="border rounded px-2 py-1" onChange={(event) => {
+                                    setDynamicPageNumber(event.target.value)
+                                    setCurrentPage(1)
+                                }} value={dynamicPageNumber}>
+                                    <option>5</option>
+                                    <option>10</option>
+                                    <option>20</option>
+                                </select>
 
-                                {totalPagesArrray.map((data, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => { setCurrentPage(index + 1) }}
-                                        className={`px-3 py-1 rounded ${currentPage === index + 1
-                                            ? "bg-blue-600 text-white"
-                                            : "border"
-                                            }`}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
+                                <button className="border px-3 py-1 rounded" onClick={() => {
+                                    previous()
+                                }} disabled={currentPage === 1}>previous</button>
 
-                                <button
-                                    className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => next()}
-                                    disabled={currentPage === totalPages}>
-                                    Next
-                                </button>
+                                <h2 className="flex items-center gap-1 whitespace-nowrap">
+                                    page <b>{currentPage}</b> of <b>{totalPages}</b>
+                                </h2>
 
+                                <button className="border px-3 py-1 rounded" onClick={() => {
+                                    next()
+                                }} disabled={currentPage === totalPages}>next</button>
                             </div>
-                        )}
+                        </div>
 
                     </div>
-
-                </div>
+                )}
 
                 {/* view consumer modal */}
                 {viewModal && (
@@ -317,6 +742,169 @@ export const Consumers = () => {
                                 </div>
 
                             </div>
+
+                        </div>
+                    </div>
+                )}
+
+                {/* add consumer modal */}
+                {consumerModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
+
+                        <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[50%] p-6 relative">
+
+                            <button
+                                onClick={() => closeAddModal()}
+                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                            >
+                                <i className="fa-solid fa-circle-xmark"></i>
+                            </button>
+
+                            <h2 className="text-xl font-bold mb-4">Add Consumer</h2>
+                            {/* alert */}
+                            {openAlert && (
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={(event) => {
+                                submitForm(event)
+                            }}>
+
+                                <div className="block">
+                                    <input
+                                        type="text"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="First Name"
+                                        id="firstName"
+                                        value={formData.firstName}
+                                        onInput={(event) => { validateFirstName(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.firstNameError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="text"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Last Name"
+                                        id="lastName"
+                                        value={formData.lastName}
+                                        onInput={(event) => { validateLastName(event.target.value) }}
+
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.lastNameError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="email"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Email"
+                                        id="email"
+                                        value={formData.email}
+                                        onInput={(event) => { validateEmail(event.target.value) }}
+
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.emailError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <div className="flex items-center gap-2">
+                                        <span>+1</span>
+                                        <input
+                                            type="tel"
+                                            className="w-full border rounded px-3 py-2"
+                                            placeholder="Mobile"
+                                            id="mobile"
+                                            value={formData.mobile}
+                                            onInput={(event) => { validateMobileNumber(event.target.value, event) }}
+                                        />
+                                    </div>
+
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.mobileError}
+                                    </p>
+                                </div>
+                                <div className="block sm:w-100">
+                                    <select id="gender"
+                                        value={formData.gender}
+                                        onInput={(event) => { validateGender(event.target.value) }}
+                                        className="w-full border rounded px-3 py-2"
+                                    >
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.genderError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="password"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Password"
+                                        id="password"
+                                        value={formData.password}
+                                        onInput={(event) => { validatePassword(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500 font-bold">
+                                        {error.passwordError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <input
+                                        type="password"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Confirm-Password"
+                                        id="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onInput={(event) => { validateConfirmPassword(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.confirmPasswordError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <textarea className="w-full border rounded px-3 py-2"
+                                        placeholder="Enter address"
+                                        id="address"
+                                        value={formData.address}
+                                        onInput={(event) => { validateAddress(event.target.value) }} ></textarea>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.addressError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <input
+                                        type="checkbox"
+                                        id="terms"
+                                        checked={formData.terms}
+                                        onChange={(event) => { validateTerms(event.target.checked) }}
+                                    />
+                                    <label for="terms"> Terms & Conditions</label>
+                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                        {error.termsError}
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+                                >
+                                    Add
+                                </button>
+
+                            </form>
 
                         </div>
                     </div>

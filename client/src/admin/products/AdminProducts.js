@@ -8,6 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { AdminFooter } from '../footer/Footer';
 import { AdminNavbar } from '../navbar/AdminNavbar';
 export const AdminProducts = () => {
+    // alert
+    const [openAlert, setOpenAlert] = useState(false)
+    const [alertColor, setAlertColor] = useState("")
+    const [alertContent, setAlertContent] = useState("")
 
     var [editErrors, setEditErrors] = useState({
         nameError: "",
@@ -66,8 +70,56 @@ export const AdminProducts = () => {
 
     const navigate = useNavigate()
 
+    // pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(null);
+    const [dynamicPageNumber, setDynamicPageNumber] = useState(5);
+    const [totalDataCount, setTotalDataCount] = useState(0);
+    const [startValue, setStartValue] = useState(0);
+    const [endValue, setEndValue] = useState(0);
+
+    // filter and search
+    const [finalPrice, setFinalPrice] = useState("");
+    const [finalCategory, setFinalCategory] = useState("");
+    const [category, setCategory] = useState("");
+    const [price, setPrice] = useState("");
+    const [searchData, setSearchData] = useState("");
+
+
+    // search function
+    function search(inputValue) {
+        setCurrentPage(1)
+        setTimeout(() => {
+            setCategory("")
+            setPrice("")
+            setSearchData(inputValue)
+        }, 1500);
+    }
+
+    // priceApply function
+    function priceApply(inputValue) {
+        setFinalPrice(inputValue)
+    }
+
+    // categoryApply function
+    function categoryApply(inputValue) {
+        setFinalCategory(inputValue)
+    }
+
+    // applyFilter function
+    function applyFilter() {
+        setCurrentPage(1)
+        setCategory(finalCategory)
+        setPrice(finalPrice)
+    }
+    // clearFilter function
+    function clearFilter() {
+        setFinalCategory("");
+        setFinalPrice("");
+        setCategory("");
+        setPrice("");
+    }
+
 
     async function particularProduct(id) {
         try {
@@ -153,6 +205,30 @@ export const AdminProducts = () => {
     }
     function closeAddModal() {
         setAddModal(false)
+        setAddErrors({
+            nameError: "",
+            defaultPriceError: "",
+            offerError: "",
+            descriptionError: "",
+            stockError: "",
+            colorError: "",
+            sizeError: "",
+            imageError: "",
+            categoryError: ""
+        })
+
+        setAddData({
+            name: "",
+            price: 0,
+            defaultPrice: 0,
+            offer: "",
+            description: "",
+            stock: "",
+            color: "",
+            size: "",
+            image: "",
+            category: ""
+        })
     }
 
     // logout function
@@ -326,7 +402,7 @@ export const AdminProducts = () => {
 
         setAddErrors(errorObject);
 
-        var values = Object.values(addErrors);
+        var values = Object.values(errorObject);
         var boolean = values.some((data, index) => data !== "")
         if (!boolean) {
             console.log(addData);
@@ -340,7 +416,9 @@ export const AdminProducts = () => {
             formData.append("color", addData.color);
             formData.append("size", addData.size);
             formData.append("category", addData.category);
-            formData.append("image", addData.image);
+            if (addData.image) {
+                formData.append("image", addData.image);
+            }
             try {
                 const token = localStorage.getItem('loginToken');
                 const dataAdd = await axios.post("http://localhost:5000/addProducts", formData, {
@@ -348,7 +426,12 @@ export const AdminProducts = () => {
                         Authorization: token
                     }
                 })
-                alert(dataAdd.data.message)
+                // alert(dataAdd.data.message)
+                setAlertContent(dataAdd.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
                 getAllProducts();
             } catch (error) {
                 console.log(error.response.data.message);
@@ -561,7 +644,11 @@ export const AdminProducts = () => {
                         Authorization: token
                     }
                 })
-                alert(dataEdit.data.message)
+                setAlertContent(dataEdit.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
                 getAllProducts();
             } catch (error) {
                 console.log(error.response.data.message);
@@ -581,18 +668,24 @@ export const AdminProducts = () => {
     async function getAllProducts() {
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get(`http://localhost:5000/getAllProducts?page=${currentPage}`, {
+            const getData = await axios.get(`http://localhost:5000/getAllProducts?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`, {
                 headers: {
                     Authorization: token
                 }
             })
+            // pagination concept
             var allData = getData.data.data
-            var totalPages = getData.data.totalPage / 5
-            console.log(allData);
-            console.log(totalPages);
-            
+            var totalNumberOfData = getData.data.totalPage
+            var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
+
+            var calculateStart = (currentPage - 1) * dynamicPageNumber + 1
+            var calculateEnd = (parseInt(calculateStart) + parseInt(dynamicPageNumber)) - 1
+
+            setStartValue(calculateStart)
+            setEndValue(calculateEnd)
             setAllProducts(allData)
-            setTotalPages(totalPages)
+            setTotalPages(totalPagesData)
+            setTotalDataCount(totalNumberOfData)
         } catch (error) {
             console.log(error.response.data.message);
             alert(error.response.data.message)
@@ -604,18 +697,6 @@ export const AdminProducts = () => {
             }
         }
     }
-
-
-    // pagination functionality
-    var totalPagesArrray = [];
-
-    function pagination() {
-        for (let index = 0; index < totalPages; index++) {
-            totalPagesArrray.push(index)
-        }
-    }
-
-    pagination()
 
     // next function
     function next() {
@@ -652,10 +733,11 @@ export const AdminProducts = () => {
         } catch (error) {
             console.log("error");
         }
-    }, [currentPage])
+    }, [currentPage, category, price, searchData, dynamicPageNumber])
 
     return (
-        <div className="flex h-screen">
+        <div className={`flex-1 transition-all duration-300 
+            ${open ? "ml-64" : "ml-16"}`}>
 
             {/* sidebar */}
             <Sidebar />
@@ -664,21 +746,71 @@ export const AdminProducts = () => {
 
                 <AdminNavbar />
 
-                <div className="flex justify-between items-center p-4">
-                    <h2 className="text-lg font-semibold"> <i className="fa-brands fa-product-hunt"></i> Products</h2>
-                    <button className="text-white bg-blue-500 font-bold px-3 py-3 rounded" onClick={() => {
-                        openAddModal()
-                    }}>
-                        <i className="fa-solid fa-plus"></i> Add Product
-                    </button>
-                </div>
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4">
 
-                {/* cards */}
-                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-lg shadow p-4">
-                        <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-shirt text-2xl"></i> Total Products Count</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{allProducts.length}</p>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <i className="fa-brands fa-product-hunt"></i>
+                        Products
+                    </h2>
+
+                    <div className="flex flex-wrap items-center gap-3">
+
+                        {/* search */}
+                        <input
+                            type="search"
+                            placeholder="Search by name, category"
+                            className="w-48 border border-black rounded px-3 py-2 text-sm"
+                            onInput={(event) => { search(event.target.value) }}
+                        />
+
+                        {/* category select */}
+                        <select
+                            className="w-40 border border-black rounded-md px-3 py-2 text-sm"
+                            value={finalCategory}
+                            onChange={(event) => categoryApply(event.target.value)}
+                        >
+                            <option value="">Select Category</option>
+                            <option value="kurti">Kurti</option>
+                            <option value="tshirt">T-Shirt</option>
+                            <option value="jeans">Jeans</option>
+                            <option value="shirt">Shirt</option>
+                            <option value="hoodie">Hoodie</option>
+                            <option value="pants">Pants</option>
+                            <option value="jacket">Jacket</option>
+                        </select>
+
+                        {/* price select */}
+                        <select
+                            className="w-40 border border-black rounded-md px-3 py-2 text-sm"
+                            value={finalPrice}
+                            onChange={(event) => priceApply(event.target.value)}
+                        >
+                            <option value="">Select Price</option>
+                            <option value="lowest">Lowest</option>
+                            <option value="highest">Highest</option>
+                        </select>
+
+                        <button className='bg-blue-500 px-4 py-2 rounded text-white' onClick={() => {
+                            applyFilter()
+                        }}>
+                            Apply
+                        </button>
+                        {(category || price) && (
+                            <button className='bg-blue-500 px-4 py-2 rounded text-white' onClick={() => {
+                                clearFilter()
+                            }}>
+                                Clear
+                            </button>
+                        )}
+
+                        <button className="text-white bg-green-700 font-bold px-3 py-2 rounded" onClick={() => {
+                            openAddModal()
+                        }}>
+                            <i className="fa-solid fa-plus"></i> Add Product
+                        </button>
+
                     </div>
+
                 </div>
 
                 {/* products table */}
@@ -728,18 +860,24 @@ export const AdminProducts = () => {
 
                                             <td className="px-6 py-4">
                                                 <button className="text-green-900 me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
-                                                    View
+                                                    <i className="fa-solid fa-eye"></i>
                                                 </button>
                                                 <button className="text-blue-600 me-5 font-bold hover:underline" onClick={() => openEditModal(data._id)}>
-                                                    Edit
+                                                    <i className="fa-solid fa-marker"></i>
                                                 </button>
                                                 <button className="text-red-600 me-5 font-bold hover:underline" onClick={() => openDeleteModal(data._id)}>
-                                                    Delete
+                                                    <i className="fa-solid fa-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>
                                     )
-                                })) : (<p className='text-red-600'>No Products</p>)}
+                                })) : (
+                                    <tr>
+                                        <td colSpan="6" className="text-center py-6 text-red-600 font-bold text-xl">
+                                            No Products
+                                        </td>
+                                    </tr>
+                                )}
 
                             </tbody>
 
@@ -748,47 +886,40 @@ export const AdminProducts = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t bg-white px-4 py-3">
+                {/* pagination */}
+                <div className="flex justify-between items-center border-t p-4 bg-white">
 
-                    <div className="sm:flex sm:flex-1 sm:justify-end">
+                    <div className="sm:flex justify-between items-center w-full">
+                        <h2 className="flex items-center gap-1 whitespace-nowrap">
+                            showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
+                        </h2>
+                        <div className="flex items-center gap-6">
 
-                        {/* pagination */}
-                        {totalPagesArrray.length > 0 && (
-                            <div className="flex items-center gap-1 mt-4">
+                            <select className="border rounded px-2 py-1" onChange={(event) => {
+                                setDynamicPageNumber(event.target.value)
+                                setCurrentPage(1)
+                            }} value={dynamicPageNumber}>
+                                <option>5</option>
+                                <option>10</option>
+                                <option>20</option>
+                            </select>
 
-                                <button
-                                    className={`px-2 py-1 border rounded ${currentPage === 1 ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => previous()}
-                                    disabled={currentPage === 1}>
-                                    Previous
-                                </button>
+                            <button className="border px-3 py-1 rounded" onClick={() => {
+                                previous()
+                            }} disabled={currentPage === 1}>previous</button>
 
-                                {totalPagesArrray.map((data, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentPage(index + 1)}
-                                        className={`px-3 py-1 rounded ${currentPage === index + 1
-                                            ? "bg-blue-600 text-white"
-                                            : "border"
-                                            }`}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
+                            <h2 className="flex items-center gap-1 whitespace-nowrap">
+                                page <b>{currentPage}</b> of <b>{totalPages}</b>
+                            </h2>
 
-                                <button
-                                    className={`px-2 py-1 border rounded ${currentPage === totalPages ? "bg-gray-500" : "bg-white"}`}
-                                    onClick={() => next()}
-                                    disabled={currentPage === totalPages}>
-                                    Next
-                                </button>
-
-                            </div>
-                        )}
-
+                            <button className="border px-3 py-1 rounded" onClick={() => {
+                                next()
+                            }} disabled={currentPage === totalPages}>next</button>
+                        </div>
                     </div>
 
                 </div>
+
 
 
                 {/* delete confirmation modal */}
@@ -902,6 +1033,12 @@ export const AdminProducts = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+                            {/* alert */}
+                            {openAlert && (
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                </div>
+                            )}
                             <form onSubmit={(event) => { updateProduct(event) }}>
 
                                 <div className="block">
@@ -1089,6 +1226,12 @@ export const AdminProducts = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Add Product</h2>
+                            {/* alert */}
+                            {openAlert && (
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                </div>
+                            )}
 
                             <form onSubmit={(event) => { addProduct(event) }}>
 
@@ -1097,7 +1240,7 @@ export const AdminProducts = () => {
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
                                         placeholder="Enter name"
-                                        value={getParticularProduct.name}
+                                        value={addData.name}
                                         onInput={(event) => {
                                             validateName(event.target.value)
                                         }}
@@ -1223,7 +1366,7 @@ export const AdminProducts = () => {
                                     )}
                                 </div>
 
-                                <div className="block">
+                                <div className="block mt-4">
                                     <input
                                         type="text"
                                         className="w-full border rounded px-3 py-2"
