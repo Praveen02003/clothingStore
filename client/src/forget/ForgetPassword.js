@@ -258,7 +258,7 @@ export const ForgetPassword = () => {
                 <h2 className='font-bold text-2xl'>Reset Password</h2>
                 {openAlert && (
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="font-bold block sm:inline">{alertContent}</span>
+                        <span class="block sm:inline">{alertContent}</span>
                     </div>
                 )}
 

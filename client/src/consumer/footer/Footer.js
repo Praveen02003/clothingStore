@@ -2,9 +2,9 @@ import React from 'react'
 
 export const Footer = () => {
     return (
-        <div>
+        <div className='mt-20'>
             {/* footer section */}
-            <footer className="p-10 bg-gray-700">
+            <footer className="mt-20 p-10 bg-gray-700">
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-5">
 

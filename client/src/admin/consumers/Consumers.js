@@ -22,20 +22,392 @@ export const Consumers = () => {
         setParticularConsumerId,
     } = useContext(mainContext);
 
-    var allErrors = {
+    const navigate = useNavigate();
+
+    // edit consumer
+    var [editFormData, setEditFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        image: "",
+        mobile: "",
+        gender: "",
+        password: "",
+        confirmPassword: "",
+        address: "",
+        terms: ""
+    });
+
+    var [editError, setEditError] = useState({
         firstNameError: "",
         lastNameError: "",
         emailError: "",
+        imageError: "",
         mobileError: "",
         genderError: "",
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
         termsError: ""
-    };
 
-    const navigate = useNavigate();
+    });
 
+
+    // editValidateFirstName function
+    function editValidateFirstName(value) {
+
+        var allErrors = { ...editError }
+        var inputValue = value;
+
+        setGetParticularConsumer({ ...getParticularConsumer, firstName: inputValue })
+
+        if (!inputValue) {
+            allErrors.firstNameError = 'Enter First Name';
+        }
+        else {
+            allErrors.firstNameError = "";
+        }
+        setEditError(allErrors)
+    }
+
+
+    // editValidateLastName function
+    function editValidateLastName(value) {
+
+        var allErrors = { ...error }
+        var inputValue = value;
+
+        setGetParticularConsumer({ ...getParticularConsumer, lastName: inputValue })
+
+        if (!inputValue) {
+            allErrors.lastNameError = 'Enter Last Name';
+        }
+        else {
+            allErrors.lastNameError = "";
+        }
+        setEditError(allErrors)
+    }
+
+
+    // editValidateEmail function
+    function editValidateEmail(value) {
+        let allErrors = { ...error };
+        let inputValue = value;
+
+        setGetParticularConsumer({ ...getParticularConsumer, email: inputValue })
+
+        if (!inputValue) {
+            allErrors.emailError = 'Enter Email';
+        }
+        else if (inputValue && !inputValue.includes('@')) {
+            allErrors.emailError = 'Email must contain @';
+        }
+        else if (inputValue && inputValue.includes(" ")) {
+            allErrors.emailError = "Email should not contain space";
+        }
+        else if (inputValue.indexOf('@') !== inputValue.lastIndexOf('@')) {
+            allErrors.emailError = "Email must contain only one '@'";
+        }
+        else {
+            let split_email = inputValue.split("@");
+
+            if (!split_email[0]) {
+                allErrors.emailError = "Email should not start with '@'";
+            }
+            else if (!split_email[1]) {
+                allErrors.emailError = "Enter domain name after '@'";
+            }
+            else if (!split_email[1].includes(".")) {
+                allErrors.emailError = "Domain must contain '.'";
+            }
+            else if (split_email[0].startsWith(".")) {
+                allErrors.emailError = "Email should not start with '.'";
+            }
+            else if (split_email[1].startsWith(".") || split_email[1].endsWith(".")) {
+                allErrors.emailError = "Invalid domain format";
+            }
+            else {
+                let domainparts = split_email[1].split(".");
+                let extension = domainparts[domainparts.length - 1];
+
+                if (!extension) {
+                    allErrors.emailError = "Extension cannot be empty";
+                }
+                else {
+                    allErrors.emailError = "";
+                }
+            }
+        }
+
+        setEditError(allErrors);
+    }
+
+    // editValidateMobileNumber function
+    function editValidateMobileNumber(inputvalue, event) {
+
+        let allErrors = { ...error };
+
+
+        var finalnumber = "";
+        var formattednumber = "";
+
+        if (!inputvalue) {
+            allErrors.mobileError = "Enter Mobile Number";
+            setEditError(allErrors)
+            setGetParticularConsumer({ ...getParticularConsumer, mobile: formattednumber })
+            return;
+        }
+
+        let numbers = inputvalue.split("").filter(item => (item >= '0') && (item <= '9')).join("");
+
+        finalnumber = numbers.slice(0, 10);
+
+        if (finalnumber.length > 6) {
+            formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3, 6) + "-" + finalnumber.slice(6);
+        }
+        else if (finalnumber.length > 3) {
+            formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3);
+        }
+        else {
+            formattednumber = finalnumber;
+        }
+
+        if (inputvalue && finalnumber.length < 10) {
+            allErrors.mobileError = "Mobile Number must be 10 digits";
+        } else {
+            allErrors.mobileError = "";
+        }
+
+        setGetParticularConsumer({ ...getParticularConsumer, mobile: formattednumber })
+
+        setEditError(allErrors)
+    }
+
+    // editValidateGender function
+    function editValidateGender(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.genderError = "Select Gender";
+        }
+        else {
+            allErrors.genderError = "";
+        }
+
+        setGetParticularConsumer({ ...getParticularConsumer, gender: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    // editValidateTerms
+    function editValidateTerms(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.termsError = "Accept terms and condition";
+        }
+        else {
+            allErrors.termsError = "";
+        }
+
+        setGetParticularConsumer({ ...getParticularConsumer, terms: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+
+    // editValidatePassword function
+    function editValidatePassword(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.passwordError = 'Enter Password';
+        }
+        else if (inputvalue && inputvalue.length < 8) {
+            allErrors.passwordError = 'Password must be at least 8 characters';
+        }
+        else if (!/\d/.test(inputvalue)) {
+            allErrors.passwordError = "Password must contain at least one number";
+        }
+        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputvalue)) {
+            allErrors.passwordError = "Password must contain at least one special character";
+        }
+        else {
+            allErrors.passwordError = "";
+        }
+        setGetParticularConsumer({ ...getParticularConsumer, newPassword: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    // editValidateConfirmPassword
+    function editValidateConfirmPassword(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.confirmPasswordError = 'Enter Confirm-Password';
+        }
+        else if (getParticularConsumer.newPassword !== inputvalue) {
+            allErrors.confirmPasswordError = "Password do not match";
+        }
+        else {
+            allErrors.confirmPasswordError = "";
+        }
+
+        setGetParticularConsumer({ ...getParticularConsumer, confirmPassword: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    // editValidateAddress
+    function editValidateAddress(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.addressError = 'Enter address';
+        }
+        else {
+            allErrors.addressError = "";
+        }
+
+        setGetParticularConsumer({ ...getParticularConsumer, address: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    // validateImage function
+    function editValidateImage(event) {
+        console.log(event, "===>");
+
+        if (event.target.files && event.target.files[0]) {
+            setEditError({ ...editError, imageError: "" })
+        }
+        else {
+            setEditError({ ...editError, imageError: "Choose Image" })
+
+        }
+        setGetParticularConsumer({ ...getParticularConsumer, images: event.target.files[0] })
+    }
+
+
+    async function updateUser(event) {
+        event.preventDefault();
+
+        let allErrors = { ...editError };
+
+        const data = getParticularConsumer;
+
+
+        if (!data.firstName) {
+            allErrors.firstNameError = "Enter FirstName";
+        }
+
+
+        if (!data.lastName) {
+            allErrors.lastNameError = "Enter LastName";
+        }
+
+        if (!data.email) {
+            allErrors.emailError = "Enter email";
+        }
+
+        if (!data.images) {
+            allErrors.imageError = "Choose Image";
+        }
+
+
+        if (!data.mobile) {
+            allErrors.mobileError = "Enter MobileNumber";
+        }
+
+
+
+        if (!data.gender) {
+            allErrors.genderError = "Select gender";
+        }
+
+
+        if (!data.address) {
+            allErrors.addressError = "Enter address";
+        }
+
+        if (!data.terms) {
+            allErrors.termsError = "Accept terms";
+        }
+
+        const passwordBoolean = (data.newPassword && (data.newPassword.length > 0));
+        const confirmPasswordBoolean = (data.confirmPassword && (data.confirmPassword.length > 0));
+
+        if (passwordBoolean || confirmPasswordBoolean) {
+
+            if (!passwordBoolean) {
+                allErrors.passwordError = "Enter Password";
+            } else {
+                allErrors.passwordError = "";
+            }
+
+            if (!confirmPasswordBoolean) {
+                allErrors.confirmPasswordError = "Enter Confirm-Password";
+            } else {
+                allErrors.confirmPasswordError = "";
+            }
+
+            if (passwordBoolean && confirmPasswordBoolean && data.newPassword !== data.confirmPassword) {
+                allErrors.confirmPasswordError = "Password do not match";
+            }
+        }
+
+        setEditError(allErrors);
+
+        const hasError = Object.values(allErrors).some(data => data !== "");
+
+        if (hasError) {
+            return;
+        }
+        try {
+            const formData = new FormData();
+
+            formData.append("firstName", getParticularConsumer.firstName);
+            formData.append("lastName", getParticularConsumer.lastName);
+            formData.append("email", getParticularConsumer.email);
+            formData.append("mobile", getParticularConsumer.mobile);
+            formData.append("gender", getParticularConsumer.gender);
+            formData.append("address", getParticularConsumer.address);
+            formData.append("terms", getParticularConsumer.terms);
+
+            if (getParticularConsumer.newPassword && getParticularConsumer.confirmPassword) {
+                formData.append("newPassword", getParticularConsumer.newPassword);
+                formData.append("confirmPassword", getParticularConsumer.confirmPassword);
+            }
+
+            if (getParticularConsumer.images) {
+                formData.append("image", getParticularConsumer.images);
+            }
+            const token = localStorage.getItem('loginToken');
+            const updateData = await axios.post(
+                "http://localhost:5000/updateUser",
+                formData,
+                {
+                    headers: {
+                        Authorization: token
+                    }
+                }
+            );
+            setAlertContent(updateData.data.message)
+            setOpenAlert(true)
+            setTimeout(() => {
+                setOpenAlert(false)
+            }, 2000);
+            getAllConsumers();
+
+            console.log(updateData.data.message);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // add consumer
     var [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -368,7 +740,14 @@ export const Consumers = () => {
                 setFormData({ ...formData, mobile: replacedNumber })
                 console.log(formData, "===>");
                 try {
-                    var result = await axios.post("http://localhost:5000/addUser", { data: formData });
+                    const token = localStorage.getItem('loginToken');
+                    var result = await axios.post("http://localhost:5000/addUser", { data: formData }, {
+                        headers: {
+                            Authorization: token
+                        }
+                    }
+
+                    );
                     console.log(result.data.message);
                     if (result.data.message === "New User Added Successfully") {
                         getAllConsumers()
@@ -386,6 +765,12 @@ export const Consumers = () => {
     }
 
     const [consumerModal, setConsumerModal] = useState(false)
+
+    const [editModal, setEditModal] = useState(false)
+
+
+    const [finalCategory, setFinalCategory] = useState("");
+    const [category, setCategory] = useState("");
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(null);
@@ -435,6 +820,17 @@ export const Consumers = () => {
         })
     }
 
+    const convertMobileNumber = (inputValue) => {
+        var mobileNumbers = inputValue.replace(/\D/g, "").slice(0, 10);
+
+        if (mobileNumbers.length > 6) {
+            return "(" + mobileNumbers.slice(0, 3) + ") " + mobileNumbers.slice(3, 6) + "-" + mobileNumbers.slice(6);
+        } else if (mobileNumbers.length > 3) {
+            return "(" + mobileNumbers.slice(0, 3) + ") " + mobileNumbers.slice(3);
+        }
+        return mobileNumbers;
+    };
+
 
     async function particularConsumer(id) {
         try {
@@ -445,7 +841,12 @@ export const Consumers = () => {
                 }
             })
             console.log(getOneData.data.data, "==>");
-            setGetParticularConsumer(getOneData.data.data)
+            const data = getOneData.data.data;
+
+            setGetParticularConsumer({
+                ...data,
+                mobile: convertMobileNumber(data.mobile)
+            });
 
         } catch (error) {
             console.log(error.response.data.message);
@@ -481,7 +882,7 @@ export const Consumers = () => {
     async function getAllConsumers() {
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}`, {
+            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}&category=${category}`, {
                 headers: {
                     Authorization: token
                 }
@@ -543,12 +944,44 @@ export const Consumers = () => {
         setCurrentPage(currentPage - 1)
     }
 
+    // categoryApply function
+    function categoryApply(inputValue) {
+        setFinalCategory(inputValue)
+    }
+
+    // applyFilter function
+    function applyFilter() {
+        setCurrentPage(1)
+        setSearchData("")
+        setCategory(finalCategory)
+    }
+    // clearFilter function
+    function clearFilter() {
+        setFinalCategory("");
+        setCategory("");
+    }
+
     // search function
     function search(inputValue) {
         setCurrentPage(1)
         setTimeout(() => {
             setSearchData(inputValue)
         }, 1500);
+    }
+
+    // edit modal
+    function openEditModal(id) {
+        particularConsumer(id)
+        setEditModal(true)
+    }
+    function closeEditModal() {
+        setEditModal(false)
+    }
+
+    // edit image removeImage function
+    function removeEditImage(product) {
+        setGetParticularConsumer({ ...getParticularConsumer, images: "" })
+        setEditError({ ...editError, imageError: "Choose Image" })
     }
 
 
@@ -558,7 +991,7 @@ export const Consumers = () => {
         } catch (error) {
             console.log("error");
         }
-    }, [currentPage, dynamicPageNumber, searchData])
+    }, [currentPage, dynamicPageNumber, searchData, category])
 
     return (
         <div className={`flex-1 transition-all duration-300 
@@ -584,6 +1017,29 @@ export const Consumers = () => {
                             className="w-48 border border-black rounded px-3 py-2 text-sm"
                             onInput={(event) => { search(event.target.value) }}
                         />
+                        {/* category select */}
+                        <select
+                            className="w-40 border border-black rounded-md px-3 py-2 text-sm"
+                            value={finalCategory}
+                            onChange={(event) => categoryApply(event.target.value)}
+                        >
+                            <option value="">Select Category</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">In-Active</option>
+                        </select>
+
+                        <button className='bg-blue-500 px-4 py-2 rounded text-white' onClick={() => {
+                            applyFilter()
+                        }}>
+                            Apply
+                        </button>
+                        {(category) && (
+                            <button className='bg-blue-500 px-4 py-2 rounded text-white' onClick={() => {
+                                clearFilter()
+                            }}>
+                                Clear
+                            </button>
+                        )}
 
                         <button className="text-white bg-green-700 font-bold px-3 py-2 rounded" onClick={() => {
                             openAddModal()
@@ -601,7 +1057,7 @@ export const Consumers = () => {
                         <table className="w-full text-sm text-left text-gray-500">
 
                             <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
-                                <tr className='text-center'>
+                                <tr className='text-center bg-gray-600 text-white'>
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">First Name</th>
                                     <th className="px-6 py-3">Last Name</th>
@@ -639,6 +1095,9 @@ export const Consumers = () => {
                                                 <td className="px-6 py-4">
                                                     <button className="text-black me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
                                                         <i className="fa-solid fa-eye"></i>
+                                                    </button>
+                                                    <button className="text-blue-600 me-5 font-bold hover:underline" onClick={() => openEditModal(data._id)}>
+                                                        <i className="fa-solid fa-marker"></i>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -764,7 +1223,7 @@ export const Consumers = () => {
                             {/* alert */}
                             {openAlert && (
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                    <span class="block sm:inline">{alertContent}</span>
                                 </div>
                             )}
 
@@ -781,7 +1240,7 @@ export const Consumers = () => {
                                         value={formData.firstName}
                                         onInput={(event) => { validateFirstName(event.target.value) }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.firstNameError}
                                     </p>
                                 </div>
@@ -796,7 +1255,7 @@ export const Consumers = () => {
                                         onInput={(event) => { validateLastName(event.target.value) }}
 
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.lastNameError}
                                     </p>
                                 </div>
@@ -811,7 +1270,7 @@ export const Consumers = () => {
                                         onInput={(event) => { validateEmail(event.target.value) }}
 
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.emailError}
                                     </p>
                                 </div>
@@ -829,7 +1288,7 @@ export const Consumers = () => {
                                         />
                                     </div>
 
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.mobileError}
                                     </p>
                                 </div>
@@ -843,7 +1302,7 @@ export const Consumers = () => {
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.genderError}
                                     </p>
                                 </div>
@@ -857,7 +1316,7 @@ export const Consumers = () => {
                                         value={formData.password}
                                         onInput={(event) => { validatePassword(event.target.value) }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold">
+                                    <p className="text-sm text-red-500">
                                         {error.passwordError}
                                     </p>
                                 </div>
@@ -870,7 +1329,7 @@ export const Consumers = () => {
                                         value={formData.confirmPassword}
                                         onInput={(event) => { validateConfirmPassword(event.target.value) }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.confirmPasswordError}
                                     </p>
                                 </div>
@@ -880,7 +1339,7 @@ export const Consumers = () => {
                                         id="address"
                                         value={formData.address}
                                         onInput={(event) => { validateAddress(event.target.value) }} ></textarea>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.addressError}
                                     </p>
                                 </div>
@@ -892,7 +1351,7 @@ export const Consumers = () => {
                                         onChange={(event) => { validateTerms(event.target.checked) }}
                                     />
                                     <label for="terms"> Terms & Conditions</label>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {error.termsError}
                                     </p>
                                 </div>
@@ -902,6 +1361,197 @@ export const Consumers = () => {
                                     className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
                                 >
                                     Add
+                                </button>
+
+                            </form>
+
+                        </div>
+                    </div>
+                )}
+
+                {/* edit consumer modal */}
+                {editModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
+
+                        <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[50%] p-6 relative">
+
+                            <button
+                                onClick={() => closeEditModal()}
+                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                            >
+                                <i className="fa-solid fa-circle-xmark"></i>
+                            </button>
+
+                            <h2 className="text-xl font-bold mb-4">Edit Consumer</h2>
+                            {/* alert */}
+                            {openAlert && (
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span class="block sm:inline">{alertContent}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={(event) => {
+                                updateUser(event)
+                            }}>
+
+                                <div className="block">
+                                    <input
+                                        type="text"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="First Name"
+                                        id="firstName"
+                                        value={getParticularConsumer.firstName}
+                                        onInput={(event) => { editValidateFirstName(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.firstNameError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="text"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Last Name"
+                                        id="lastName"
+                                        value={getParticularConsumer.lastName}
+                                        onInput={(event) => { editValidateLastName(event.target.value) }}
+
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.lastNameError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="email"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Email"
+                                        id="email"
+                                        value={getParticularConsumer.email}
+                                        onInput={(event) => { editValidateEmail(event.target.value) }}
+
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.emailError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="file"
+                                        className="w-full border rounded px-3 py-2"
+                                        onChange={(event) => {
+                                            editValidateImage(event)
+                                        }}
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.imageError}
+                                    </p>
+                                    {getParticularConsumer.images && (
+                                        <div className="relative inline-block">
+                                            <img src={
+                                                typeof (getParticularConsumer.images) === "string"
+                                                    ? `http://localhost:5000/uploadingImages/${getParticularConsumer.images}`
+                                                    : URL.createObjectURL(getParticularConsumer.images)
+                                            }
+                                                alt="Thumb"
+                                                className="w-24 h-24 object-cover rounded-lg border shadow"
+                                            />
+                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularConsumer) }}>
+                                                Remove
+                                            </button>
+
+                                        </div>
+
+                                    )}
+                                </div>
+
+                                <div className="block">
+                                    <div className="flex items-center gap-2">
+                                        <span>+1</span>
+                                        <input
+                                            type="tel"
+                                            className="w-full border rounded px-3 py-2"
+                                            placeholder="Mobile"
+                                            id="mobile"
+                                            value={getParticularConsumer.mobile}
+                                            onInput={(event) => { editValidateMobileNumber(event.target.value, event) }}
+                                        />
+                                    </div>
+
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.mobileError}
+                                    </p>
+                                </div>
+                                <div className="block sm:w-100">
+                                    <select id="gender"
+                                        value={getParticularConsumer.gender}
+                                        onInput={(event) => { editValidateGender(event.target.value) }}
+                                        className="w-full border rounded px-3 py-2"
+                                    >
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.genderError}
+                                    </p>
+                                </div>
+
+                                <div className="block">
+                                    <input
+                                        type="password"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Password"
+                                        id="password"
+                                        onInput={(event) => { editValidatePassword(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500">
+                                        {editError.passwordError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <input
+                                        type="password"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholder="Confirm-Password"
+                                        id="confirmPassword"
+                                        onInput={(event) => { editValidateConfirmPassword(event.target.value) }}
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.confirmPasswordError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <textarea className="w-full border rounded px-3 py-2"
+                                        placeholder="Enter address"
+                                        id="address"
+                                        value={getParticularConsumer.address}
+                                        onInput={(event) => { editValidateAddress(event.target.value) }} ></textarea>
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.addressError}
+                                    </p>
+                                </div>
+                                <div className="block">
+                                    <input
+                                        type="checkbox"
+                                        id="terms"
+                                        checked={getParticularConsumer.terms}
+                                        onChange={(event) => { editValidateTerms(event.target.checked) }}
+                                    />
+                                    <label for="terms"> Terms & Conditions</label>
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {editError.termsError}
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+                                >
+                                    Update
                                 </button>
 
                             </form>

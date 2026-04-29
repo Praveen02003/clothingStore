@@ -21,6 +21,7 @@ export const UserDashboard = () => {
   const navigate = useNavigate()
 
   const [fewDatas, setFewDatas] = useState([])
+  const [cartDatas, setcartDatas] = useState([])
 
   const [particularProduct, setParticularProduct] = useState({})
 
@@ -58,6 +59,7 @@ export const UserDashboard = () => {
     }
   }
 
+  // getFewProduct function
   async function getFewProduct() {
     try {
       var getData = await axios.get(`http://localhost:5000/getFewData`)
@@ -68,6 +70,70 @@ export const UserDashboard = () => {
     }
   }
 
+  // addToCart function
+  async function addToCart(id) {
+    if (loginUser) {
+      var datas = {}
+      var userId = loginUser._id
+      var productId = id
+      datas.userId = userId
+      datas.productId = productId
+
+      try {
+        const token = localStorage.getItem('loginToken');
+
+        var getData = await axios.post("http://localhost:5000/cartAdd", { data: datas },
+          {
+            headers: {
+              Authorization: token
+            }
+          }
+        )
+
+        // alert(getData.data.message);
+        getCartData()
+      } catch (error) {
+        alert(error);
+
+        console.log(error);
+      }
+    }
+    else {
+      alert("Please login first");
+    }
+  }
+
+  // getCartData function
+  async function getCartData() {
+    if (loginUser) {
+      var datas = {}
+      var userId = loginUser._id
+      datas.userId = userId
+
+      try {
+        const token = localStorage.getItem('loginToken');
+
+        var getData = await axios.post("http://localhost:5000/getCartData", { data: datas },
+          {
+            headers: {
+              Authorization: token
+            }
+          }
+        )
+        setcartDatas(getData.data.data)
+        console.log(getData.data.data);
+
+      } catch (error) {
+        alert(error);
+        console.log(error);
+      }
+    }
+    else {
+      alert("Please login first");
+    }
+  }
+
+  // authUser function
   function authUser() {
     var user = JSON.parse(localStorage.getItem('loginUser'))
     var token = localStorage.getItem('loginToken')
@@ -78,6 +144,12 @@ export const UserDashboard = () => {
     }
     getFewProduct()
   }
+
+  useEffect(() => {
+    if (loginUser?._id) {
+      getCartData()
+    }
+  }, [loginUser])
 
   useEffect(() => {
     try {
@@ -163,9 +235,12 @@ export const UserDashboard = () => {
 
           </div>
         </div>
-        <a href='/consumers/products' className="justify-center bg-blue-500 px-4 py-4 text-center items-center font-bold text-white mb-6">
-          see more <i class="fa-solid fa-arrow-right-long"></i>
-        </a>
+
+        <div className="flex justify-center mb-6">
+          <a href="/consumers/products" className="w-60 flex justify-center items-center bg-blue-500 px-4 py-4 text-center font-bold text-white rounded">
+            see more <i className="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+        </div>
 
 
         {/* view modal */}
@@ -213,8 +288,10 @@ export const UserDashboard = () => {
                     <p className="font-bold text-black text-xl">Category : <span className='text-green-600'>{particularProduct.category}</span></p>
                   </div>
 
-                  <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded">
-                    Add to Cart
+                  <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded" onClick={() => {
+                    addToCart(particularProduct._id)
+                  }}>
+                    {cartDatas.includes(particularProduct._id) ? "Remove from cart" : "Add to Cart"}
                   </button>
 
                 </div>

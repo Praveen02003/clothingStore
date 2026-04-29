@@ -22,69 +22,97 @@ export const Cart = () => {
 
   const [allDatas, setAllDatas] = useState([])
 
-  const [particularProduct, setParticularProduct] = useState({})
+  const [totalAmount, setTotalAmount] = useState(0)
 
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+  // calculateTotalAmount function
+  function calculateTotalAmount(cartData) {
+    let total = 0;
 
-  // pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(null);
-  const [dynamicPageNumber, setDynamicPageNumber] = useState(5);
-  const [totalDataCount, setTotalDataCount] = useState(0);
-  const [startValue, setStartValue] = useState(0);
-  const [endValue, setEndValue] = useState(0);
+    cartData.forEach((item) => {
+      const product = item.product[0];
+      const price = product?.price || 0;
+      const quantity = item.quantity || 0;
 
-  // filter and search
-  const [finalPrice, setFinalPrice] = useState("");
-  const [finalCategory, setFinalCategory] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [searchData, setSearchData] = useState("");
+      total += price * quantity;
+    });
 
-  // openViewModal function
-  function openViewModal(id) {
-    setViewModalOpen(true)
-    getOneProduct(id)
+    setTotalAmount(total);
   }
-
-  // closeViewModal function
-  function closeViewModal() {
-    setViewModalOpen(false)
-  }
-
-  async function getOneProduct(id) {
+  // updateQuantity function
+  async function updateQuantity(cartId, quantity) {
     try {
-      const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
-      console.log(getOneData.data.data, "==>");
-      setParticularProduct(getOneData.data.data)
+      const token = localStorage.getItem("loginToken");
+      var data = {
+        cartId: cartId,
+        quantity: quantity
+      }
 
-    } catch (error) {
-      console.log("error");
-    }
-  }
+      const updateData = await axios.post(
+        "http://localhost:5000/updateCartQuantity", { data: data },
+        {
+          headers: {
+            Authorization: token
+          }
+        }
+      );
 
-  async function getAllProducts() {
-    try {
-      var getData = await axios.get(`http://localhost:5000/getAllProduct?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`)
-
-      // pagination concept
-      var allData = getData.data.data
-      var totalNumberOfData = getData.data.totalPage
-      var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
-
-      var calculateStart = (currentPage - 1) * dynamicPageNumber + 1
-      var calculateEnd = (parseInt(calculateStart) + parseInt(dynamicPageNumber)) - 1
-
-      setStartValue(calculateStart)
-      setEndValue(calculateEnd)
-      setAllDatas(allData)
-      setTotalPages(totalPagesData)
-      setTotalDataCount(totalNumberOfData)
+      var message = updateData.data.message
+      if (message === "quantity updated success") {
+        getCartAll()
+      }
+      console.log(message);
     } catch (error) {
       console.log(error);
     }
   }
 
+  // removeFromCart function
+  async function removeFromCart(id) {
+    try {
+      const token = localStorage.getItem('loginToken');
+      var getData = await axios.get(`http://localhost:5000/removeFromCart/${id}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+
+      var message = getData.data.message
+      if (message === "item deleted successfully") {
+        getCartAll()
+      }
+      console.log(message);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // getCartAll function
+  async function getCartAll() {
+    try {
+      const token = localStorage.getItem('loginToken');
+      var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+
+      var allData = getData.data.data
+      console.log(allData);
+
+      setAllDatas(allData)
+
+      calculateTotalAmount(allData);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  // goToCheckOutPage function
+  function goToCheckOutPage() {
+    navigate("/consumers/checkOut")
+  }
+
+  // authUser function
   function authUser() {
     var user = JSON.parse(localStorage.getItem('loginUser'))
     var token = localStorage.getItem('loginToken')
@@ -93,72 +121,21 @@ export const Cart = () => {
     if (user && token) {
       setLoginUser(user)
     }
-    getAllProducts()
   }
-
-  // next function
-  function next() {
-    setCurrentPage(currentPage + 1)
-  }
-
-  // previous function
-  function previous() {
-    setCurrentPage(currentPage - 1)
-  }
-
-  // search function
-  function search(inputValue) {
-    setTimeout(() => {
-      setCategory("")
-      setPrice("")
-      setSearchData(inputValue)
-    }, 1500);
-  }
-
-  // priceApply function
-  function priceApply(inputValue) {
-    setFinalPrice(inputValue)
-  }
-
-  // categoryApply function
-  function categoryApply(inputValue) {
-    setFinalCategory(inputValue)
-  }
-
-  // applyFilter function
-  function applyFilter() {
-    setCategory(finalCategory)
-    setPrice(finalPrice)
-  }
-  // clearFilter function
-  function clearFilter() {
-    setFinalCategory("");
-    setFinalPrice("");
-    setCategory("");
-    setPrice("");
-  }
-
-  // ratings function
-  function ratings(loopValue) {
-    var ratingsArray = []
-    for (let index = 0; index < loopValue; index++) {
-      var fontAwesomeStars = <i className="fa-solid fa-star text-yellow-600" key={index}></i>
-      ratingsArray.push(fontAwesomeStars)
-    }
-
-    return ratingsArray;
-  }
-
-
 
   useEffect(() => {
     try {
       authUser()
     } catch (error) {
       console.log("error");
-
     }
-  }, [currentPage, category, price, searchData, dynamicPageNumber])
+  }, [])
+
+  useEffect(() => {
+    if (loginUser?._id) {
+      getCartAll()
+    }
+  }, [loginUser])
 
   return (
     <div className={`flex-1 transition-all duration-300 
@@ -187,161 +164,98 @@ export const Cart = () => {
               <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
                 <tr className='text-center'>
                   <th className="px-6 py-3">S.no</th>
-                  <th className="px-6 py-3">First Name</th>
-                  <th className="px-6 py-3">Last Name</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Product Name</th>
+                  <th className="px-6 py-3">Price</th>
+                  <th className="px-6 py-3">Offer</th>
+                  <th className="px-6 py-3">Category</th>
+                  <th className="px-6 py-3">Quantity</th>
                   <th className="px-6 py-3">Action</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr className="bg-white text-center border-b hover:bg-gray-50">
+                {allDatas.length > 0 ? (
+                  allDatas.map((data, index) => {
+                    const product = data.product[0];
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    1
-                  </td>
+                    return (
+                      <tr key={index} className="bg-white text-center border-b hover:bg-gray-50">
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    t shirt
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bgmn
-                  </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          {index + 1}
+                        </td>
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    dfng dfgn
-                  </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          {product?.name}
+                        </td>
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bfdbdf
-                  </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          <i className="fa-solid fa-indian-rupee-sign"></i> {product?.price}
+                        </td>
 
-                  <td className="px-6 py-4">
-                    <button className="text-black me-5 font-bold hover:underline" >
-                      <i className="fa-solid fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
+                        <td className="px-6 py-4 font-semibold text-blue-600">
+                          {product?.offer} <i className="fa-solid fa-percent"></i>
+                        </td>
 
-                <tr className="bg-white text-center border-b hover:bg-gray-50">
+                        <td className="px-6 py-4 font-semibold text-green-600">
+                          {product?.category}
+                        </td>
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    1
-                  </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          <input
+                            type="number"
+                            min="1"
+                            value={data.quantity}
+                            className="w-16 border border-gray-300 rounded px-2 py-1 text-center"
+                            onChange={(event) => {
+                              var quantity = Number(event.target.value);
+                              var stock = data.product[0]?.stock;
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    t shirt
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bgmn
-                  </td>
+                              if (quantity > stock) {
+                                alert(`Only ${stock} items are available`);
+                                return;
+                              }
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    dfng dfgn
-                  </td>
+                              updateQuantity(data._id, quantity);
+                            }}
+                          />
+                        </td>
 
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bfdbdf
-                  </td>
+                        <td className="px-6 py-4">
+                          <button className="text-black me-5 font-bold hover:underline" onClick={() => {
+                            removeFromCart(data._id)
+                          }}>
+                            <i className="fa-solid fa-delete-left"></i>
+                          </button>
+                        </td>
 
-                  <td className="px-6 py-4">
-                    <button className="text-black me-5 font-bold hover:underline" >
-                      <i className="fa-solid fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
-
-                <tr className="bg-white text-center border-b hover:bg-gray-50">
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    1
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    t shirt
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bgmn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    dfng dfgn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bfdbdf
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button className="text-black me-5 font-bold hover:underline" >
-                      <i className="fa-solid fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
-
-                <tr className="bg-white text-center border-b hover:bg-gray-50">
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    1
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    t shirt
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bgmn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    dfng dfgn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bfdbdf
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button className="text-black me-5 font-bold hover:underline" >
-                      <i className="fa-solid fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
-                
-                <tr className="bg-white text-center border-b hover:bg-gray-50">
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    1
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    t shirt
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bgmn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    dfng dfgn
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-900">
-                    bfdbdf
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button className="text-black me-5 font-bold hover:underline" >
-                      <i className="fa-solid fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
-
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center py-6 text-red-500 font-bold">
+                      No Items in the Cart
+                    </td>
+                  </tr>
+                )}
               </tbody>
 
             </table>
 
           </div>
         </div>
+
+        {totalAmount > 0 && (
+          <div className="flex flex-wrap items-center justify-end gap-4 p-4">
+
+            <button className="text-lg text-white rounded font-bold flex items-center gap-2 bg-green-600 px-10 py-3" onClick={() => {
+              goToCheckOutPage()
+            }}>
+              <i className="fa-solid fa-indian-rupee-sign"></i> {totalAmount} Checkout
+            </button>
+          </div>
+        )}
 
         {/* footer section */}
         <Footer />

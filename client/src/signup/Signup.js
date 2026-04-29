@@ -402,13 +402,18 @@ export const Signup = () => {
     }, [])
     return (
         <div className='mainForm'>
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
             <div className="main">
 
                 <h2 className='font-bold text-2xl'>Sign Up</h2>
 
                 {openAlert && (
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="font-bold block sm:inline">{alertContent}</span>
+                        <span class="block sm:inline">{alertContent}</span>
                     </div>
                 )}
 
@@ -462,6 +467,7 @@ export const Signup = () => {
                         <label for="terms">Terms & Conditions</label>
                     </div>
                     <p id="termsError">{error.termsError}</p>
+                    
 
                     {/* submit button */}
                     <button

@@ -122,15 +122,15 @@ export const Dashboard = () => {
 
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-ranking-star text-2xl"></i> Orders Count</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
-                        <button className="mt-3 text-blue-600 hover:underline font-bold">
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.ordersCount || 0}</p>
+                        <a className="mt-30 text-blue-600 hover:underline font-bold" href="/admin/orders">
                             View
-                        </button>
+                        </a>
                     </div>
 
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-calculator"></i> Total Purchase</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black">5</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black"><i class="fa-solid fa-indian-rupee-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}</p>
                     </div>
                 </div>
 

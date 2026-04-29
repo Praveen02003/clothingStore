@@ -70,6 +70,18 @@ export const Sidebar = () => {
                             {sideBarOpen && "Cart"}
                         </a>
                     )}
+                    {loginUser && (
+                        <a href="/consumers/myProducts" className="flex items-center gap-3 px-2 py-2 text-white hover:bg-gray-700 rounded">
+                            <i class="fa-solid fa-chart-simple text-2xl"></i>
+                            {sideBarOpen && "My Products"}
+                        </a>
+                    )}
+                    {loginUser && (
+                        <a href="/consumers/myOrders" className="flex items-center gap-3 px-2 py-2 text-white hover:bg-gray-700 rounded">
+                            <i class="fa-solid fa-folder-closed text-2xl"></i>
+                            {sideBarOpen && "My Orders"}
+                        </a>
+                    )}
                 </nav>
             </div>
         </div>

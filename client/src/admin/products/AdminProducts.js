@@ -13,6 +13,8 @@ export const AdminProducts = () => {
     const [alertColor, setAlertColor] = useState("")
     const [alertContent, setAlertContent] = useState("")
 
+    const [loginUser, setLoginUser] = useState({})
+
     var [editErrors, setEditErrors] = useState({
         nameError: "",
         defaultPriceError: "",
@@ -109,6 +111,7 @@ export const AdminProducts = () => {
     // applyFilter function
     function applyFilter() {
         setCurrentPage(1)
+        setSearchData("")
         setCategory(finalCategory)
         setPrice(finalPrice)
     }
@@ -419,11 +422,14 @@ export const AdminProducts = () => {
             if (addData.image) {
                 formData.append("image", addData.image);
             }
+            console.log(formData);
+
             try {
                 const token = localStorage.getItem('loginToken');
                 const dataAdd = await axios.post("http://localhost:5000/addProducts", formData, {
                     headers: {
-                        Authorization: token
+                        Authorization: token,
+                        "Content-Type": "multipart/form-data"
                     }
                 })
                 // alert(dataAdd.data.message)
@@ -622,7 +628,7 @@ export const AdminProducts = () => {
 
         setEditErrors(errorObject);
 
-        var values = Object.values(editErrors);
+        var values = Object.values(errorObject);
         var boolean = values.some((data, index) => data !== "")
         if (!boolean) {
             console.log(getParticularProduct);
@@ -663,6 +669,7 @@ export const AdminProducts = () => {
 
         }
 
+
     }
 
     async function getAllProducts() {
@@ -673,6 +680,8 @@ export const AdminProducts = () => {
                     Authorization: token
                 }
             })
+            console.log(getData.data.data,"--->");
+            
             // pagination concept
             var allData = getData.data.data
             var totalNumberOfData = getData.data.totalPage
@@ -721,6 +730,7 @@ export const AdminProducts = () => {
             else if (user.role.toLowerCase() === "admin") {
                 getAllProducts();
             }
+            setLoginUser(user)
         }
         else {
             navigate('/login')
@@ -824,13 +834,14 @@ export const AdminProducts = () => {
                         <table className="w-full text-sm text-left text-gray-500">
 
                             <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
-                                <tr>
+                                <tr className='bg-gray-600 text-white'>
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">Name</th>
                                     <th className="px-6 py-3">Price</th>
                                     <th className="px-6 py-3">Stock</th>
                                     <th className="px-6 py-3">Category</th>
                                     <th className="px-6 py-3">Action</th>
+                                    <th className="px-6 py-3">Added By</th>
                                 </tr>
                             </thead>
 
@@ -868,6 +879,9 @@ export const AdminProducts = () => {
                                                 <button className="text-red-600 me-5 font-bold hover:underline" onClick={() => openDeleteModal(data._id)}>
                                                     <i className="fa-solid fa-trash"></i>
                                                 </button>
+                                            </td>
+                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                                {data.user[0].email}
                                             </td>
                                         </tr>
                                     )
@@ -1036,7 +1050,7 @@ export const AdminProducts = () => {
                             {/* alert */}
                             {openAlert && (
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                    <span class="block sm:inline">{alertContent}</span>
                                 </div>
                             )}
                             <form onSubmit={(event) => { updateProduct(event) }}>
@@ -1051,7 +1065,7 @@ export const AdminProducts = () => {
                                             editValidateName(event.target.value)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.nameError}
                                     </p>
                                 </div>
@@ -1067,7 +1081,7 @@ export const AdminProducts = () => {
                                             editValidateDefaultPrice(event.target.value)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.defaultPriceError}
                                     </p>
                                 </div>
@@ -1095,7 +1109,7 @@ export const AdminProducts = () => {
 
                                     />
 
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.offerError}
                                     </p>
                                 </div>
@@ -1110,7 +1124,7 @@ export const AdminProducts = () => {
                                         }}
                                         value={getParticularProduct.stock}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.stockError}
                                     </p>
                                 </div>
@@ -1126,7 +1140,7 @@ export const AdminProducts = () => {
                                         <option value="orange">orange</option>
                                         <option value="white">white</option>
                                     </select>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.colorError}
                                     </p>
                                 </div>
@@ -1142,7 +1156,7 @@ export const AdminProducts = () => {
                                         <option value="L">42</option>
                                         <option value="XL">XL</option>
                                     </select>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.sizeError}
                                     </p>
                                 </div>
@@ -1154,7 +1168,7 @@ export const AdminProducts = () => {
                                             editValidateImage(event)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.imageError}
                                     </p>
                                     {getParticularProduct.image && (
@@ -1186,7 +1200,7 @@ export const AdminProducts = () => {
                                         }}
                                         value={getParticularProduct.category}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.categoryError}
                                     </p>
                                 </div>
@@ -1194,7 +1208,7 @@ export const AdminProducts = () => {
                                     <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' onInput={(event) => {
                                         editValidateDescription(event.target.value)
                                     }} value={getParticularProduct.description}></textarea>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {editErrors.descriptionError}
                                     </p>
                                 </div>
@@ -1229,7 +1243,7 @@ export const AdminProducts = () => {
                             {/* alert */}
                             {openAlert && (
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="font-bold block sm:inline">{alertContent}</span>
+                                    <span class="block sm:inline">{alertContent}</span>
                                 </div>
                             )}
 
@@ -1245,7 +1259,7 @@ export const AdminProducts = () => {
                                             validateName(event.target.value)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.nameError}
                                     </p>
                                 </div>
@@ -1261,7 +1275,7 @@ export const AdminProducts = () => {
                                             validateDefaultPrice(event.target.value)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.defaultPriceError}
                                     </p>
                                 </div>
@@ -1289,7 +1303,7 @@ export const AdminProducts = () => {
 
                                     />
 
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.offerError}
                                     </p>
                                 </div>
@@ -1304,7 +1318,7 @@ export const AdminProducts = () => {
                                         }}
                                         value={addData.stock}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.stockError}
                                     </p>
                                 </div>
@@ -1320,7 +1334,7 @@ export const AdminProducts = () => {
                                         <option value="orange">orange</option>
                                         <option value="white">white</option>
                                     </select>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.colorError}
                                     </p>
                                 </div>
@@ -1336,7 +1350,7 @@ export const AdminProducts = () => {
                                         <option value="L">42</option>
                                         <option value="XL">XL</option>
                                     </select>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.sizeError}
                                     </p>
                                 </div>
@@ -1348,7 +1362,7 @@ export const AdminProducts = () => {
                                             validateImage(event)
                                         }}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.imageError}
                                     </p>
                                     {addData.image && (
@@ -1376,7 +1390,7 @@ export const AdminProducts = () => {
                                         }}
                                         value={addData.category}
                                     />
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.categoryError}
                                     </p>
                                 </div>
@@ -1384,7 +1398,7 @@ export const AdminProducts = () => {
                                     <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' onInput={(event) => {
                                         validateDescription(event.target.value)
                                     }} value={addData.description}></textarea>
-                                    <p className="text-sm text-red-500 font-bold mb-0">
+                                    <p className="text-sm text-red-500 mb-0">
                                         {addErrors.descriptionError}
                                     </p>
                                 </div>

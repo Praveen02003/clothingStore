@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
 
-export const Products = () => {
+export const MyProducts = () => {
 
   const {
     sideBarOpen,
@@ -357,6 +357,90 @@ export const Products = () => {
     }
   }
 
+  async function getAllProducts() {
+    console.log(loginUser?._id, "-->");
+
+    try {
+      const token = localStorage.getItem('loginToken');
+      var getData = await axios.get(`http://localhost:5000/getMyProduct/${loginUser._id}?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+      console.log(getData.data.data, "===>");
+
+      // pagination concept
+      var allData = getData.data.data
+      var totalNumberOfData = getData.data.totalPage
+      var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
+
+      var calculateStart = (currentPage - 1) * dynamicPageNumber + 1
+      var calculateEnd = (parseInt(calculateStart) + parseInt(dynamicPageNumber)) - 1
+
+      setStartValue(calculateStart)
+      setEndValue(calculateEnd)
+      setAllDatas(allData)
+      setTotalPages(totalPagesData)
+      setTotalDataCount(totalNumberOfData)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  function authUser() {
+    var user = JSON.parse(localStorage.getItem('loginUser'))
+    var token = localStorage.getItem('loginToken')
+    console.log(user, "===>");
+
+    if (user && token) {
+      setLoginUser(user)
+    }
+  }
+
+  // next function
+  function next() {
+    setCurrentPage(currentPage + 1)
+  }
+
+  // previous function
+  function previous() {
+    setCurrentPage(currentPage - 1)
+  }
+
+  // search function
+  function search(inputValue) {
+    setCurrentPage(1)
+    setTimeout(() => {
+      setCategory("")
+      setPrice("")
+      setSearchData(inputValue)
+    }, 1500);
+  }
+
+  // priceApply function
+  function priceApply(inputValue) {
+    setFinalPrice(inputValue)
+  }
+
+  // categoryApply function
+  function categoryApply(inputValue) {
+    setFinalCategory(inputValue)
+  }
+
+  // applyFilter function
+  function applyFilter() {
+    setCurrentPage(1)
+    setCategory(finalCategory)
+    setPrice(finalPrice)
+  }
+  // clearFilter function
+  function clearFilter() {
+    setFinalCategory("");
+    setFinalPrice("");
+    setCategory("");
+    setPrice("");
+  }
+
   // addToCart function
   async function addToCart(id) {
     if (loginUser) {
@@ -420,84 +504,6 @@ export const Products = () => {
     }
   }
 
-  async function getAllProducts() {
-    try {
-      var getData = await axios.get(`http://localhost:5000/getAllProduct?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`)
-      console.log(getData.data.data, "===>");
-
-      // pagination concept
-      var allData = getData.data.data
-      var totalNumberOfData = getData.data.totalPage
-      var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
-
-      var calculateStart = (currentPage - 1) * dynamicPageNumber + 1
-      var calculateEnd = (parseInt(calculateStart) + parseInt(dynamicPageNumber)) - 1
-
-      setStartValue(calculateStart)
-      setEndValue(calculateEnd)
-      setAllDatas(allData)
-      setTotalPages(totalPagesData)
-      setTotalDataCount(totalNumberOfData)
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  function authUser() {
-    var user = JSON.parse(localStorage.getItem('loginUser'))
-    var token = localStorage.getItem('loginToken')
-    console.log(user, "===>");
-
-    if (user && token) {
-      setLoginUser(user)
-    }
-    getAllProducts()
-  }
-
-  // next function
-  function next() {
-    setCurrentPage(currentPage + 1)
-  }
-
-  // previous function
-  function previous() {
-    setCurrentPage(currentPage - 1)
-  }
-
-  // search function
-  function search(inputValue) {
-    setCurrentPage(1)
-    setTimeout(() => {
-      setCategory("")
-      setPrice("")
-      setSearchData(inputValue)
-    }, 1500);
-  }
-
-  // priceApply function
-  function priceApply(inputValue) {
-    setFinalPrice(inputValue)
-  }
-
-  // categoryApply function
-  function categoryApply(inputValue) {
-    setFinalCategory(inputValue)
-  }
-
-  // applyFilter function
-  function applyFilter() {
-    setCurrentPage(1)
-    setCategory(finalCategory)
-    setPrice(finalPrice)
-  }
-  // clearFilter function
-  function clearFilter() {
-    setFinalCategory("");
-    setFinalPrice("");
-    setCategory("");
-    setPrice("");
-  }
-
   // ratings function
   function ratings(loopValue) {
     var ratingsArray = []
@@ -510,19 +516,15 @@ export const Products = () => {
   }
 
   useEffect(() => {
-    if (loginUser?._id) {
-      getCartData()
-    }
-  }, [loginUser])
+    authUser()
+  }, [])
 
   useEffect(() => {
-    try {
-      authUser()
-    } catch (error) {
-      console.log("error");
-
+    if (loginUser?._id) {
+      getAllProducts()
+      getCartData()
     }
-  }, [currentPage, category, price, searchData, dynamicPageNumber])
+  }, [loginUser, currentPage, category, price, searchData, dynamicPageNumber])
 
   return (
     <div className={`flex-1 transition-all duration-300 
@@ -539,7 +541,7 @@ export const Products = () => {
 
           <h2 className="text-lg font-bold flex items-center gap-2">
             <i className="fa-solid fa-shirt text-2xl"></i>
-            Products
+            My Products
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">

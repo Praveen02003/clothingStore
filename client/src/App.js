@@ -11,14 +11,19 @@ import { UserDashboard } from './consumer/dashboard/UserDashboard';
 
 import { createContext, useState } from 'react';
 import { ForgetPassword } from './forget/ForgetPassword';
+import { MyProducts } from './consumer/myProducts/MyProducts';
+import { Checkout } from './consumer/checkout/Checkout';
+import { Payment } from './consumer/payment/Payment';
+import { MyOrders } from './consumer/myOrders/MyOrders';
+import { Orders } from './admin/orders/Orders';
 
 export const mainContext = createContext()
 
 function App() {
 
   // sidebar open
-  const [open, setOpen] = useState(true)
-  const [sideBarOpen, setSideBarOpen] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [sideBarOpen, setSideBarOpen] = useState(false)
 
   // modal opens
   const [viewModal, setViewModal] = useState(false);
@@ -96,11 +101,16 @@ function App() {
           <Route path='/consumers/products' element={<Products />} />
           <Route path='/consumer/resetPassword' element={<ForgetPassword />} />
           <Route path='/consumers/cart' element={<Cart />} />
+          <Route path='/consumers/myProducts' element={<MyProducts />} />
+          <Route path='/consumers/checkOut' element={<Checkout />} />
+          <Route path='/consumers/payment' element={<Payment />} />
+          <Route path='/consumers/myOrders' element={<MyOrders />} />
 
           {/* admin routes */}
           <Route path='/admin/dashBoard' element={<Dashboard />} />
           <Route path='/admin/adminProducts' element={<AdminProducts />} />
           <Route path='/admin/consumers' element={<Consumers />} />
+          <Route path='/admin/orders' element={<Orders />} />
         </Routes>
       </BrowserRouter>
     </mainContext.Provider>

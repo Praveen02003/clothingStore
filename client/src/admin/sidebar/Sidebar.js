@@ -86,6 +86,15 @@ export const Sidebar = () => {
                             {open && "Consumers"}
                         </a>
                     )}
+                    {(loginUser && loginUser.role.toLowerCase() === "admin") && (
+                        <a href="/admin/orders"
+                            className={`flex items-center py-2 text-white hover:bg-gray-700 rounded
+                                ${open ? "px-4 gap-3" : "justify-center"}`}>
+
+                            <i class="fa-regular fa-folder-open text-2xl"></i>
+                            {open && "Orders"}
+                        </a>
+                    )}
                 </nav>
             </div>
         </div>
