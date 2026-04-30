@@ -18,6 +18,7 @@ export const Navbar = () => {
     function logOut() {
         localStorage.removeItem('loginToken')
         localStorage.removeItem('loginUser')
+        localStorage.removeItem('consumerSidebarOpen')
         setLoginUser(null)
         navigate('/login')
     }

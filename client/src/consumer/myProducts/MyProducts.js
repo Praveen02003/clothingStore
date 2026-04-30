@@ -2,9 +2,6 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import banner1 from '../../assets/banner1.jpg'
-import banner2 from '../../assets/banner2.jpg'
-import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
@@ -18,6 +15,8 @@ export const MyProducts = () => {
     setLoginUser,
     userProductAddModal,
     setUserProductAddModal,
+    cartCount,
+    setCartCount
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -29,6 +28,8 @@ export const MyProducts = () => {
   const [particularProduct, setParticularProduct] = useState({})
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
+
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,6 +51,24 @@ export const MyProducts = () => {
   const [openAlert, setOpenAlert] = useState(false)
   const [alertColor, setAlertColor] = useState("")
   const [alertContent, setAlertContent] = useState("")
+
+  const [productEditModal, setProductEditModal] = useState(false)
+  const [productDeleteModal, setproductDeleteModal] = useState(false)
+  const [particularProductId, setParticularProductId] = useState(null)
+
+  const [particularProductData, setParticularProductData] = useState({})
+
+  var [editErrors, setEditErrors] = useState({
+    nameError: "",
+    defaultPriceError: "",
+    offerError: "",
+    descriptionError: "",
+    stockError: "",
+    colorError: "",
+    sizeError: "",
+    imageError: "",
+    categoryError: ""
+  })
 
   var [addErrors, setAddErrors] = useState({
     nameError: "",
@@ -80,6 +99,7 @@ export const MyProducts = () => {
   function logOut() {
     localStorage.removeItem('loginToken')
     localStorage.removeItem('loginUser')
+    localStorage.removeItem('consumerSidebarOpen')
     setLoginUser(null)
     navigate('/login')
   }
@@ -204,6 +224,7 @@ export const MyProducts = () => {
   }
 
   async function addProduct(event) {
+    setSpinnerLoader(true)
     event.preventDefault()
     var errorObject = {}
     // console.log(addData);
@@ -273,6 +294,7 @@ export const MyProducts = () => {
         })
         if (dataAdd.data.message === "Product Added Successfully") {
           getAllProducts()
+          setSpinnerLoader(false)
         }
         setAlertContent(dataAdd.data.message)
         setOpenAlert(true)
@@ -281,7 +303,7 @@ export const MyProducts = () => {
         }, 2000);
       } catch (error) {
         console.log(error.response.data.message);
-        alert(error.response.data.message)
+        // alert(error.response.data.message)
         if (error.response.data.message === "Access denied") {
           logOut()
         }
@@ -335,10 +357,284 @@ export const MyProducts = () => {
     })
   }
 
+  async function getParticularProduct(id) {
+    try {
+      const token = localStorage.getItem('loginToken');
+      const getOneData = await axios.get(`http://localhost:5000/getOneProduct/${id}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+
+      console.log(getOneData.data.data, "==>");
+      setParticularProductData(getOneData.data.data)
+
+    } catch (error) {
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
+    }
+  }
+
+  // edit modal
+  async function openEditModal(id) {
+    setSpinnerLoader(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      await getParticularProduct(id)
+      setProductEditModal(true)
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSpinnerLoader(false);
+    }
+  }
+  // clodeEditModal function
+  function closeEditModal() {
+    setProductEditModal(false)
+  }
+
+  // edit image removeImage function
+  function removeEditImage(product) {
+    setParticularProductData({ ...particularProductData, image: "" })
+    setEditErrors({ ...editErrors, imageError: "Choose Image" })
+  }
+
+  // edit product validation functions
+
+  // validateName function
+  function editValidateName(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, nameError: "Enter Product Name" })
+    }
+    else {
+      setEditErrors({ ...editErrors, nameError: "" })
+    }
+    setParticularProductData({ ...particularProductData, name: inputValue })
+  }
+  // validatePrice function
+  function editValidateDefaultPrice(inputValue) {
+
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, defaultPriceError: "Enter Product Original Price" })
+    }
+    else if (inputValue <= 0) {
+      setEditErrors({ ...editErrors, defaultPriceError: "Enter Product Original Price > 0" })
+    }
+    else {
+      setEditErrors({ ...editErrors, defaultPriceError: "" })
+    }
+    setParticularProductData({ ...particularProductData, defaultPrice: inputValue })
+  }
+  // validateOffer function
+  function editValidateOffer(inputValue) {
+    let offerPrice = particularProductData.defaultPrice;
+    let originalPrice = particularProductData.defaultPrice;
+
+    if (inputValue === "" || inputValue === null) {
+      setEditErrors({ ...editErrors, offerError: "Enter Offer if no offer type 0" });
+    }
+
+    else if (inputValue < 0 || inputValue > 100) {
+      setEditErrors({ ...editErrors, offerError: "Enter Offer between 0 and 100" });
+    }
+
+    else {
+      offerPrice = Math.floor(originalPrice - (originalPrice * inputValue) / 100);
+      setEditErrors({ ...editErrors, offerError: "" });
+    }
+    setParticularProductData({ ...particularProductData, offer: inputValue, price: offerPrice })
+  }
+  // validateStock function
+  function editValidateStock(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, stockError: "Enter Stock" })
+    }
+    else if (inputValue <= 0) {
+      setEditErrors({ ...editErrors, stockError: "Enter Stock > 0" })
+    }
+    else {
+      setEditErrors({ ...editErrors, stockError: "" })
+    }
+    setParticularProductData({ ...particularProductData, stock: inputValue })
+  }
+
+  // validateColor function
+  function editValidateColor(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, colorError: "Select Color" })
+    }
+    else {
+      setEditErrors({ ...editErrors, colorError: "" })
+    }
+    setParticularProductData({ ...particularProductData, color: inputValue })
+  }
+
+  // validateSize function
+  function editValidateSize(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, sizeError: "Select Size" })
+    }
+    else {
+      setEditErrors({ ...editErrors, sizeError: "" })
+    }
+    setParticularProductData({ ...particularProductData, size: inputValue })
+  }
+
+  // validateImage function
+  function editValidateImage(event) {
+    console.log(event, "===>");
+
+    if (event.target.files && event.target.files[0]) {
+      setEditErrors({ ...editErrors, imageError: "" })
+    }
+    else {
+      setEditErrors({ ...editErrors, imageError: "Choose Image" })
+
+    }
+    setParticularProductData({ ...particularProductData, image: event.target.files[0] })
+  }
+
+  // validateCategory function
+  function editValidateCategory(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, categoryError: "Enter Category" })
+    }
+    else {
+      setEditErrors({ ...editErrors, categoryError: "" })
+    }
+    setParticularProductData({ ...particularProductData, category: inputValue })
+  }
+
+  // validateDescription function
+  function editValidateDescription(inputValue) {
+    if (!inputValue) {
+      setEditErrors({ ...editErrors, descriptionError: "Enter Description" })
+    }
+    else {
+      setEditErrors({ ...editErrors, descriptionError: "" })
+    }
+    setParticularProductData({ ...particularProductData, description: inputValue })
+  }
+
+  async function updateProduct(event) {
+    event.preventDefault()
+    var errorObject = {}
+    // console.log(addData);
+    if (!particularProductData.name) {
+      errorObject['nameError'] = "Enter Product Name";
+    }
+    if (!particularProductData.defaultPrice) {
+      errorObject['defaultPriceError'] = "Enter Product Original Price";
+    }
+    if (particularProductData.defaultPrice <= 0) {
+      errorObject['defaultPriceError'] = "Enter Product Original Price > 0";
+    }
+
+    if (!particularProductData.offer && particularProductData.offer !== 0) {
+      errorObject['offerError'] = "Enter Offer if no offer type 0";
+    }
+    if (particularProductData.offer < 0 || particularProductData.offer > 100) {
+      errorObject['offerError'] = "Enter Offer > 0 < 100";
+    }
+    if (!particularProductData.stock) {
+      errorObject['stockError'] = "Enter Stock";
+    }
+    if (particularProductData.stock <= 0) {
+      errorObject['stockError'] = "Enter Stock > 0";
+    }
+    if (!particularProductData.color) {
+      errorObject['colorError'] = "Select Color";
+    }
+    if (!particularProductData.size) {
+      errorObject['sizeError'] = "Select Size";
+    }
+    if (!particularProductData.image) {
+      errorObject['imageError'] = "Choose Image";
+    }
+    if (!particularProductData.category) {
+      errorObject['categoryError'] = "Enter Category";
+    }
+    if (!particularProductData.description) {
+      errorObject['descriptionError'] = "Enter Description";
+    }
+
+    setEditErrors(errorObject);
+
+    var values = Object.values(errorObject);
+    var boolean = values.some((data, index) => data !== "")
+    if (!boolean) {
+      console.log(particularProductData);
+      const formData = new FormData();
+      formData.append("name", particularProductData.name);
+      formData.append("price", particularProductData.price);
+      formData.append("defaultPrice", particularProductData.defaultPrice);
+      formData.append("offer", particularProductData.offer);
+      formData.append("description", particularProductData.description);
+      formData.append("stock", particularProductData.stock);
+      formData.append("color", particularProductData.color);
+      formData.append("size", particularProductData.size);
+      formData.append("category", particularProductData.category);
+      formData.append("image", particularProductData.image);
+      try {
+        const token = localStorage.getItem('loginToken');
+        const dataEdit = await axios.post("http://localhost:5000/upateProducts", formData, {
+          headers: {
+            Authorization: token
+          }
+        })
+        if (dataEdit.data.message === "Product Updated Successfully") {
+
+          setAlertContent(dataEdit.data.message)
+          setOpenAlert(true)
+          setTimeout(() => {
+            setOpenAlert(false)
+            closeEditModal()
+          }, 2000);
+        }
+        else {
+          setAlertContent(dataEdit.data.message)
+          setOpenAlert(true)
+          setTimeout(() => {
+            setOpenAlert(false)
+          }, 2000);
+        }
+        getAllProducts();
+      } catch (error) {
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
+      }
+
+    }
+
+
+  }
+
   // openViewModal function
-  function openViewModal(id) {
-    setViewModalOpen(true)
-    getOneProduct(id)
+  async function openViewModal(id) {
+    setSpinnerLoader(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      await getOneProduct(id)
+      setViewModalOpen(true)
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSpinnerLoader(false);
+    }
   }
 
   // closeViewModal function
@@ -347,18 +643,28 @@ export const MyProducts = () => {
   }
 
   async function getOneProduct(id) {
+    setSpinnerLoader(true)
     try {
       const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
+      setSpinnerLoader(false)
 
     } catch (error) {
-      console.log("error");
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
   async function getAllProducts() {
     console.log(loginUser?._id, "-->");
+    setSpinnerLoader(true)
 
     try {
       const token = localStorage.getItem('loginToken');
@@ -371,6 +677,7 @@ export const MyProducts = () => {
 
       // pagination concept
       var allData = getData.data.data
+
       var totalNumberOfData = getData.data.totalPage
       var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
 
@@ -382,8 +689,16 @@ export const MyProducts = () => {
       setAllDatas(allData)
       setTotalPages(totalPagesData)
       setTotalDataCount(totalNumberOfData)
+      setSpinnerLoader(false)
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
@@ -443,6 +758,7 @@ export const MyProducts = () => {
 
   // addToCart function
   async function addToCart(id) {
+    setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -463,10 +779,16 @@ export const MyProducts = () => {
 
         // alert(getData.data.message);
         getCartData()
+        setSpinnerLoader(false)
       } catch (error) {
-        alert(error);
-
-        console.log(error);
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -474,8 +796,59 @@ export const MyProducts = () => {
     }
   }
 
+
+  // delete modal
+  function openDeleteModal(id) {
+    setproductDeleteModal(true)
+    setParticularProductId(id)
+  }
+  function closeDeleteModal() {
+    setproductDeleteModal(false)
+  }
+
+  async function deleteParticularProduct(id) {
+    try {
+      const token = localStorage.getItem('loginToken');
+      const deleteOneData = await axios.get(`http://localhost:5000/deleteParticularProduct/${id}`, {
+        headers: {
+          Authorization: token
+        }
+      })
+      console.log(deleteOneData.data.message, "==>");
+      // alert(deleteOneData.data.message)
+      if (deleteOneData.data.message === "Product Deleted Successfully") {
+        setAlertContent(deleteOneData.data.message)
+        setOpenAlert(true)
+        setTimeout(() => {
+          setOpenAlert(false)
+          closeDeleteModal();
+        }, 2000);
+      }
+      else {
+        setAlertContent(deleteOneData.data.message)
+        setOpenAlert(true)
+        setTimeout(() => {
+          setOpenAlert(false)
+        }, 2000);
+      }
+      getAllProducts();
+
+    } catch (error) {
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
+    }
+  }
+
+
   // getCartData function
   async function getCartData() {
+    setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -492,11 +865,19 @@ export const MyProducts = () => {
           }
         )
         setcartDatas(getData.data.data)
+        setCartCount(getData.data.data.length)
         console.log(getData.data.data);
+        setSpinnerLoader(false)
 
       } catch (error) {
-        alert(error);
-        console.log(error);
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -532,6 +913,12 @@ export const MyProducts = () => {
 
       {/* sidebar */}
       <Sidebar />
+
+      {spinnerLoader && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+        </div>
+      )}
 
       <div className="flex flex-col flex-1">
 
@@ -613,30 +1000,62 @@ export const MyProducts = () => {
 
             {allDatas.length > 0 ? (allDatas.map((data, index) => {
               return (
-                <div key={index}>
+                <div key={index} className="rounded-lg p-3 shadow-sm">
+
                   <img
                     src={`http://localhost:5000/uploadingImages/${data.image}`}
                     className="w-full h-60 object-contain bg-gray-100 rounded-md"
                   />
 
-                  <div className="mt-3 flex justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold hover:underline cursor-pointer" onClick={() => {
-                        openViewModal(data._id)
-                      }}>{data.name}</h3>
-                      <p className="text-sm text-gray-500 font-bold mb-2">{data.color}</p>
-                      <div className='flex'>
+                  <div className="mt-3 flex justify-between items-start">
+                    <div className="flex-1">
+
+                      <h3
+                        className="text-sm font-bold hover:underline cursor-pointer"
+                        onClick={() => openViewModal(data._id)}
+                      >
+                        {data.name}
+                      </h3>
+
+                      <p className="text-sm text-gray-500 font-semibold mb-1">
+                        {data.color}
+                      </p>
+
+                      <div className="flex items-center gap-1">
                         {ratings(data.rating)}
                       </div>
+
                     </div>
-                    <p className="text-sm font-bold text-blue-600"> <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+
+                    <div className="flex flex-col items-end gap-2">
+
+                      <p className="text-sm font-bold text-blue-600 flex items-center gap-1">
+                        <i className="fa-solid fa-dollar-sign"></i>
+                        {data.price}
+                      </p>
+
+                      <button
+                        className="text-sm text-gray-600"
+                        onClick={() => openEditModal(data._id)}
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button
+                        className="text-sm text-gray-600"
+                        onClick={() => openDeleteModal(data._id)}
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+
+                    </div>
+
                   </div>
                 </div>
               )
             })) : (
               <div className="col-span-full flex justify-center items-center py-10">
                 <p className="text-red-600 font-bold text-lg">
-                  No Product Found
+                  No Products Added By You
                 </p>
               </div>
             )}
@@ -645,38 +1064,40 @@ export const MyProducts = () => {
         </div>
 
         {/* pagination */}
-        <div className="flex justify-between items-center border-t p-4 bg-white">
+        {allDatas.length > 0 && (
+          <div className="flex justify-between items-center border-t p-4 bg-white">
 
-          <div className="sm:flex justify-between items-center w-full">
-            <h2 className="flex items-center gap-1 whitespace-nowrap">
-              showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
-            </h2>
-            <div className="flex items-center gap-6">
-
-              <select className="border rounded px-2 py-1" onChange={(event) => {
-                setDynamicPageNumber(event.target.value)
-                setCurrentPage(1)
-              }} value={dynamicPageNumber}>
-                <option>5</option>
-                <option>10</option>
-                <option>20</option>
-              </select>
-
-              <button className="border px-3 py-1 rounded" onClick={() => {
-                previous()
-              }} disabled={currentPage === 1}>previous</button>
-
+            <div className="sm:flex justify-between items-center w-full">
               <h2 className="flex items-center gap-1 whitespace-nowrap">
-                page <b>{currentPage}</b> of <b>{totalPages}</b>
+                showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
               </h2>
+              <div className="flex items-center gap-6">
 
-              <button className="border px-3 py-1 rounded" onClick={() => {
-                next()
-              }} disabled={currentPage === totalPages}>next</button>
+                <select className="border rounded px-2 py-1" onChange={(event) => {
+                  setDynamicPageNumber(event.target.value)
+                  setCurrentPage(1)
+                }} value={dynamicPageNumber}>
+                  <option>5</option>
+                  <option>10</option>
+                  <option>20</option>
+                </select>
+
+                <button className="border px-3 py-1 rounded" onClick={() => {
+                  previous()
+                }} disabled={currentPage === 1}>previous</button>
+
+                <h2 className="flex items-center gap-1 whitespace-nowrap">
+                  page <b>{currentPage}</b> of <b>{totalPages}</b>
+                </h2>
+
+                <button className="border px-3 py-1 rounded" onClick={() => {
+                  next()
+                }} disabled={currentPage === totalPages}>next</button>
+              </div>
             </div>
-          </div>
 
-        </div>
+          </div>
+        )}
 
 
         {/* view modal */}
@@ -705,7 +1126,7 @@ export const MyProducts = () => {
                   </h2>
 
                   <p className="text-lg font-semibold mt-2">
-                    <i className="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                    <i class="fa-solid fa-dollar-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
                   </p>
 
                   <div className="mt-4">
@@ -744,7 +1165,7 @@ export const MyProducts = () => {
 
               <button
                 onClick={() => closeAddModal()}
-                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                className="absolute top-4 right-4 text-gray-500"
               >
                 <i className="fa-solid fa-circle-xmark"></i>
               </button>
@@ -883,8 +1304,8 @@ export const MyProducts = () => {
                         alt="Thumb"
                         className="w-24 h-24 object-cover rounded-lg border shadow"
                       />
-                      <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
-                        Remove
+                      <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow" onClick={() => { removeImage() }}>
+                        <i class="fa-solid fa-xmark"></i>
                       </button>
 
                     </div>
@@ -924,6 +1345,241 @@ export const MyProducts = () => {
               </form>
 
             </div>
+          </div>
+        )}
+
+        {/* edit product modal */}
+        {productEditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
+
+            <div className="bg-white rounded-lg shadow-lg w-[90%] md:w-[50%] p-6 relative">
+
+              <button
+                onClick={() => closeEditModal()}
+                className="absolute top-4 right-4 text-gray-500"
+              >
+                <i className="fa-solid fa-circle-xmark"></i>
+              </button>
+
+              <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+              {/* alert */}
+              {openAlert && (
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                  <span class="block sm:inline">{alertContent}</span>
+                </div>
+              )}
+              <form onSubmit={(event) => { updateProduct(event) }}>
+
+                <div className="block">
+                  <input
+                    type="text"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter name"
+                    value={particularProductData.name}
+                    onInput={(event) => {
+                      editValidateName(event.target.value)
+                    }}
+                  />
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.nameError}
+                  </p>
+                </div>
+
+                <div className="block">
+                  <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter default price"
+                    min="1"
+                    value={particularProductData.defaultPrice}
+                    onInput={(event) => {
+                      editValidateDefaultPrice(event.target.value)
+                    }}
+                  />
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.defaultPriceError}
+                  </p>
+                </div>
+
+                <div className="block">
+                  <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter sale price"
+                    readOnly
+                    value={particularProductData.price}
+                  />
+                </div>
+
+                <div className="block">
+                  <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter offer"
+                    min="0"
+                    onInput={(event) => {
+                      editValidateOffer(event.target.value)
+                    }}
+                    value={particularProductData.offer}
+
+                  />
+
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.offerError}
+                  </p>
+                </div>
+                <div className="block">
+                  <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter stock"
+                    min="1"
+                    onInput={(event) => {
+                      editValidateStock(event.target.value)
+                    }}
+                    value={particularProductData.stock}
+                  />
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.stockError}
+                  </p>
+                </div>
+                <div className="block sm:w-100">
+                  <select className="w-full border rounded px-3 py-2" onChange={(event) => {
+                    editValidateColor(event.target.value)
+                  }} value={particularProductData.color}>
+                    <option value="">Select Color</option>
+                    <option value="blue">blue</option>
+                    <option value="red">red</option>
+                    <option value="green">green</option>
+                    <option value="yellow">yellow</option>
+                    <option value="orange">orange</option>
+                    <option value="white">white</option>
+                  </select>
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.colorError}
+                  </p>
+                </div>
+                <div className="block sm:w-100">
+                  <select className="w-full border rounded px-3 py-2" onChange={(event) => {
+                    editValidateSize(event.target.value)
+                  }} value={particularProductData.size}>
+                    <option value="">Select Size</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="L">40</option>
+                    <option value="L">42</option>
+                    <option value="XL">XL</option>
+                  </select>
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.sizeError}
+                  </p>
+                </div>
+                <div className="block">
+                  <input
+                    type="file"
+                    className="w-full border rounded px-3 py-2"
+                    onChange={(event) => {
+                      editValidateImage(event)
+                    }}
+                  />
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.imageError}
+                  </p>
+                  {particularProductData.image && (
+                    <div className="relative inline-block">
+                      <img src={
+                        typeof (particularProductData.image) === "string"
+                          ? `http://localhost:5000/uploadingImages/${particularProductData.image}`
+                          : URL.createObjectURL(particularProductData.image)
+                      }
+                        alt="Thumb"
+                        className="w-24 h-24 object-cover rounded-lg border shadow"
+                      />
+                      <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow" onClick={() => { removeEditImage(getParticularProduct) }}>
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+
+                    </div>
+
+                  )}
+                </div>
+
+                <div className="block">
+                  <input
+                    type="text"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Enter category"
+                    onInput={(event) => {
+                      editValidateCategory(event.target.value)
+                    }}
+                    value={particularProductData.category}
+                  />
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.categoryError}
+                  </p>
+                </div>
+                <div className="block">
+                  <textarea className="w-full border rounded px-3 py-2" placeholder='Enter description' onInput={(event) => {
+                    editValidateDescription(event.target.value)
+                  }} value={particularProductData.description}></textarea>
+                  <p className="text-sm text-red-500 mb-0">
+                    {editErrors.descriptionError}
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+                >
+                  Update
+                </button>
+
+              </form>
+
+            </div>
+          </div>
+        )}
+
+        {/* delete confirmation modal */}
+        {productDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
+
+            <div className="bg-white rounded-lg shadow-xl p-6">
+
+              <div className="flex items-start gap-4">
+                <div>
+                  {/* alert */}
+                  {openAlert && (
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                      <span class="block sm:inline">{alertContent}</span>
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold text-red-600">
+                    Delete Confirmation
+                  </h3>
+
+                  <p className="mt-2 text-black text-lg font-bold">
+                    Are you sure you want to delete the product ?
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-2">
+
+                <button onClick={() => { deleteParticularProduct(particularProductId) }} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">
+                  Delete
+                </button>
+
+                <button onClick={() => closeDeleteModal()} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+                  Cancel
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
         )}
 

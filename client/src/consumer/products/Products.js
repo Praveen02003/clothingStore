@@ -2,9 +2,6 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import banner1 from '../../assets/banner1.jpg'
-import banner2 from '../../assets/banner2.jpg'
-import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
@@ -18,11 +15,15 @@ export const Products = () => {
     setLoginUser,
     userProductAddModal,
     setUserProductAddModal,
+    cartCount,
+    setCartCount
   } = useContext(mainContext);
 
   const navigate = useNavigate()
 
   const [allDatas, setAllDatas] = useState([])
+
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
 
   const [cartDatas, setcartDatas] = useState([])
 
@@ -80,6 +81,7 @@ export const Products = () => {
   function logOut() {
     localStorage.removeItem('loginToken')
     localStorage.removeItem('loginUser')
+    localStorage.removeItem('consumerSidebarOpen')
     setLoginUser(null)
     navigate('/login')
   }
@@ -204,6 +206,7 @@ export const Products = () => {
   }
 
   async function addProduct(event) {
+    setSpinnerLoader(true)
     event.preventDefault()
     var errorObject = {}
     // console.log(addData);
@@ -273,6 +276,7 @@ export const Products = () => {
         })
         if (dataAdd.data.message === "Product Added Successfully") {
           getAllProducts()
+          setSpinnerLoader(false)
         }
         setAlertContent(dataAdd.data.message)
         setOpenAlert(true)
@@ -281,7 +285,7 @@ export const Products = () => {
         }, 2000);
       } catch (error) {
         console.log(error.response.data.message);
-        alert(error.response.data.message)
+        // alert(error.response.data.message)
         if (error.response.data.message === "Access denied") {
           logOut()
         }
@@ -336,9 +340,18 @@ export const Products = () => {
   }
 
   // openViewModal function
-  function openViewModal(id) {
-    setViewModalOpen(true)
-    getOneProduct(id)
+  async function openViewModal(id) {
+    setSpinnerLoader(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      await getOneProduct(id)
+      setViewModalOpen(true)
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSpinnerLoader(false);
+    }
   }
 
   // closeViewModal function
@@ -347,10 +360,13 @@ export const Products = () => {
   }
 
   async function getOneProduct(id) {
+    setSpinnerLoader(true)
+
     try {
       const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
+      setSpinnerLoader(false)
 
     } catch (error) {
       console.log("error");
@@ -359,6 +375,8 @@ export const Products = () => {
 
   // addToCart function
   async function addToCart(id) {
+    setSpinnerLoader(true)
+
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -378,11 +396,18 @@ export const Products = () => {
         )
 
         // alert(getData.data.message);
+        setSpinnerLoader(false)
         getCartData()
-      } catch (error) {
-        alert(error);
 
-        console.log(error);
+      } catch (error) {
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -392,6 +417,7 @@ export const Products = () => {
 
   // getCartData function
   async function getCartData() {
+    setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -408,11 +434,19 @@ export const Products = () => {
           }
         )
         setcartDatas(getData.data.data)
+        setCartCount(getData.data.data.length)
+        setSpinnerLoader(false)
         console.log(getData.data.data);
 
       } catch (error) {
-        alert(error);
-        console.log(error);
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -421,12 +455,14 @@ export const Products = () => {
   }
 
   async function getAllProducts() {
+    setSpinnerLoader(true)
     try {
       var getData = await axios.get(`http://localhost:5000/getAllProduct?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`)
       console.log(getData.data.data, "===>");
 
       // pagination concept
       var allData = getData.data.data
+
       var totalNumberOfData = getData.data.totalPage
       var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
 
@@ -439,7 +475,14 @@ export const Products = () => {
       setTotalPages(totalPagesData)
       setTotalDataCount(totalNumberOfData)
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
@@ -528,8 +571,15 @@ export const Products = () => {
     <div className={`flex-1 transition-all duration-300 
         ${sideBarOpen ? "ml-64" : "ml-16"}`}>
 
+
       {/* sidebar */}
       <Sidebar />
+
+      {spinnerLoader && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+        </div>
+      )}
 
       <div className="flex flex-col flex-1">
 
@@ -627,7 +677,7 @@ export const Products = () => {
                         {ratings(data.rating)}
                       </div>
                     </div>
-                    <p className="text-sm font-bold text-blue-600"> <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+                    <p className="text-sm font-bold text-blue-600"> <i class="fa-solid fa-dollar-sign"></i> {data.price}</p>
                   </div>
                 </div>
               )
@@ -643,38 +693,40 @@ export const Products = () => {
         </div>
 
         {/* pagination */}
-        <div className="flex justify-between items-center border-t p-4 bg-white">
+        {allDatas.length > 0 && (
+          <div className="flex justify-between items-center border-t p-4 bg-white">
 
-          <div className="sm:flex justify-between items-center w-full">
-            <h2 className="flex items-center gap-1 whitespace-nowrap">
-              showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
-            </h2>
-            <div className="flex items-center gap-6">
-
-              <select className="border rounded px-2 py-1" onChange={(event) => {
-                setDynamicPageNumber(event.target.value)
-                setCurrentPage(1)
-              }} value={dynamicPageNumber}>
-                <option>5</option>
-                <option>10</option>
-                <option>20</option>
-              </select>
-
-              <button className="border px-3 py-1 rounded" onClick={() => {
-                previous()
-              }} disabled={currentPage === 1}>previous</button>
-
+            <div className="sm:flex justify-between items-center w-full">
               <h2 className="flex items-center gap-1 whitespace-nowrap">
-                page <b>{currentPage}</b> of <b>{totalPages}</b>
+                showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
               </h2>
+              <div className="flex items-center gap-6">
 
-              <button className="border px-3 py-1 rounded" onClick={() => {
-                next()
-              }} disabled={currentPage === totalPages}>next</button>
+                <select className="border rounded px-2 py-1" onChange={(event) => {
+                  setDynamicPageNumber(event.target.value)
+                  setCurrentPage(1)
+                }} value={dynamicPageNumber}>
+                  <option>5</option>
+                  <option>10</option>
+                  <option>20</option>
+                </select>
+
+                <button className="border px-3 py-1 rounded" onClick={() => {
+                  previous()
+                }} disabled={currentPage === 1}>previous</button>
+
+                <h2 className="flex items-center gap-1 whitespace-nowrap">
+                  page <b>{currentPage}</b> of <b>{totalPages}</b>
+                </h2>
+
+                <button className="border px-3 py-1 rounded" onClick={() => {
+                  next()
+                }} disabled={currentPage === totalPages}>next</button>
+              </div>
             </div>
-          </div>
 
-        </div>
+          </div>
+        )}
 
 
         {/* view modal */}
@@ -703,7 +755,7 @@ export const Products = () => {
                   </h2>
 
                   <p className="text-lg font-semibold mt-2">
-                    <i className="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                    <i class="fa-solid fa-dollar-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
                   </p>
 
                   <div className="mt-4">
@@ -881,8 +933,8 @@ export const Products = () => {
                         alt="Thumb"
                         className="w-24 h-24 object-cover rounded-lg border shadow"
                       />
-                      <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
-                        Remove
+                      <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow" onClick={() => { removeImage() }}>
+                        <i class="fa-solid fa-xmark"></i>
                       </button>
 
                     </div>

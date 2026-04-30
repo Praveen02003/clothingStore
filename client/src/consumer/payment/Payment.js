@@ -2,9 +2,6 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import banner1 from '../../assets/banner1.jpg'
-import banner2 from '../../assets/banner2.jpg'
-import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
@@ -22,8 +19,20 @@ export const Payment = () => {
 
     const [allDatas, setAllDatas] = useState([])
 
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
+
+    // logout function
+    function logOut() {
+        localStorage.removeItem('loginToken')
+        localStorage.removeItem('loginUser')
+        localStorage.removeItem('consumerSidebarOpen')
+        setLoginUser(null)
+        navigate('/login')
+    }
+
     // getCartAll function
     async function getCartAll() {
+        setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
             var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
@@ -36,9 +45,17 @@ export const Payment = () => {
             console.log(allData);
 
             setAllDatas(allData)
+            setSpinnerLoader(false)
 
         } catch (error) {
-            console.log(error);
+            console.log(error.response.data.message);
+            // alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
@@ -74,6 +91,13 @@ export const Payment = () => {
             {/* sidebar */}
             <Sidebar />
 
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
+
+
             <div className="flex flex-col flex-1">
 
                 <Navbar />
@@ -90,7 +114,7 @@ export const Payment = () => {
 
                     <div className="bg-white shadow-lg rounded-xl p-8 text-center max-w-md w-full">
                         <div className="flex justify-center mb-4">
-                            <div className="text-green-600 rounded-full p-4 text-5xl">
+                            <div className="text-gray-700 rounded-full p-4 text-5xl">
                                 <i class="fa-solid fa-circle-check"></i>
                             </div>
                         </div>
@@ -105,11 +129,11 @@ export const Payment = () => {
 
                         <div className="flex flex-col gap-3">
 
-                            <button onClick={() => navigate("/")} className="bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700">
-                                Back to Shopping
+                            <button onClick={() => navigate("/")} className="bg-gray-700 text-white py-2 rounded-lg font-semibold">
+                                Back to home
                             </button>
 
-                            <a href='/consumers/myOrders' className="border border-gray-300 py-2 rounded-lg font-semibold hover:bg-gray-100">
+                            <a href='/consumers/myOrders' className="border border-gray-300 py-2 rounded-lg font-semibold">
                                 View My Orders
                             </a>
 

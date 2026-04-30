@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import '../forget/ForgetPassword.css'
 import { data, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 
+
 export const ForgetPassword = () => {
+
     var navigate = useNavigate();
 
     const [count, setCount] = useState(1)
@@ -19,21 +21,23 @@ export const ForgetPassword = () => {
         emailError: "",
         passwordError: "",
         confirmPasswordError: "",
-        securityQuestionError: ""
+        securityAnswerTypeError: ""
     };
 
     var [formData, setFormData] = useState({
-        email: "",
+        email: JSON.parse(localStorage.getItem("resetEmail")) || "",
         password: "",
         confirmPassword: "",
-        securityQuestion: ""
+        securityQuestion: "",
+        securityAnswer: "",
+        securityAnswerType: ""
     });
 
     var [error, setError] = useState({
         emailError: "",
         passwordError: "",
         confirmPasswordError: "",
-        securityQuestionError: ""
+        securityAnswerTypeError: ""
     });
 
     var [boolean, setBoolean] = useState(false);
@@ -50,22 +54,6 @@ export const ForgetPassword = () => {
         }
         else {
             allErrors.emailError = "";
-        }
-        setError(allErrors)
-    }
-
-    // validateSecurityQuestion function
-    function validateSecurityQuestion(value) {
-        var allErrors = { ...error }
-        var inputValue = value;
-
-        setFormData({ ...formData, securityQuestion: inputValue })
-
-        if (!inputValue) {
-            allErrors.securityQuestionError = 'Enter Second Name';
-        }
-        else {
-            allErrors.securityQuestionError = "";
         }
         setError(allErrors)
     }
@@ -113,12 +101,27 @@ export const ForgetPassword = () => {
         setError(allErrors)
     }
 
+    // validateSecurityQuestion function
+    function validateSecurityAnswerType(value) {
+        var allErrors = { ...error }
+        var inputValue = value;
+
+        setFormData({ ...formData, securityAnswerType: inputValue })
+
+        if (!inputValue) {
+            allErrors.securityAnswerTypeError = 'Enter Answer';
+        }
+        else {
+            allErrors.securityAnswerTypeError = "";
+        }
+        setError(allErrors)
+    }
+
     // submitForm function
 
     async function submitForm(event) {
-        event.preventDefault();
         setSpinnerLoader(true)
-
+        event.preventDefault();
         try {
             if (count === 1) {
                 if (!formData.email) {
@@ -133,6 +136,14 @@ export const ForgetPassword = () => {
 
                 if (res.data.message === "Data present") {
                     setCount(2);
+                    console.log(res.data.data, "===>");
+                    var question = res.data.data.securityQuestion
+                    var answer = res.data.data.securityAnswer
+                    console.log(question);
+                    console.log(answer);
+
+                    setFormData({ ...formData, securityQuestion: question, securityAnswer: answer })
+
                 } else {
                     console.log(res.data.message);
                     setAlertContent(res.data.message)
@@ -145,9 +156,9 @@ export const ForgetPassword = () => {
             }
 
             else if (count === 2) {
-                if (!formData.securityQuestion) {
+                if (!formData.securityAnswerType) {
                     setSpinnerLoader(false)
-                    setError({ ...error, securityQuestionError: "Enter Second Name" });
+                    setError({ ...error, securityAnswerTypeError: "Enter Answer" });
                     return;
                 }
 
@@ -178,15 +189,15 @@ export const ForgetPassword = () => {
                     allErrors.passwordError = "Password must be at least 8 characters";
                 }
                 else if (!/\d/.test(formData.password)) {
-                    
+
                     allErrors.passwordError = "Password must contain at least one number";
                 }
                 else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-                    
+
                     allErrors.passwordError = "Password must contain at least one special character";
                 }
                 else {
-                    
+
                     allErrors.passwordError = "";
                 }
 
@@ -213,10 +224,14 @@ export const ForgetPassword = () => {
 
 
                 if (res.data.message === "Password reset success") {
-                    setSpinnerLoader(false)
+                    setAlertContent(res.data.message)
+                    setOpenAlert(true)
+                    localStorage.removeItem("resetEmail")
                     setTimeout(() => {
+                        setOpenAlert(false)
+                        setSpinnerLoader(false)
                         navigate("/login");
-                    }, 1500);
+                    }, 1000);
                 }
                 else {
                     setSpinnerLoader(false)
@@ -253,6 +268,12 @@ export const ForgetPassword = () => {
     }, [])
     return (
         <div id='mainForm'>
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
+
             <div className="resetForm">
 
                 <h2 className='font-bold text-2xl'>Reset Password</h2>
@@ -280,9 +301,9 @@ export const ForgetPassword = () => {
                     {/* security question */}
                     {count === 2 && (
                         <div className='grid grid-col-2'>
-                            <label className='font-bold' for="securityQuestion">What is your second name ?</label>
-                            <input type="text" placeholder="Enter Second Name" id="securityQuestion" value={formData.securityQuestion} onInput={(event) => { validateSecurityQuestion(event.target.value) }} />
-                            <p id="securityQuestionError">{error.securityQuestionError}</p>
+                            <label className='font-bold' for="securityQuestion">{formData.securityQuestion}</label>
+                            <input type="text" placeholder="Enter Second Name" id="securityQuestion" value={formData.securityQuestionType} onInput={(event) => { validateSecurityAnswerType(event.target.value) }} />
+                            <p id="securityAnswerTypeError">{error.securityAnswerTypeError}</p>
                         </div>
                     )}
 

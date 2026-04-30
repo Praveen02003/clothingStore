@@ -15,7 +15,9 @@ export const UserDashboard = () => {
     sideBarOpen,
     setSideBarOpen,
     loginUser,
-    setLoginUser
+    setLoginUser,
+    cartCount,
+    setCartCount
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -23,7 +25,11 @@ export const UserDashboard = () => {
   const [fewDatas, setFewDatas] = useState([])
   const [cartDatas, setcartDatas] = useState([])
 
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
+
   const [particularProduct, setParticularProduct] = useState({})
+
+  const [randomNumber, setRandomNumber] = useState(0)
 
   const defaultSlides = [
     { image: banner1 },
@@ -34,10 +40,30 @@ export const UserDashboard = () => {
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
+  // ratings function
+  function ratings(loopValue) {
+    var ratingsArray = []
+    for (let index = 0; index < loopValue; index++) {
+      var fontAwesomeStars = <i className="fa-solid fa-star text-yellow-600" key={index}></i>
+      ratingsArray.push(fontAwesomeStars)
+    }
+
+    return ratingsArray;
+  }
+
   // openViewModal function
-  function openViewModal(id) {
-    setViewModalOpen(true)
-    getOneProduct(id)
+  async function openViewModal(id) {
+    setSpinnerLoader(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      await getOneProduct(id)
+      setViewModalOpen(true)
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSpinnerLoader(false);
+    }
   }
 
   // closeViewModal function
@@ -45,33 +71,61 @@ export const UserDashboard = () => {
     setViewModalOpen(false)
   }
 
+  // logout function
+  function logOut() {
+    localStorage.removeItem('loginToken')
+    localStorage.removeItem('loginUser')
+    localStorage.removeItem('consumerSidebarOpen')
+    setLoginUser(null)
+    navigate('/login')
+  }
+
+
 
 
   async function getOneProduct(id) {
+    setSpinnerLoader(true)
     try {
-
       const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
-
+      setSpinnerLoader(false)
     } catch (error) {
-      console.log("error");
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
   // getFewProduct function
   async function getFewProduct() {
+    setSpinnerLoader(true)
     try {
       var getData = await axios.get(`http://localhost:5000/getFewData`)
       console.log(getData.data.data);
+
       setFewDatas(getData.data.data)
+      setSpinnerLoader(false)
     } catch (error) {
-      console.log("error");
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
   // addToCart function
   async function addToCart(id) {
+    setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -92,10 +146,16 @@ export const UserDashboard = () => {
 
         // alert(getData.data.message);
         getCartData()
+        setSpinnerLoader(false)
       } catch (error) {
-        alert(error);
-
-        console.log(error);
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -105,6 +165,7 @@ export const UserDashboard = () => {
 
   // getCartData function
   async function getCartData() {
+    setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
       var userId = loginUser._id
@@ -121,11 +182,19 @@ export const UserDashboard = () => {
           }
         )
         setcartDatas(getData.data.data)
+        setCartCount(getData.data.data.length)
+        setSpinnerLoader(false)
         console.log(getData.data.data);
 
       } catch (error) {
-        alert(error);
-        console.log(error);
+        console.log(error.response.data.message);
+        // alert(error.response.data.message)
+        if (error.response.data.message === "Access denied") {
+          logOut()
+        }
+        else if (error.response.data.message === "Invalid token") {
+          logOut()
+        }
       }
     }
     else {
@@ -145,9 +214,19 @@ export const UserDashboard = () => {
     getFewProduct()
   }
 
+  function generate() {
+    const randomNumberGenerate = Math.floor(Math.random() * 3);
+    console.log(randomNumberGenerate, "===>");
+    setRandomNumber(randomNumberGenerate);
+    setTimeout(() => {
+      generate()
+    }, 2000);
+  }
+
   useEffect(() => {
     if (loginUser?._id) {
       getCartData()
+      generate()
     }
   }, [loginUser])
 
@@ -167,6 +246,13 @@ export const UserDashboard = () => {
       {/* sidebar */}
       <Sidebar />
 
+      {spinnerLoader && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+        </div>
+      )}
+
+
       <div className="flex flex-col flex-1">
 
         {/* navbar section */}
@@ -177,22 +263,22 @@ export const UserDashboard = () => {
           {/* Slides */}
           <div className="flex overflow-hidden">
 
-            <img className="w-full flex-shrink-0 bg-indigo-100 h-80 flex items-center justify-center rounded-xl" src={defaultSlides[slide].image} />
+            <img className="w-full flex-shrink-0 bg-indigo-100 h-80 flex items-center justify-center rounded-xl" src={defaultSlides[randomNumber].image} />
 
           </div>
 
           <button
-            className={`absolute left-2 top-1/2 bg-white p-2 rounded-full shadow ${slide === 0 ? "hidden" : ""}`}
-            onClick={() => setSlide(slide - 1)}
-            disabled={slide === 0}
+            className={`absolute left-2 top-1/2 bg-white p-2 rounded-full shadow ${randomNumber === 0 ? "hidden" : ""}`}
+            onClick={() => generate()}
+            disabled={randomNumber === 0}
           >
             <i className="fa-solid fa-arrow-left"></i>
           </button>
 
           <button
-            className={`absolute right-2 top-1/2 bg-white p-2 rounded-full shadow ${slide === defaultSlides.length - 1 ? "hidden" : ""}`}
-            onClick={() => setSlide(slide + 1)}
-            disabled={slide === defaultSlides.length - 1}
+            className={`absolute right-2 top-1/2 bg-white p-2 rounded-full shadow ${randomNumber === defaultSlides.length - 1 ? "hidden" : ""}`}
+            onClick={() => generate()}
+            disabled={randomNumber === defaultSlides.length - 1}
           >
             <i className="fa-solid fa-arrow-right"></i>
           </button>
@@ -224,9 +310,12 @@ export const UserDashboard = () => {
                       <h3 className="text-sm font-bold hover:underline cursor-pointer" onClick={() => {
                         openViewModal(data._id)
                       }}>{data.name}</h3>
-                      <p className="text-sm text-gray-500 font-bold">{data.color}</p>
+                      <p className="text-sm text-gray-500 font-bold mb-2">{data.color}</p>
+                      <div className='flex'>
+                        {ratings(data.rating)}
+                      </div>
                     </div>
-                    <p className="text-sm font-bold text-blue-600"> <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}</p>
+                    <p className="text-sm font-bold text-blue-600"> <i class="fa-solid fa-dollar-sign"></i> {data.price}</p>
                   </div>
                 </div>
               )
@@ -269,7 +358,7 @@ export const UserDashboard = () => {
                   </h2>
 
                   <p className="text-lg font-semibold mt-2">
-                    <i className="fa-solid fa-indian-rupee-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
+                    <i class="fa-solid fa-dollar-sign"></i> {particularProduct.price} <span className='line-through text-gray-500'>{particularProduct.defaultPrice}</span>
                   </p>
 
                   <div className="mt-4">

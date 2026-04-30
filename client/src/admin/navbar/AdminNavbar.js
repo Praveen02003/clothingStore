@@ -9,6 +9,7 @@ export const AdminNavbar = () => {
     function logOut() {
         localStorage.removeItem('loginToken')
         localStorage.removeItem('loginUser')
+        localStorage.removeItem('sidebarOpen')
         navigate('/login')
     }
     return (

@@ -35,7 +35,9 @@ export const Consumers = () => {
         password: "",
         confirmPassword: "",
         address: "",
-        terms: ""
+        terms: "",
+        securityQuestion: "",
+        securityAnswer: ""
     });
 
     var [editError, setEditError] = useState({
@@ -48,8 +50,9 @@ export const Consumers = () => {
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
-        termsError: ""
-
+        termsError: "",
+        securityQuestionError: "",
+        securityAnswerError: ""
     });
 
 
@@ -289,7 +292,37 @@ export const Consumers = () => {
         setGetParticularConsumer({ ...getParticularConsumer, images: event.target.files[0] })
     }
 
+    // editValidateSecurityQuestion
+    function editValidateSecurityQuestion(inputvalue) {
+        let allErrors = { ...error };
 
+        if (!inputvalue) {
+            allErrors.securityQuestionError = 'Select Security Question';
+        }
+        else {
+            allErrors.securityQuestionError = "";
+        }
+        setGetParticularConsumer({ ...getParticularConsumer, securityQuestion: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    // editValidateSecurityAnswer
+    function editValidateSecurityAnswer(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.securityAnswerError = 'Enter Answer';
+        }
+        else {
+            allErrors.securityAnswerError = "";
+        }
+        setGetParticularConsumer({ ...getParticularConsumer, securityAnswer: inputvalue })
+
+        setEditError(allErrors)
+    }
+
+    //  updateUser function 
     async function updateUser(event) {
         event.preventDefault();
 
@@ -324,6 +357,13 @@ export const Consumers = () => {
 
         if (!data.gender) {
             allErrors.genderError = "Select gender";
+        }
+
+        if (!data.securityQuestion) {
+            allErrors.securityQuestionError = "Select Security Question";
+        }
+        if (!data.securityAnswer) {
+            allErrors.securityAnswerError = "Enter answer";
         }
 
 
@@ -364,6 +404,8 @@ export const Consumers = () => {
         if (hasError) {
             return;
         }
+        console.log(getParticularConsumer);
+
         try {
             const formData = new FormData();
 
@@ -374,6 +416,8 @@ export const Consumers = () => {
             formData.append("gender", getParticularConsumer.gender);
             formData.append("address", getParticularConsumer.address);
             formData.append("terms", getParticularConsumer.terms);
+            formData.append("securityQuestion", getParticularConsumer.securityQuestion);
+            formData.append("securityAnswer", getParticularConsumer.securityAnswer);
 
             if (getParticularConsumer.newPassword && getParticularConsumer.confirmPassword) {
                 formData.append("newPassword", getParticularConsumer.newPassword);
@@ -389,15 +433,27 @@ export const Consumers = () => {
                 formData,
                 {
                     headers: {
-                        Authorization: token
+                        Authorization: token,
+                        "Content-Type": "multipart/form-data"
                     }
                 }
             );
-            setAlertContent(updateData.data.message)
-            setOpenAlert(true)
-            setTimeout(() => {
-                setOpenAlert(false)
-            }, 2000);
+            if (updateData.data.message === "User updated successfully") {
+
+                setAlertContent(updateData.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                    closeEditModal()
+                }, 2000);
+            }
+            else {
+                setAlertContent(updateData.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
+            }
             getAllConsumers();
 
             console.log(updateData.data.message);
@@ -413,11 +469,14 @@ export const Consumers = () => {
         lastName: "",
         email: "",
         mobile: "",
+        image: "",
         gender: "",
         password: "",
         confirmPassword: "",
         address: "",
-        terms: ""
+        terms: "",
+        securityQuestion: "",
+        securityAnswer: ""
     });
 
     var [error, setError] = useState({
@@ -425,11 +484,14 @@ export const Consumers = () => {
         lastNameError: "",
         emailError: "",
         mobileError: "",
+        imageError: "",
         genderError: "",
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
-        termsError: ""
+        termsError: "",
+        securityQuestionError: "",
+        securityAnswerError: ""
 
     });
 
@@ -564,6 +626,22 @@ export const Consumers = () => {
         setError(allErrors)
     }
 
+    // validateImage function
+    function validateImage(event) {
+        let allErrors = { ...error };
+
+        if (event.target.files && event.target.files[0]) {
+            allErrors.imageError = ""
+        }
+        else {
+            allErrors.imageError = "Choose Image"
+
+        }
+        setFormData({ ...formData, image: event.target.files[0] })
+
+        setError(allErrors)
+    }
+
     // validateGender function
     function validateGender(inputvalue) {
         let allErrors = { ...error };
@@ -656,6 +734,38 @@ export const Consumers = () => {
         setError(allErrors)
     }
 
+    // validateSecurityQuestion
+    function validateSecurityQuestion(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.securityQuestionError = 'Select Security Question';
+        }
+        else {
+            allErrors.securityQuestionError = "";
+        }
+
+        setFormData({ ...formData, securityQuestion: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // validateSecurityAnswer
+    function validateSecurityAnswer(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.securityAnswerError = 'Enter Answer';
+        }
+        else {
+            allErrors.securityAnswerError = "";
+        }
+
+        setFormData({ ...formData, securityAnswer: inputvalue })
+
+        setError(allErrors)
+    }
+
     // submitForm function
     async function submitForm(event) {
         event.preventDefault();
@@ -703,6 +813,17 @@ export const Consumers = () => {
             }
         }
 
+        if (!formData.securityQuestion) {
+            allErrors.securityQuestionError = 'Select Security Question';
+        }
+        if (!formData.securityAnswer) {
+            allErrors.securityAnswerError = 'Enter answer';
+        }
+
+        if (!formData.image) {
+            allErrors.imageError = "Choose Image";
+        }
+
         if (!formData.gender) {
             allErrors.genderError = "Select Gender";
         }
@@ -740,23 +861,47 @@ export const Consumers = () => {
                 setFormData({ ...formData, mobile: replacedNumber })
                 console.log(formData, "===>");
                 try {
+                    var forms = new FormData()
+                    forms.append("firstName", formData.firstName);
+                    forms.append("lastName", formData.lastName);
+                    forms.append("email", formData.email);
+                    forms.append("mobile", formData.mobile);
+                    forms.append("image", formData.image);
+                    forms.append("gender", formData.gender);
+                    forms.append("password", formData.password);
+                    forms.append("confirmPassword", formData.confirmPassword);
+                    forms.append("address", formData.address);
+                    forms.append("terms", formData.terms);
+                    forms.append("securityAnswer", formData.securityAnswer);
+                    forms.append("securityQuestion", formData.securityQuestion);
                     const token = localStorage.getItem('loginToken');
-                    var result = await axios.post("http://localhost:5000/addUser", { data: formData }, {
+                    var result = await axios.post("http://localhost:5000/addUser", forms, {
                         headers: {
-                            Authorization: token
+                            Authorization: token,
+                            "Content-Type": "multipart/form-data"
                         }
                     }
 
                     );
                     console.log(result.data.message);
-                    if (result.data.message === "New User Added Successfully") {
+                    if (result.data.message === "User Added Successfully") {
                         getAllConsumers()
+                        setAlertContent(result.data.message)
+                        setOpenAlert(true)
+                        setTimeout(() => {
+                            closeAddModal()
+                            setOpenAlert(false)
+                        }, 2000);
                     }
-                    setAlertContent(result.data.message)
-                    setOpenAlert(true)
-                    setTimeout(() => {
-                        setOpenAlert(false)
-                    }, 2000);
+                    else {
+                        console.log(result.data, "====>");
+
+                        setAlertContent(result.data.message)
+                        setOpenAlert(true)
+                        setTimeout(() => {
+                            setOpenAlert(false)
+                        }, 2000);
+                    }
                 } catch (error) {
                     alert(error);
                 }
@@ -785,6 +930,8 @@ export const Consumers = () => {
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState("")
     const [alertContent, setAlertContent] = useState("")
+
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
 
 
     // add modal
@@ -850,7 +997,7 @@ export const Consumers = () => {
 
         } catch (error) {
             console.log(error.response.data.message);
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
             if (error.response.data.message === "Access denied") {
                 logOut()
             }
@@ -863,10 +1010,20 @@ export const Consumers = () => {
 
 
     // view modal
-    function openViewModal(id) {
-        particularConsumer(id)
-        setViewModal(true)
+    async function openViewModal(id) {
+        setSpinnerLoader(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        try {
+            await particularConsumer(id)
+            setViewModal(true)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setSpinnerLoader(false);
+        }
     }
+
     function closeViewModal() {
         setViewModal(false)
         setParticularConsumerId({})
@@ -876,10 +1033,12 @@ export const Consumers = () => {
     function logOut() {
         localStorage.removeItem('loginToken')
         localStorage.removeItem('loginUser')
+        localStorage.removeItem('sidebarOpen')
         navigate('/login')
     }
 
     async function getAllConsumers() {
+        setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
             const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}&category=${category}`, {
@@ -902,9 +1061,10 @@ export const Consumers = () => {
             setAllConsumers(allData)
             setTotalPages(totalPagesData)
             setTotalDataCount(totalNumberOfData)
+            setSpinnerLoader(false)
         } catch (error) {
             console.log(error.response.data.message);
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
             if (error.response.data.message === "Access denied") {
                 logOut()
             }
@@ -970,9 +1130,18 @@ export const Consumers = () => {
     }
 
     // edit modal
-    function openEditModal(id) {
-        particularConsumer(id)
-        setEditModal(true)
+    async function openEditModal(id) {
+        setSpinnerLoader(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        try {
+            await particularConsumer(id)
+            setEditModal(true)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setSpinnerLoader(false);
+        }
     }
     function closeEditModal() {
         setEditModal(false)
@@ -982,6 +1151,12 @@ export const Consumers = () => {
     function removeEditImage(product) {
         setGetParticularConsumer({ ...getParticularConsumer, images: "" })
         setEditError({ ...editError, imageError: "Choose Image" })
+    }
+
+    // add image removeImage function
+    function removeImage() {
+        setFormData({ ...formData, image: "" })
+        setError({ ...error, imageError: "Choose Image" })
     }
 
 
@@ -999,6 +1174,12 @@ export const Consumers = () => {
 
             {/* sidebar */}
             <Sidebar />
+
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
 
             <div className="flex flex-col flex-1">
 
@@ -1121,7 +1302,6 @@ export const Consumers = () => {
 
                 {/* pagination */}
                 {allConsumers.length > 0 && (
-
                     <div className="flex justify-between items-center border-t p-4 bg-white">
 
                         <div className="sm:flex justify-between items-center w-full">
@@ -1214,7 +1394,7 @@ export const Consumers = () => {
 
                             <button
                                 onClick={() => closeAddModal()}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                                className="absolute top-4 right-4 text-gray-500"
                             >
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </button>
@@ -1292,6 +1472,32 @@ export const Consumers = () => {
                                         {error.mobileError}
                                     </p>
                                 </div>
+
+                                <div className="block">
+                                    <input
+                                        type="file"
+                                        className="w-full border rounded px-3 py-2"
+                                        onChange={(event) => {
+                                            validateImage(event)
+                                        }}
+                                    />
+                                    <p className="text-sm text-red-500 mb-0">
+                                        {error.imageError}
+                                    </p>
+                                    {formData.image && (
+                                        <div className="relative inline-block">
+                                            <img
+                                                src={URL.createObjectURL(formData.image)}
+                                                alt="Thumb"
+                                                className="w-24 h-24 object-cover rounded-lg border shadow"
+                                            />
+                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="block sm:w-100">
                                     <select id="gender"
                                         value={formData.gender}
@@ -1343,6 +1549,21 @@ export const Consumers = () => {
                                         {error.addressError}
                                     </p>
                                 </div>
+
+                                <select id="security" value={formData.securityQuestion} onChange={(event) => { validateSecurityQuestion(event.target.value) }}>
+                                    <option value="">Select Security Question</option>
+                                    <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
+                                    <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
+                                    <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
+                                </select>
+                                <p id="genderError">{error.securityQuestionError}</p>
+
+                                {formData.securityQuestion && (
+                                    < textarea placeholder="Enter answer" id="answer" value={formData.securityAnswer} onInput={(event) => { validateSecurityAnswer(event.target.value) }} ></textarea>
+                                )}
+                                {formData.securityQuestion && (
+                                    <p id="securityQuestionError">{error.securityAnswerError}</p>
+                                )}
                                 <div className="block">
                                     <input
                                         type="checkbox"
@@ -1377,7 +1598,7 @@ export const Consumers = () => {
 
                             <button
                                 onClick={() => closeEditModal()}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                                className="absolute top-4 right-4 text-gray-500"
                             >
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </button>
@@ -1459,8 +1680,8 @@ export const Consumers = () => {
                                                 alt="Thumb"
                                                 className="w-24 h-24 object-cover rounded-lg border shadow"
                                             />
-                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularConsumer) }}>
-                                                Remove
+                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularConsumer) }}>
+                                                <i class="fa-solid fa-xmark"></i>
                                             </button>
 
                                         </div>
@@ -1534,6 +1755,21 @@ export const Consumers = () => {
                                         {editError.addressError}
                                     </p>
                                 </div>
+
+                                <select id="security" value={getParticularConsumer.securityQuestion} onChange={(event) => { editValidateSecurityQuestion(event.target.value) }}>
+                                    <option value="">Select Security Question</option>
+                                    <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
+                                    <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
+                                    <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
+                                </select>
+                                <p id="genderError">{editError.securityQuestionError}</p>
+
+                                {getParticularConsumer.securityQuestion && (
+                                    < textarea placeholder="Enter answer" id="answer" value={getParticularConsumer.securityAnswer} onInput={(event) => { editValidateSecurityAnswer(event.target.value) }} ></textarea>
+                                )}
+                                {getParticularConsumer.securityQuestion && (
+                                    <p id="securityQuestionError">{editError.securityAnswerError}</p>
+                                )}
                                 <div className="block">
                                     <input
                                         type="checkbox"

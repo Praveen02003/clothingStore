@@ -87,6 +87,8 @@ export const AdminProducts = () => {
     const [price, setPrice] = useState("");
     const [searchData, setSearchData] = useState("");
 
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
+
 
     // search function
     function search(inputValue) {
@@ -137,7 +139,7 @@ export const AdminProducts = () => {
 
         } catch (error) {
             console.log(error.response.data.message);
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
             if (error.response.data.message === "Access denied") {
                 logOut()
             }
@@ -156,15 +158,27 @@ export const AdminProducts = () => {
                 }
             })
             console.log(deleteOneData.data.message, "==>");
-            alert(deleteOneData.data.message)
+            // alert(deleteOneData.data.message)
             if (deleteOneData.data.message === "Product Deleted Successfully") {
-                closeDeleteModal();
-                getAllProducts();
+                setAlertContent(deleteOneData.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                    closeDeleteModal();
+                }, 2000);
             }
+            else {
+                setAlertContent(deleteOneData.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
+            }
+            getAllProducts();
 
         } catch (error) {
             console.log(error.response.data.message);
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
             if (error.response.data.message === "Access denied") {
                 logOut()
             }
@@ -175,10 +189,20 @@ export const AdminProducts = () => {
     }
 
     // view modal
-    function openViewModal(id) {
-        particularProduct(id)
-        setViewModal(true)
+    async function openViewModal(id) {
+        setSpinnerLoader(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        try {
+            await particularProduct(id)
+            setViewModal(true)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setSpinnerLoader(false);
+        }
     }
+
     function closeViewModal() {
         setViewModal(false)
         setGetParticularProduct({})
@@ -194,9 +218,18 @@ export const AdminProducts = () => {
     }
 
     // edit modal
-    function openEditModal(id) {
-        particularProduct(id)
-        setEditModal(true)
+    async function openEditModal(id) {
+        setSpinnerLoader(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        try {
+            await particularProduct(id)
+            setEditModal(true)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setSpinnerLoader(false);
+        }
     }
     function closeEditModal() {
         setEditModal(false)
@@ -238,6 +271,7 @@ export const AdminProducts = () => {
     function logOut() {
         localStorage.removeItem('loginToken')
         localStorage.removeItem('loginUser')
+        localStorage.removeItem('sidebarOpen')
         navigate('/login')
     }
 
@@ -441,7 +475,7 @@ export const AdminProducts = () => {
                 getAllProducts();
             } catch (error) {
                 console.log(error.response.data.message);
-                alert(error.response.data.message)
+                // alert(error.response.data.message)
                 if (error.response.data.message === "Access denied") {
                     logOut()
                 }
@@ -650,15 +684,26 @@ export const AdminProducts = () => {
                         Authorization: token
                     }
                 })
-                setAlertContent(dataEdit.data.message)
-                setOpenAlert(true)
-                setTimeout(() => {
-                    setOpenAlert(false)
-                }, 2000);
+                if (dataEdit.data.message === "Product Updated Successfully") {
+
+                    setAlertContent(dataEdit.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                        closeEditModal()
+                    }, 2000);
+                }
+                else {
+                    setAlertContent(dataEdit.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+                }
                 getAllProducts();
             } catch (error) {
                 console.log(error.response.data.message);
-                alert(error.response.data.message)
+                // alert(error.response.data.message)
                 if (error.response.data.message === "Access denied") {
                     logOut()
                 }
@@ -673,6 +718,7 @@ export const AdminProducts = () => {
     }
 
     async function getAllProducts() {
+        setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
             const getData = await axios.get(`http://localhost:5000/getAllProducts?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`, {
@@ -680,8 +726,8 @@ export const AdminProducts = () => {
                     Authorization: token
                 }
             })
-            console.log(getData.data.data,"--->");
-            
+            console.log(getData.data.data, "--->");
+
             // pagination concept
             var allData = getData.data.data
             var totalNumberOfData = getData.data.totalPage
@@ -695,9 +741,10 @@ export const AdminProducts = () => {
             setAllProducts(allData)
             setTotalPages(totalPagesData)
             setTotalDataCount(totalNumberOfData)
+            setSpinnerLoader(false)
         } catch (error) {
             console.log(error.response.data.message);
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
             if (error.response.data.message === "Access denied") {
                 logOut()
             }
@@ -751,6 +798,12 @@ export const AdminProducts = () => {
 
             {/* sidebar */}
             <Sidebar />
+
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
 
             <div className="flex flex-col flex-1">
 
@@ -859,7 +912,7 @@ export const AdminProducts = () => {
                                             </td>
 
                                             <td className="px-6 py-4 font-semibold text-gray-900">
-                                                <i className="fa-solid fa-indian-rupee-sign"></i> {data.price}
+                                                <i class="fa-solid fa-dollar-sign"></i> {data.price}
                                             </td>
 
                                             <td className="px-6 py-4 font-semibold text-gray-900">
@@ -901,38 +954,40 @@ export const AdminProducts = () => {
                 </div>
 
                 {/* pagination */}
-                <div className="flex justify-between items-center border-t p-4 bg-white">
+                {allProducts.length > 0 && (
+                    <div className="flex justify-between items-center border-t p-4 bg-white">
 
-                    <div className="sm:flex justify-between items-center w-full">
-                        <h2 className="flex items-center gap-1 whitespace-nowrap">
-                            showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
-                        </h2>
-                        <div className="flex items-center gap-6">
-
-                            <select className="border rounded px-2 py-1" onChange={(event) => {
-                                setDynamicPageNumber(event.target.value)
-                                setCurrentPage(1)
-                            }} value={dynamicPageNumber}>
-                                <option>5</option>
-                                <option>10</option>
-                                <option>20</option>
-                            </select>
-
-                            <button className="border px-3 py-1 rounded" onClick={() => {
-                                previous()
-                            }} disabled={currentPage === 1}>previous</button>
-
+                        <div className="sm:flex justify-between items-center w-full">
                             <h2 className="flex items-center gap-1 whitespace-nowrap">
-                                page <b>{currentPage}</b> of <b>{totalPages}</b>
+                                showing <b>{startValue}</b> - <b>{endValue}</b> of <b>{totalDataCount}</b>
                             </h2>
+                            <div className="flex items-center gap-6">
 
-                            <button className="border px-3 py-1 rounded" onClick={() => {
-                                next()
-                            }} disabled={currentPage === totalPages}>next</button>
+                                <select className="border rounded px-2 py-1" onChange={(event) => {
+                                    setDynamicPageNumber(event.target.value)
+                                    setCurrentPage(1)
+                                }} value={dynamicPageNumber}>
+                                    <option>5</option>
+                                    <option>10</option>
+                                    <option>20</option>
+                                </select>
+
+                                <button className="border px-3 py-1 rounded" onClick={() => {
+                                    previous()
+                                }} disabled={currentPage === 1}>previous</button>
+
+                                <h2 className="flex items-center gap-1 whitespace-nowrap">
+                                    page <b>{currentPage}</b> of <b>{totalPages}</b>
+                                </h2>
+
+                                <button className="border px-3 py-1 rounded" onClick={() => {
+                                    next()
+                                }} disabled={currentPage === totalPages}>next</button>
+                            </div>
                         </div>
-                    </div>
 
-                </div>
+                    </div>
+                )}
 
 
 
@@ -944,6 +999,12 @@ export const AdminProducts = () => {
 
                             <div className="flex items-start gap-4">
                                 <div>
+                                    {/* alert */}
+                                    {openAlert && (
+                                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                            <span class="block sm:inline">{alertContent}</span>
+                                        </div>
+                                    )}
                                     <h3 className="text-lg font-bold text-red-600">
                                         Delete Confirmation
                                     </h3>
@@ -1002,11 +1063,11 @@ export const AdminProducts = () => {
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>Sale Price : </span>
-                                        <i className="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.price}
+                                        <i class="fa-solid fa-dollar-sign"></i> {getParticularProduct.price}
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>Original Price : </span>
-                                        <i className="fa-solid fa-indian-rupee-sign"></i> {getParticularProduct.defaultPrice}
+                                        <i class="fa-solid fa-dollar-sign"></i> {getParticularProduct.defaultPrice}
                                     </p>
                                     <p className="text-xl mt-2 text-gray-900">
                                         <span className='font-bold'>colors : </span>
@@ -1041,7 +1102,7 @@ export const AdminProducts = () => {
 
                             <button
                                 onClick={() => closeEditModal()}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                                className="absolute top-4 right-4 text-gray-500"
                             >
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </button>
@@ -1181,8 +1242,8 @@ export const AdminProducts = () => {
                                                 alt="Thumb"
                                                 className="w-24 h-24 object-cover rounded-lg border shadow"
                                             />
-                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularProduct) }}>
-                                                Remove
+                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeEditImage(getParticularProduct) }}>
+                                                <i class="fa-solid fa-xmark"></i>
                                             </button>
 
                                         </div>
@@ -1234,7 +1295,7 @@ export const AdminProducts = () => {
 
                             <button
                                 onClick={() => closeAddModal()}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                                className="absolute top-4 right-4 text-gray-500"
                             >
                                 <i className="fa-solid fa-circle-xmark"></i>
                             </button>
@@ -1372,8 +1433,8 @@ export const AdminProducts = () => {
                                                 alt="Thumb"
                                                 className="w-24 h-24 object-cover rounded-lg border shadow"
                                             />
-                                            <button className="absolute bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
-                                                Remove
+                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
+                                                <i class="fa-solid fa-xmark"></i>
                                             </button>
 
                                         </div>

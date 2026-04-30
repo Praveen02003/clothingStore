@@ -20,7 +20,9 @@ export const Signup = () => {
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
-        termsError: ""
+        termsError: "",
+        securityQuestionError: "",
+        securityAnswerError: ""
     };
 
     const navigate = useNavigate();
@@ -34,7 +36,9 @@ export const Signup = () => {
         password: "",
         confirmPassword: "",
         address: "",
-        terms: ""
+        terms: "",
+        securityQuestion: "",
+        securityAnswer: ""
     });
 
     var [error, setError] = useState({
@@ -46,7 +50,9 @@ export const Signup = () => {
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
-        termsError: ""
+        termsError: "",
+        securityQuestionError: "",
+        securityAnswerError: ""
 
     });
 
@@ -273,10 +279,41 @@ export const Signup = () => {
         setError(allErrors)
     }
 
+    // validateSecurityQuestion
+    function validateSecurityQuestion(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.securityQuestionError = 'Select Security Question';
+        }
+        else {
+            allErrors.securityQuestionError = "";
+        }
+
+        setFormData({ ...formData, securityQuestion: inputvalue })
+
+        setError(allErrors)
+    }
+
+    // validateSecurityAnswer
+    function validateSecurityAnswer(inputvalue) {
+        let allErrors = { ...error };
+
+        if (!inputvalue) {
+            allErrors.securityAnswerError = 'Enter Answer';
+        }
+        else {
+            allErrors.securityAnswerError = "";
+        }
+
+        setFormData({ ...formData, securityAnswer: inputvalue })
+
+        setError(allErrors)
+    }
+
     // submitForm function
     async function submitForm(event) {
         event.preventDefault();
-        setSpinnerLoader(true)
 
         let allErrors = { ...error };
 
@@ -347,6 +384,12 @@ export const Signup = () => {
         if (!formData.address) {
             allErrors.addressError = 'Enter address';
         }
+        if (!formData.securityQuestion) {
+            allErrors.securityQuestionError = 'Select Security Question';
+        }
+        if (!formData.securityAnswer) {
+            allErrors.securityAnswerError = 'Enter answer';
+        }
 
         setError(allErrors);
 
@@ -358,6 +401,7 @@ export const Signup = () => {
                 setFormData({ ...formData, mobile: replacedNumber })
                 console.log(formData, "===>");
                 try {
+                    setSpinnerLoader(true)
                     var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
                     console.log(result.data.message);
                     if (result.data.message === "Signup Successfully") {
@@ -461,13 +505,28 @@ export const Signup = () => {
                     <textarea placeholder="Enter address" id="address" value={formData.address} onInput={(event) => { validateAddress(event.target.value) }} ></textarea>
                     <p id="addressError">{error.addressError}</p>
 
+                    {/* gender */}
+                    <select id="security" value={formData.securityQuestion} onChange={(event) => { validateSecurityQuestion(event.target.value) }}>
+                        <option value="">Select Security Question</option>
+                        <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
+                        <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
+                        <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
+                    </select>
+                    <p id="genderError">{error.securityQuestionError}</p>
+
+                    {formData.securityQuestion && (
+                        < textarea placeholder="Enter answer" id="answer" value={formData.securityAnswer} onInput={(event) => { validateSecurityAnswer(event.target.value) }} ></textarea>
+                    )}
+                    {formData.securityQuestion && (
+                        <p id="securityQuestionError">{error.securityAnswerError}</p>
+                    )}
+
                     {/* terms */}
                     <div className="termsRow">
                         <input type="checkbox" id="terms" checked={formData.terms} onChange={(event) => { validateTerms(event.target.checked) }} />
                         <label for="terms">Terms & Conditions</label>
                     </div>
                     <p id="termsError">{error.termsError}</p>
-                    
 
                     {/* submit button */}
                     <button
@@ -494,6 +553,6 @@ export const Signup = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
     )
 }

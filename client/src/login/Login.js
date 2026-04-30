@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import '../login/Login.css'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios';
 
+
 export const Login = () => {
+
   var navigate = useNavigate();
 
   const [openAlert, setOpenAlert] = useState(false)
   const [alertColor, setAlertColor] = useState(null)
   const [alertContent, setAlertContent] = useState(null)
+
+
+  const [toggleValue, setToggleValue] = useState("password")
 
   const [spinnerLoader, setSpinnerLoader] = useState(false);
 
@@ -28,6 +33,21 @@ export const Login = () => {
   });
 
   var [boolean, setBoolean] = useState(false);
+
+  // saveEmail function
+  function saveEmail() {
+    localStorage.setItem("resetEmail", JSON.stringify(formData.email))
+    navigate("/consumer/resetPassword")
+  }
+  // showPassword function
+  function showPassword(inputValue) {
+    if (inputValue === true) {
+      setToggleValue("text")
+    }
+    else if (inputValue === false) {
+      setToggleValue("password")
+    }
+  }
 
   // validateEmail function
   function validateEmail(value) {
@@ -65,7 +85,7 @@ export const Login = () => {
 
   async function submitForm(event) {
     event.preventDefault();
-    setSpinnerLoader(true)
+    
 
     var allErrors = { ...error }
 
@@ -82,6 +102,7 @@ export const Login = () => {
     if (formData.email && formData.password) {
       console.log(formData);
       try {
+        setSpinnerLoader(true)
         var result = await axios.post("http://localhost:5000/loginUser", { data: formData });
         console.log(result.data.message);
         // alert(result.data.message);
@@ -167,8 +188,14 @@ export const Login = () => {
           <p id="emailError">{error.emailError}</p>
 
           {/* password */}
-          <input type="password" placeholder="Enter Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
+          <input type={toggleValue} placeholder="Enter Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
           <p id="passwordError">{error.passwordError}</p>
+          <div className="mb-4 flex items-center gap-2">
+            <input type="checkbox" id="passwordVisible" onChange={(event) => { showPassword(event.target.checked) }} />
+            <label htmlFor="sameAddress" className="text-sm text-black mt-2">
+              Show Password
+            </label>
+          </div>
 
           {/* submit button */}
           <button
@@ -190,9 +217,11 @@ export const Login = () => {
 
         {/* link */}
         <div className="link">
-          <a href='/consumer/resetPassword'>
-            Reset Password
-          </a>
+          <button onClick={() => {
+            saveEmail()
+          }}>
+            Forget Password
+          </button>
         </div>
         {/* link */}
         <div className="link">

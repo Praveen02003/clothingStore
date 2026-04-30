@@ -2,9 +2,6 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import banner1 from '../../assets/banner1.jpg'
-import banner2 from '../../assets/banner2.jpg'
-import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
@@ -24,23 +21,21 @@ export const Checkout = () => {
 
     const [totalAmount, setTotalAmount] = useState(0)
 
-    // goToPaymentPage function
-    async function goToPaymentPage() {
-        console.log(allDatas);
-        try {
-            const token = localStorage.getItem('loginToken');
-            var orderData = await axios.post(`http://localhost:5000/placeOrder`, { data: allDatas }, {
-                headers: {
-                    Authorization: token
-                }
-            })
-            // alert(orderData.data.message)
-        } catch (error) {
-            console.log("error");
+    const [spinnerLoader, setSpinnerLoader] = useState(false);
 
-        }
+    // logout function
+    function logOut() {
+        localStorage.removeItem('loginToken')
+        localStorage.removeItem('loginUser')
+        localStorage.removeItem('consumerSidebarOpen')
+        setLoginUser(null)
+        navigate('/login')
+    }
 
-        navigate("/consumers/payment")
+
+    // goToFinalCheckoutPage function
+    function goToFinalCheckoutPage() {
+        navigate("/consumers/addressDetails")
     }
 
     // calculateTotalAmount function
@@ -60,6 +55,7 @@ export const Checkout = () => {
 
     // getCartAll function
     async function getCartAll() {
+        setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
             var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
@@ -75,12 +71,20 @@ export const Checkout = () => {
                 setAllDatas(allData)
                 calculateTotalAmount(allData)
             }
-            else{
+            else {
                 navigate('/consumers/cart')
             }
+            setSpinnerLoader(false)
 
         } catch (error) {
-            console.log(error);
+            console.log(error.response.data.message);
+            // alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
@@ -114,6 +118,13 @@ export const Checkout = () => {
 
             {/* sidebar */}
             <Sidebar />
+
+
+            {spinnerLoader && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+                </div>
+            )}
 
             <div className="flex flex-col flex-1">
 
@@ -193,10 +204,10 @@ export const Checkout = () => {
                 {totalAmount > 0 && (
                     <div className="flex flex-wrap items-center justify-end gap-4 p-4">
 
-                        <button className="text-lg text-white rounded font-bold flex items-center gap-2 bg-green-600 px-10 py-3" onClick={() => {
-                            goToPaymentPage()
+                        <button className="text-lg text-white rounded font-bold flex items-center gap-2 bg-gray-700 px-10 py-3" onClick={() => {
+                            goToFinalCheckoutPage()
                         }}>
-                            <i className="fa-solid fa-indian-rupee-sign"></i> {totalAmount} Pay
+                            <i class="fa-solid fa-dollar-sign"></i> {totalAmount} Final Payment
                         </button>
                     </div>
                 )}

@@ -9,21 +9,27 @@ import { Dashboard } from './admin/dashboard/Dashboard';
 import { Consumers } from './admin/consumers/Consumers';
 import { UserDashboard } from './consumer/dashboard/UserDashboard';
 
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { ForgetPassword } from './forget/ForgetPassword';
 import { MyProducts } from './consumer/myProducts/MyProducts';
 import { Checkout } from './consumer/checkout/Checkout';
 import { Payment } from './consumer/payment/Payment';
 import { MyOrders } from './consumer/myOrders/MyOrders';
 import { Orders } from './admin/orders/Orders';
+import { Billing } from './consumer/billing/Billing';
+import { Address } from './consumer/address/Address';
 
 export const mainContext = createContext()
 
 function App() {
 
-  // sidebar open
-  const [open, setOpen] = useState(false)
-  const [sideBarOpen, setSideBarOpen] = useState(false)
+  // sidebar opens
+  const [open, setOpen] = useState(
+    JSON.parse(localStorage.getItem("sidebarOpen")) || false
+  );
+  const [sideBarOpen, setSideBarOpen] = useState(
+    JSON.parse(localStorage.getItem("consumerSidebarOpen")) || false
+  )
 
   // modal opens
   const [viewModal, setViewModal] = useState(false);
@@ -48,6 +54,18 @@ function App() {
 
   // consumer
   const [loginUser, setLoginUser] = useState(null)
+
+  const [loginMailPatch, setLoginMailPatch] = useState("")
+
+  const [updatedAddress, setUpdatedAddress] = useState("");
+
+  const [cartCount, setCartCount] = useState(0);
+
+
+  useEffect(() => {
+    localStorage.setItem("sidebarOpen", JSON.stringify(open));
+    localStorage.setItem("consumerSidebarOpen", JSON.stringify(sideBarOpen));
+  }, [])
   return (
     // routes
     <mainContext.Provider value={{
@@ -87,7 +105,16 @@ function App() {
       setGetAllAdminDashBoardData,
 
       loginUser,
-      setLoginUser
+      setLoginUser,
+
+      loginMailPatch,
+      setLoginMailPatch,
+
+      updatedAddress,
+      setUpdatedAddress,
+
+      cartCount,
+      setCartCount
 
     }}>
       <BrowserRouter>
@@ -103,8 +130,10 @@ function App() {
           <Route path='/consumers/cart' element={<Cart />} />
           <Route path='/consumers/myProducts' element={<MyProducts />} />
           <Route path='/consumers/checkOut' element={<Checkout />} />
+          <Route path='/consumers/bill' element={<Billing />} />
           <Route path='/consumers/payment' element={<Payment />} />
           <Route path='/consumers/myOrders' element={<MyOrders />} />
+          <Route path='/consumers/addressDetails' element={<Address />} />
 
           {/* admin routes */}
           <Route path='/admin/dashBoard' element={<Dashboard />} />

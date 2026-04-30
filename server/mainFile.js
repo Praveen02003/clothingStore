@@ -168,17 +168,22 @@ app.get('/deleteParticularProduct/:id', verifyToken, async (req, res) => {
 app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
 
     try {
-        var paramsData = req.query.startDate
-        var startDate = new Date(paramsData)
-        console.log(startDate);
-        var todayDate = new Date();
+        var startDate = req.query.startDates
+        var endDate = req.query.endDates
+        var convertStartDate = startDate ? new Date(startDate) : new Date(0)
+        var convertEndDate = endDate ? new Date(endDate) : new Date()
+
+        console.log(convertStartDate);
+        console.log(convertEndDate);
+        convertEndDate.setDate(convertEndDate.getDate() + 1)
+
         const allData = {};
 
         // productCount
         var productCount = await product.find({
             $and: [
-                { addedOn: { $gte: startDate } },
-                { addedOn: { $lte: todayDate } }
+                { addedOn: { $gte: convertStartDate } },
+                { addedOn: { $lt: convertEndDate } }
             ]
         }).countDocuments()
         // console.log(productCount);
@@ -187,20 +192,35 @@ app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
         // consumerCount
         var consumerCount = await consumer.find({
             $and: [
-                { addedOn: { $gte: startDate } },
-                { addedOn: { $lte: todayDate } }
+                { addedOn: { $gte: convertStartDate } },
+                { addedOn: { $lt: convertEndDate } }
             ]
         }).countDocuments()
 
         allData['consumerCount'] = consumerCount
         // ordersCount
-        var ordersCount = await order.countDocuments()
+        var ordersCount = await order.countDocuments(
+            {
+                $and: [
+                    { addedOn: { $gte: convertStartDate } },
+                    { addedOn: { $lt: convertEndDate } }
+                ]
+            }
+        )
 
         allData['ordersCount'] = ordersCount
         console.log(allData);
 
         // totalPurchase
         var totalPurchase = await orderHistory.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { addedOn: { $gte: convertStartDate } },
+                        { addedOn: { $lt: convertEndDate } }
+                    ]
+                }
+            },
             {
                 $group: {
                     _id: "$userId",
@@ -213,7 +233,7 @@ app.get('/getAdminDashBoardDatas', verifyToken, async (req, res) => {
             }
         ])
 
-        allData['totalPurchase'] = totalPurchase[0].totalRevenue
+        allData['totalPurchase'] = totalPurchase.length > 0 ? totalPurchase[0].totalRevenue : 0
         console.log(allData);
 
 
@@ -351,6 +371,7 @@ app.get('/getFewData', async (req, res) => {
     try {
         // const data = await product.find().limit(6);
         const data = await product.aggregate([
+            { $match: { stock: { $gt: 0 } } },
             {
                 $lookup: {
                     from: "consumers",
@@ -385,7 +406,7 @@ app.get('/getSpecificProduct/:id', async (req, res) => {
 app.get('/getAllProduct', async (req, res) => {
 
     try {
-        var categorySort = {}
+        var categorySort = { stock: { $gt: 1 } }
         var priceSort = {}
 
         var page = parseInt(req.query.page) || 1;
@@ -449,7 +470,7 @@ app.get('/getMyProduct/:id', verifyToken, async (req, res) => {
 
 
     try {
-        var categorySort = { userId: new ObjectId(userId) };
+        var categorySort = { userId: new ObjectId(userId), stock: { $gt: 0 } };
         var priceSort = {}
 
         var page = parseInt(req.query.page) || 1;
@@ -536,10 +557,11 @@ app.get('/getMyProduct/:id', verifyToken, async (req, res) => {
 })
 
 // addUser route
-app.post('/addUser', verifyToken, async (req, res) => {
-    const data = req.body.data;
+app.post('/addUser', verifyToken, upload.single("image"), async (req, res) => {
+    const data = req.body;
     const date = new Date();
     const saltRounds = 12;
+    const imageFile = req.file;
     try {
         var getData = await consumer.findOne({ email: data.email })
         // console.log(getData);
@@ -557,18 +579,20 @@ app.post('/addUser', verifyToken, async (req, res) => {
                 terms: data.terms,
                 role: "user",
                 status: "active",
-                images: "",
+                images: imageFile.originalname,
                 address: data.address,
+                securityQuestion: data.securityQuestion,
+                securityAnswer: data.securityAnswer,
                 addedOn: date,
                 editedOn: date
             })
-            return res.json({ message: "New User Added Successfully" });
+            return res.json({ message: "User Added Successfully" });
         }
         else {
             return res.json({ message: "User Already Exists" });
         }
     } catch (error) {
-        return res.json({ message: error });
+        return res.json({ message: "User Added Failed", data: error });
     }
 });
 
@@ -716,11 +740,17 @@ app.post('/updateCartQuantity', verifyToken, async (req, res) => {
 app.post('/placeOrder', verifyToken, async (req, res) => {
     try {
         const data = req.body.data;
+        console.log(data, "===>");
+
+        const address = req.body.address;
+        console.log(address);
+
         const date = new Date();
 
         const createEntry = await order.create({
             userId: req.userId,
             status: "placed",
+            shippingAddress: address,
             addedOn: date,
             editedOn: date
         });
@@ -759,10 +789,64 @@ app.post('/placeOrder', verifyToken, async (req, res) => {
     }
 });
 
+// updateOrderStatus route
+app.post('/updateOrderStatus', verifyToken, async (req, res) => {
+    try {
+        const data = req.body.data;
+
+        const findOrder = await order.findOne({ _id: data.id });
+        if (findOrder) {
+            var uodateOrder = await order.updateOne({ _id: data.id }, { $set: { status: data.status } })
+        }
+        else if (!findOrder) {
+            return res.status(404).json({ message: "data not found" });
+        }
+
+        return res.json({ message: "status updated successfully" });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// deleteOrder route
+app.post('/deleteOrder', verifyToken, async (req, res) => {
+    try {
+        const data = req.body.data;
+
+        const findOrder = await order.findOne({ _id: data.id });
+        if (findOrder) {
+            var findOrderHistory = await orderHistory.find({ orderId: data.id })
+            console.log(findOrderHistory);
+            for (const element of findOrderHistory) {
+                var findProduct = await product.findOne({ _id: element.productId })
+                var updateQuantity = findProduct.stock + element.quantity
+                var updateProduct = await product.updateOne({ _id: element.productId }, { $set: { stock: updateQuantity } })
+            }
+
+            var deleteOrderHistory = await orderHistory.deleteOne({ orderId: data.id })
+            var deleteOrder = await order.deleteOne({ _id: data.id })
+        }
+        else if (!findOrder) {
+            return res.status(404).json({ message: "data not found" });
+        }
+
+        return res.json({ message: "order deleted successfully" });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 // getMyOrders route
 app.get('/getMyOrders/:id', verifyToken, async (req, res) => {
     try {
         const userId = req.params.id;
+
+        var page = parseInt(req.query.page) || 1;
+        var limitItem = parseInt(req.query.count) || 5;
+        const skipPage = (page - 1) * limitItem;
+
         var getOrders = await order.aggregate([
             {
                 $match: {
@@ -792,12 +876,17 @@ app.get('/getMyOrders/:id', verifyToken, async (req, res) => {
                     foreignField: "_id",
                     as: "orderProduct"
                 }
-            }
+            },
+            { $sort: { addedOn: -1 } },
+            { $skip: skipPage },
+            { $limit: limitItem }
         ]);
         console.log(getOrders);
 
+        const totalOrders = await order.countDocuments({ userId: new ObjectId(userId) });
 
-        return res.json({ message: "data fetched", data: getOrders });
+
+        return res.json({ message: "data fetched", data: getOrders, totalPage: totalOrders });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -807,6 +896,10 @@ app.get('/getMyOrders/:id', verifyToken, async (req, res) => {
 // getAllOrders route
 app.get('/getAllOrders', verifyToken, async (req, res) => {
     try {
+        var page = parseInt(req.query.page) || 1;
+        var limitItem = parseInt(req.query.count) || 5;
+        const skipPage = (page - 1) * limitItem;
+
         var getOrders = await order.aggregate([
             {
                 $lookup: {
@@ -831,12 +924,17 @@ app.get('/getAllOrders', verifyToken, async (req, res) => {
                     foreignField: "_id",
                     as: "orderProduct"
                 }
-            }
+            },
+            { $sort: { addedOn: -1 } },
+            { $skip: skipPage },
+            { $limit: limitItem }
         ]);
         console.log(getOrders);
 
+        const totalOrders = await order.countDocuments();
 
-        return res.json({ message: "data fetched", data: getOrders });
+
+        return res.json({ message: "data fetched", data: getOrders, totalPage: totalOrders });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -901,6 +999,19 @@ app.get('/removeFromCart/:id', verifyToken, async (req, res) => {
     }
 });
 
+// getAddressDetails route
+app.get('/getAddressDetails/:id', verifyToken, async (req, res) => {
+    try {
+        var userId = req.params.id
+        var findData = await consumer.findOne({ _id: userId })
+        if (findData) {
+            return res.json({ message: "data fetched", data: findData });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+});
+
 // updateUser route
 app.post('/updateUser', verifyToken, upload.single("image"), async (req, res) => {
     const data = req.body;
@@ -924,6 +1035,8 @@ app.post('/updateUser', verifyToken, upload.single("image"), async (req, res) =>
             gender: data.gender,
             terms: data.terms,
             address: data.address,
+            securityQuestion: data.securityQuestion,
+            securityAnswer: data.securityAnswer,
             editedOn: new Date()
         };
         if (imageFile) {
@@ -974,6 +1087,8 @@ app.post('/addUsers', async (req, res) => {
                 status: "active",
                 images: "",
                 address: data.address,
+                securityQuestion: data.securityQuestion,
+                securityAnswer: data.securityAnswer,
                 addedOn: date,
                 editedOn: date
             })
@@ -1020,13 +1135,13 @@ app.post('/forgetPassword', async (req, res) => {
     console.log(data);
     const saltRounds = 12;
     try {
-        if (data.email && data.securityQuestion && data.password && data.confirmPassword) {
+        if (data.email && data.securityAnswerType && data.password && data.confirmPassword) {
             const user = await consumer.findOne({ email: data.email });
             if (!user) {
                 return res.json({ message: "Invalid credentials" });
             }
 
-            if (user.lastName.toLowerCase() === data.securityQuestion.toLowerCase()) {
+            if (user.securityAnswer.toLowerCase() === data.securityAnswerType.toLowerCase()) {
                 var hashPassword = await bcrypt.hash(data.password, saltRounds)
                 const updatePassword = await consumer.updateOne({ email: data.email }, { $set: { password: hashPassword } });
                 return res.json({ message: "Password reset success" });
@@ -1034,21 +1149,21 @@ app.post('/forgetPassword', async (req, res) => {
                 return res.json({ message: "Invalid lastName" });
             }
         }
-        else if (data.email && data.securityQuestion) {
+        else if (data.email && data.securityAnswerType) {
             const user = await consumer.findOne({ email: data.email });
             if (!user) {
                 return res.json({ message: "Invalid credentials" });
             }
-            if (user.lastName.toLowerCase() === data.securityQuestion.toLowerCase()) {
+            if (user.securityAnswer.toLowerCase() === data.securityAnswerType.toLowerCase()) {
                 return res.json({ message: "Validate success" });
             } else {
-                return res.json({ message: "Invalid lastName" });
+                return res.json({ message: "Invalid answer" });
             }
         }
         else if (data.email) {
             const user = await consumer.findOne({ email: data.email });
             if (user) {
-                return res.json({ message: "Data present" });
+                return res.json({ message: "Data present", data: user });
             } else {
                 return res.json({ message: "Invalid credentials" });
             }
@@ -1058,6 +1173,14 @@ app.post('/forgetPassword', async (req, res) => {
         return res.json({ message: "server error" });
     }
 });
+
+// app.get('/addproduct', async (req, res) => {
+//     // await consumer.createIndexes({ role: 1 })
+//     var data = await product.collection.getIndexes()
+//     return res.json({ message: "success", data: data })
+// });
+
+
 
 app.listen(port, () => {
     console.log(`server running at port ${port}`);

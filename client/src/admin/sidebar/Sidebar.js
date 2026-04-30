@@ -1,10 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { mainContext } from '../../App';
+import { useLocation } from 'react-router-dom';
 export const Sidebar = () => {
     const {
         open,
         setOpen
     } = useContext(mainContext);
+
+    var location = useLocation()
 
     function openSidebar() {
         setOpen(true)
@@ -47,7 +50,11 @@ export const Sidebar = () => {
                     )}
 
                     <button
-                        onClick={() => setOpen(!open)}
+                        onClick={() => {
+                            const trackSideBar = !open;
+                            setOpen(trackSideBar);
+                            localStorage.setItem("sidebarOpen", JSON.stringify(trackSideBar));
+                        }}
                         className="text-xl text-white"
                     >
                         <i className="fa-solid fa-bars"></i>
@@ -59,7 +66,7 @@ export const Sidebar = () => {
 
                     {(loginUser && loginUser.role.toLowerCase() === "admin") && (
                         <a href="/admin/dashBoard"
-                            className={`flex items-center py-2 text-white hover:bg-gray-700 rounded
+                            className={`flex items-center py-2 text-white ${location.pathname === "/admin/dashBoard" ? "bg-gray-600" : ""} ${location.pathname === "/admin/dashBoard" ? "bg-gray-600" : ""} rounded
                                 ${open ? "px-4 gap-3" : "justify-center"}`}>
 
                             <i className="fa-solid fa-gauge-high text-2xl"></i>
@@ -69,7 +76,7 @@ export const Sidebar = () => {
 
                     {(loginUser && loginUser.role.toLowerCase() === "admin") && (
                         <a href="/admin/adminProducts"
-                            className={`flex items-center py-2 text-white hover:bg-gray-700 rounded
+                            className={`flex items-center py-2 text-white ${location.pathname === "/admin/adminProducts" ? "bg-gray-600" : ""} rounded
                                     ${open ? "px-4 gap-3" : "justify-center"}`}>
 
                             <i className="fa-solid fa-shirt text-2xl"></i>
@@ -79,7 +86,7 @@ export const Sidebar = () => {
 
                     {(loginUser && loginUser.role.toLowerCase() === "admin") && (
                         <a href="/admin/consumers"
-                            className={`flex items-center py-2 text-white hover:bg-gray-700 rounded
+                            className={`flex items-center py-2 text-white ${location.pathname === "/admin/consumers" ? "bg-gray-600" : ""} rounded
                                 ${open ? "px-4 gap-3" : "justify-center"}`}>
 
                             <i className="fa-solid fa-user text-2xl"></i>
@@ -88,7 +95,7 @@ export const Sidebar = () => {
                     )}
                     {(loginUser && loginUser.role.toLowerCase() === "admin") && (
                         <a href="/admin/orders"
-                            className={`flex items-center py-2 text-white hover:bg-gray-700 rounded
+                            className={`flex items-center py-2 text-white ${location.pathname === "/admin/orders" ? "bg-gray-600" : ""} rounded
                                 ${open ? "px-4 gap-3" : "justify-center"}`}>
 
                             <i class="fa-regular fa-folder-open text-2xl"></i>

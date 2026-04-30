@@ -38,6 +38,14 @@ const consumerSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        securityQuestion: {
+            type: String,
+            required: true
+        },
+        securityAnswer: {
+            type: String,
+            required: true
+        },
         address: {
             type: String,
             required: true
@@ -55,6 +63,7 @@ const consumerSchema = new mongoose.Schema(
         }
     }
 );
+consumerSchema.index({ email: 1 });
 
 const consumer = mongoose.model("Consumer", consumerSchema);
 module.exports = consumer;

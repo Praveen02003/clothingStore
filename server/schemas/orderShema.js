@@ -10,6 +10,10 @@ const orderSchema = new mongoose.Schema(
             type: String,
             default: "placed"
         },
+        shippingAddress: {
+            type: String,
+            required: true
+        },
         addedOn: {
             type: Date,
             default: null

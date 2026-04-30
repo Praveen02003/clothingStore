@@ -2,9 +2,6 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import banner1 from '../../assets/banner1.jpg'
-import banner2 from '../../assets/banner2.jpg'
-import banner3 from '../../assets/banner3.jpg'
 import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
@@ -15,14 +12,27 @@ export const Cart = () => {
     sideBarOpen,
     setSideBarOpen,
     loginUser,
-    setLoginUser
+    setLoginUser,
+    cartCount,
+    setCartCount
   } = useContext(mainContext);
 
   const navigate = useNavigate()
 
   const [allDatas, setAllDatas] = useState([])
 
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
+
   const [totalAmount, setTotalAmount] = useState(0)
+
+  // logout function
+  function logOut() {
+    localStorage.removeItem('loginToken')
+    localStorage.removeItem('loginUser')
+    localStorage.removeItem('consumerSidebarOpen')
+    setLoginUser(null)
+    navigate('/login')
+  }
 
   // calculateTotalAmount function
   function calculateTotalAmount(cartData) {
@@ -40,6 +50,7 @@ export const Cart = () => {
   }
   // updateQuantity function
   async function updateQuantity(cartId, quantity) {
+    setSpinnerLoader(true)
     try {
       const token = localStorage.getItem("loginToken");
       var data = {
@@ -59,15 +70,24 @@ export const Cart = () => {
       var message = updateData.data.message
       if (message === "quantity updated success") {
         getCartAll()
+        setSpinnerLoader(false)
       }
       console.log(message);
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
   // removeFromCart function
   async function removeFromCart(id) {
+    setSpinnerLoader(true)
     try {
       const token = localStorage.getItem('loginToken');
       var getData = await axios.get(`http://localhost:5000/removeFromCart/${id}`, {
@@ -79,15 +99,24 @@ export const Cart = () => {
       var message = getData.data.message
       if (message === "item deleted successfully") {
         getCartAll()
+        setSpinnerLoader(false)
       }
       console.log(message);
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
   // getCartAll function
   async function getCartAll() {
+    setSpinnerLoader(true)
     try {
       const token = localStorage.getItem('loginToken');
       var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
@@ -98,13 +127,23 @@ export const Cart = () => {
 
       var allData = getData.data.data
       console.log(allData);
+      setCartCount(allData.length)
+
 
       setAllDatas(allData)
 
       calculateTotalAmount(allData);
+      setSpinnerLoader(false)
 
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.message);
+      // alert(error.response.data.message)
+      if (error.response.data.message === "Access denied") {
+        logOut()
+      }
+      else if (error.response.data.message === "Invalid token") {
+        logOut()
+      }
     }
   }
   // goToCheckOutPage function
@@ -144,6 +183,12 @@ export const Cart = () => {
       {/* sidebar */}
       <Sidebar />
 
+      {spinnerLoader && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+        </div>
+      )}
+
       <div className="flex flex-col flex-1">
 
         <Navbar />
@@ -162,7 +207,7 @@ export const Cart = () => {
             <table className="w-full text-sm text-left text-gray-500">
 
               <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
-                <tr className='text-center'>
+                <tr className='text-center bg-gray-600 text-white'>
                   <th className="px-6 py-3">S.no</th>
                   <th className="px-6 py-3">Product Name</th>
                   <th className="px-6 py-3">Price</th>
@@ -190,7 +235,7 @@ export const Cart = () => {
                         </td>
 
                         <td className="px-6 py-4 font-semibold text-gray-900">
-                          <i className="fa-solid fa-indian-rupee-sign"></i> {product?.price}
+                          <i class="fa-solid fa-dollar-sign"></i> {product?.price}
                         </td>
 
                         <td className="px-6 py-4 font-semibold text-blue-600">
@@ -249,10 +294,10 @@ export const Cart = () => {
         {totalAmount > 0 && (
           <div className="flex flex-wrap items-center justify-end gap-4 p-4">
 
-            <button className="text-lg text-white rounded font-bold flex items-center gap-2 bg-green-600 px-10 py-3" onClick={() => {
+            <button className="text-lg text-white rounded font-bold flex items-center gap-2 bg-gray-700 px-10 py-3" onClick={() => {
               goToCheckOutPage()
             }}>
-              <i className="fa-solid fa-indian-rupee-sign"></i> {totalAmount} Checkout
+              <i class="fa-solid fa-dollar-sign"></i> {totalAmount} Checkout
             </button>
           </div>
         )}
