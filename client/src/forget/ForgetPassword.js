@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import '../forget/ForgetPassword.css'
 import { data, useNavigate } from 'react-router-dom'
-import axios from 'axios';
+import api from '../axios/AxiosFile';
 
 
 export const ForgetPassword = () => {
@@ -41,6 +41,29 @@ export const ForgetPassword = () => {
     });
 
     var [boolean, setBoolean] = useState(false);
+
+    const [toggleValue, setToggleValue] = useState("password")
+    const [confirmPasswordToggleValue, setConfirmPasswordToggleValue] = useState("password")
+
+    // showPassword function
+    function showPassword() {
+        if (toggleValue === "password") {
+            setToggleValue("text")
+        }
+        else if (toggleValue === "text") {
+            setToggleValue("password")
+        }
+    }
+
+    // showConfirmPassword function
+    function showConfirmPassword() {
+        if (confirmPasswordToggleValue === "password") {
+            setConfirmPasswordToggleValue("text")
+        }
+        else if (confirmPasswordToggleValue === "text") {
+            setConfirmPasswordToggleValue("password")
+        }
+    }
 
     // validateEmail function
     function validateEmail(value) {
@@ -130,7 +153,7 @@ export const ForgetPassword = () => {
                     return;
                 }
 
-                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                const res = await api.post("/api/consumers/forgetPassword", {
                     data: formData
                 });
 
@@ -162,7 +185,7 @@ export const ForgetPassword = () => {
                     return;
                 }
 
-                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                const res = await api.post("/api/consumers/forgetPassword", {
                     data: formData
                 });
 
@@ -218,7 +241,7 @@ export const ForgetPassword = () => {
                     return;
                 }
 
-                const res = await axios.post("http://localhost:5000/forgetPassword", {
+                const res = await api.post("/api/consumers/forgetPassword", {
                     data: formData,
                 });
 
@@ -302,24 +325,72 @@ export const ForgetPassword = () => {
                     {count === 2 && (
                         <div className='grid grid-col-2'>
                             <label className='font-bold' for="securityQuestion">{formData.securityQuestion}</label>
-                            <input type="text" placeholder="Enter Second Name" id="securityQuestion" value={formData.securityQuestionType} onInput={(event) => { validateSecurityAnswerType(event.target.value) }} />
+                            <input type="text" placeholder="Enter Answer" id="securityQuestion" value={formData.securityQuestionType} onInput={(event) => { validateSecurityAnswerType(event.target.value) }} />
                             <p id="securityAnswerTypeError">{error.securityAnswerTypeError}</p>
                         </div>
                     )}
 
+
+
+
+
+
+
                     {/* password */}
 
                     {count === 3 && (
-                        <input type="password" placeholder="Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
+                        <div className="relative w-full">
+
+                            <input
+                                type={toggleValue}
+                                placeholder="Enter Password"
+                                value={formData.password}
+                                onInput={(event) => validatePassword(event.target.value)}
+                                className="w-full border p-2 pr-10"
+                            />
+
+                            <button
+                                type="button"
+                                className="absolute bg-white top-4 right-5 rounded-full"
+                                onClick={() => {
+                                    showPassword()
+                                }}
+                            >
+                                {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                            </button>
+
+                        </div>
                     )}
                     {count === 3 && (
-                        <p id="passwordError">{error.passwordError}</p>
+                        <p>{error.passwordError}</p>
                     )}
 
                     {/* confirm-password */}
 
                     {count === 3 && (
-                        <input type="password" placeholder="Confirm Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
+                        <div className="relative w-full">
+
+                            <input
+                                type={confirmPasswordToggleValue}
+                                placeholder="Confirm-Password"
+                                value={formData.confirmPassword}
+                                onInput={(event) => validateConfirmPassword(event.target.value)}
+                                className="w-full border p-2 pr-10"
+                            />
+
+                            <button
+                                type="button"
+                                className="absolute bg-white top-4 right-5 rounded-full"
+                                onClick={() => {
+                                    showConfirmPassword()
+                                }}
+                            >
+                                {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                            </button>
+
+                        </div>
                     )}
                     {count === 3 && (
                         <p id="confirmPasswordError">{error.confirmPasswordError}</p>

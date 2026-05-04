@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import '../signup/Signup.css'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios';
+import api from '../axios/AxiosFile';
 
 export const Signup = () => {
 
@@ -55,6 +55,29 @@ export const Signup = () => {
         securityAnswerError: ""
 
     });
+
+    const [toggleValue, setToggleValue] = useState("password")
+    const [confirmPasswordToggleValue, setConfirmPasswordToggleValue] = useState("password")
+
+    // showPassword function
+    function showPassword() {
+        if (toggleValue === "password") {
+            setToggleValue("text")
+        }
+        else if (toggleValue === "text") {
+            setToggleValue("password")
+        }
+    }
+    
+    // showConfirmPassword function
+    function showConfirmPassword() {
+        if (confirmPasswordToggleValue === "password") {
+            setConfirmPasswordToggleValue("text")
+        }
+        else if (confirmPasswordToggleValue === "text") {
+            setConfirmPasswordToggleValue("password")
+        }
+    }
 
 
     // validateFirstName function
@@ -402,7 +425,7 @@ export const Signup = () => {
                 console.log(formData, "===>");
                 try {
                     setSpinnerLoader(true)
-                    var result = await axios.post("http://localhost:5000/addUsers", { data: formData });
+                    var result = await api.post("/api/consumers/addUsers", { data: formData });
                     console.log(result.data.message);
                     if (result.data.message === "Signup Successfully") {
                         setSpinnerLoader(false)
@@ -494,12 +517,56 @@ export const Signup = () => {
                     <p id="genderError">{error.genderError}</p>
 
                     {/* password */}
-                    <input type="password" placeholder="Password" id="password" value={formData.password} onInput={(event) => { validatePassword(event.target.value) }} />
-                    <p id="passwordError">{error.passwordError}</p>
+                    <div className="relative w-full">
 
-                    {/* confirm-password */}
-                    <input type="password" placeholder="Confirm-Password" id="confirmPassword" value={formData.confirmPassword} onInput={(event) => { validateConfirmPassword(event.target.value) }} />
-                    <p id="confirmPasswordError">{error.confirmPasswordError}</p>
+                        <input
+                            type={toggleValue}
+                            placeholder="Enter Password"
+                            value={formData.password}
+                            onInput={(event) => validatePassword(event.target.value)}
+                            className="w-full border p-2 pr-10"
+                        />
+
+                        <button
+                            type="button"
+                            className="absolute bg-white top-4 right-5 rounded-full"
+                            onClick={() => {
+                                showPassword()
+                            }}
+                        >
+                            {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                        </button>
+
+                    </div>
+
+                    <p>{error.passwordError}</p>
+
+                    {/*  confirm-password */}
+                    <div className="relative w-full">
+
+                        <input
+                            type={confirmPasswordToggleValue}
+                            placeholder="Confirm-Password"
+                            value={formData.confirmPassword}
+                            onInput={(event) => validateConfirmPassword(event.target.value)}
+                            className="w-full border p-2 pr-10"
+                        />
+
+                        <button
+                            type="button"
+                            className="absolute bg-white top-4 right-5 rounded-full"
+                            onClick={() => {
+                                showConfirmPassword()
+                            }}
+                        >
+                            {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                        </button>
+
+                    </div>
+
+                    <p>{error.confirmPasswordError}</p>
 
                     {/* address */}
                     <textarea placeholder="Enter address" id="address" value={formData.address} onInput={(event) => { validateAddress(event.target.value) }} ></textarea>

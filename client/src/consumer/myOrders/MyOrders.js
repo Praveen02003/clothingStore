@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
 
 export const MyOrders = () => {
 
@@ -15,6 +15,11 @@ export const MyOrders = () => {
         setLoginUser
     } = useContext(mainContext);
 
+    // alert
+    const [openAlert, setOpenAlert] = useState(false)
+    const [alertColor, setAlertColor] = useState("")
+    const [alertContent, setAlertContent] = useState("")
+
     const navigate = useNavigate()
 
     const [myOrderDatas, setMyOrderDatas] = useState([])
@@ -22,6 +27,11 @@ export const MyOrders = () => {
     const [getParticularOrder, setGetParticularOrder] = useState({})
 
     const [viewOrderModal, setViewOrderModal] = useState(false)
+    const [productDeleteModal, setProductDeleteModal] = useState(false)
+    const [orderDeleteModal, setOrderDeleteModal] = useState(false)
+
+    const [deleteOrderId, setDeleteOrderId] = useState(null);
+
 
     const [totalPrice, setTotalPrice] = useState(0)
 
@@ -34,6 +44,15 @@ export const MyOrders = () => {
     const [totalDataCount, setTotalDataCount] = useState(0);
     const [startValue, setStartValue] = useState(0);
     const [endValue, setEndValue] = useState(0);
+
+    // order delete modal
+    function openOrderDeleteModal(id) {
+        setDeleteOrderId(id)
+        setOrderDeleteModal(true)
+    }
+    function closeOrderDeleteModal() {
+        setOrderDeleteModal(false)
+    }
 
     // next function
     function next() {
@@ -59,11 +78,7 @@ export const MyOrders = () => {
         setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getMyOrders/${loginUser._id}?page=${currentPage}&count=${dynamicPageNumber}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            var getData = await api.get(`/api/orders/getMyOrders/${loginUser._id}?page=${currentPage}&count=${dynamicPageNumber}`)
 
             // pagination concept
             var allData = getData.data.data
@@ -104,8 +119,11 @@ export const MyOrders = () => {
         var token = localStorage.getItem('loginToken')
         console.log(user, "===>");
 
-        if (user && token) {
+        if ((user && token) && (user.role.toLowerCase() === "user")) {
             setLoginUser(user)
+        }
+        else {
+            navigate('/login')
         }
     }
 
@@ -116,8 +134,10 @@ export const MyOrders = () => {
 
         try {
             await getParticularOrderDetails(id)
+
             setViewOrderModal(true)
         } catch (error) {
+            setSpinnerLoader(false);
             console.log(error);
         } finally {
             setSpinnerLoader(false);
@@ -132,16 +152,27 @@ export const MyOrders = () => {
             var datas = {
                 id: id
             }
-            var orderDelete = await axios.post(`http://localhost:5000/deleteOrder`, { data: datas }, {
-                headers: {
-                    Authorization: token
-                }
-            });
+            var orderDelete = await api.post(`/api/orders/deleteOrder`, { data: datas });
             console.log(orderDelete.data.message);
+
             if (orderDelete.data.message === "order deleted successfully") {
-                getMyOrders()
                 setSpinnerLoader(false)
+                closeOrderDeleteModal()
+                setAlertContent(orderDelete.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
+
             }
+            else {
+                setAlertContent(orderDelete.data.message)
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
+            }
+            getMyOrders()
 
         } catch (error) {
             console.log(error.response.data.message);
@@ -158,14 +189,10 @@ export const MyOrders = () => {
     async function getParticularOrderDetails(id) {
         try {
             const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getParticularOrder/${id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            var getData = await api.get(`/api/orders/getParticularOrder/${id}`)
 
             var allData = getData.data.data[0]
-            console.log(allData);
+            console.log(allData, "==>");
 
             setSpinnerLoader(false)
             setViewOrderModal(true)
@@ -262,7 +289,7 @@ export const MyOrders = () => {
                                                 </button>
                                                 {data.status.toLowerCase() === "placed" && (
                                                     <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                                                        deleteOrder(data._id)
+                                                        openOrderDeleteModal(data._id)
                                                     }}>
                                                         <i class="fa-solid fa-trash"></i>
                                                     </button>
@@ -321,6 +348,14 @@ export const MyOrders = () => {
 
                     </div>
                 )}
+
+                {/* alert */}
+                {openAlert && (
+                    <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+                        <div class="text-sm font-normal">{alertContent}</div>
+                    </div>
+                )}
+
                 {/* view order modal */}
                 {viewOrderModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -351,11 +386,11 @@ export const MyOrders = () => {
 
                                 <div>
                                     <p className="font-bold text-lg text-gray-800">Order Date:</p>
-                                    <p className="text-gray-700 text-sm">{new Date(getParticularOrder.addedOn).toLocaleDateString()}</p>
+                                    <p className="text-gray-700 text-sm">{getParticularOrder?.addedOn ? new Date(getParticularOrder.addedOn).toLocaleDateString() : ""}</p>
                                 </div>
                                 <div>
                                     <p className="font-bold text-lg text-gray-800">Shipping Address:</p>
-                                    <p className="text-gray-700 text-sm">{getParticularOrder.shippingAddress}</p>
+                                    <p className="text-gray-700 text-sm">{getParticularOrder?.shippingAddress ? getParticularOrder.shippingAddress : ""}</p>
                                 </div>
 
                             </div>
@@ -385,6 +420,43 @@ export const MyOrders = () => {
                             </div>
 
                         </div>
+                    </div>
+                )}
+
+                {/* order delete confirmation modal */}
+                {orderDeleteModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
+
+                        <div className="bg-white rounded-lg shadow-xl p-6">
+
+                            <div className="flex items-start gap-4">
+                                <div>
+
+                                    <h3 className="text-lg font-bold text-red-600">
+                                        Delete Confirmation
+                                    </h3>
+
+                                    <p className="mt-2 text-black text-lg font-bold">
+                                        Are you sure you want to delete the order ?
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-2">
+
+                                <button onClick={() => { deleteOrder(deleteOrderId) }} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">
+                                    Delete
+                                </button>
+
+                                <button onClick={() => closeOrderDeleteModal()} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+                                    Cancel
+                                </button>
+
+                            </div>
+
+                        </div>
+
                     </div>
                 )}
 

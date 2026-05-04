@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
 
 export const Address = () => {
 
@@ -14,7 +14,9 @@ export const Address = () => {
         loginUser,
         setLoginUser,
         updatedAddress,
-        setUpdatedAddress
+        setUpdatedAddress,
+        cartCount,
+        setCartCount
     } = useContext(mainContext);
 
     const navigate = useNavigate()
@@ -63,14 +65,10 @@ export const Address = () => {
         if (event.target.checked === true) {
             try {
                 const token = localStorage.getItem('loginToken');
-                var getData = await axios.get(`http://localhost:5000/getAddressDetails/${loginUser._id}`, {
-                    headers: {
-                        Authorization: token
-                    }
-                })
+                var getData = await api.get(`/api/consumers/getAddressDetails/${loginUser._id}`)
 
                 var allData = getData.data.data
-                console.log(allData);
+                console.log(allData, "==>");
 
                 setAddressDetailsData(allData)
                 setUpdatedAddress(allData.address)
@@ -78,7 +76,7 @@ export const Address = () => {
                 setSpinnerLoader(false)
 
             } catch (error) {
-                console.log(error.response.data.message);
+                console.log(error);
                 // alert(error.response.data.message)
                 if (error.response.data.message === "Access denied") {
                     logOut()
@@ -111,11 +109,43 @@ export const Address = () => {
         var token = localStorage.getItem('loginToken')
         console.log(user, "===>");
 
-        if (user && token) {
+        if ((user && token) && (user.role.toLowerCase() === "user")) {
             setLoginUser(user)
+        }
+        else {
+            navigate('/login')
         }
     }
 
+    // getCartAll function
+    async function getCartAll() {
+        setSpinnerLoader(true)
+        try {
+            const token = localStorage.getItem('loginToken');
+            var getData = await api.get(`/api/carts/getCart/${loginUser._id}`)
+
+            var allData = getData.data.data
+            console.log(allData);
+
+            if (allData.length > 0) {
+                setAllDatas(allData)
+            }
+            else {
+                navigate('/consumers/cart')
+            }
+            setSpinnerLoader(false)
+
+        } catch (error) {
+            console.log(error.response.data.message);
+            // alert(error.response.data.message)
+            if (error.response.data.message === "Access denied") {
+                logOut()
+            }
+            else if (error.response.data.message === "Invalid token") {
+                logOut()
+            }
+        }
+    }
     useEffect(() => {
         try {
             authUser()
@@ -123,6 +153,19 @@ export const Address = () => {
             console.log("error");
         }
     }, [])
+
+    useEffect(() => {
+        if ((loginUser?._id && loginUser?.role.toLowerCase() === "user")) {
+            getCartAll()
+            if (cartCount === 0) {
+                navigate("/consumers/cart")
+            }
+
+        }
+        else {
+            navigate("login")
+        }
+    }, [loginUser, cartCount])
 
     return (
         <div className={`flex-1 transition-all duration-300 

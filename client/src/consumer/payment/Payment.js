@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
 
 export const Payment = () => {
 
@@ -35,11 +35,7 @@ export const Payment = () => {
         setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            var getData = await api.get(`/api/carts/getCart/${loginUser._id}`)
 
             var allData = getData.data.data
             console.log(allData);
@@ -64,11 +60,13 @@ export const Payment = () => {
         var token = localStorage.getItem('loginToken')
         console.log(user, "===>");
 
-        if (user && token) {
+        if ((user && token) && (user.role.toLowerCase() === "user")) {
             setLoginUser(user)
         }
+        else {
+            navigate('/login')
+        }
     }
-
     useEffect(() => {
         try {
             authUser()

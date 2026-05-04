@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { mainContext } from '../../App';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios, { all } from 'axios';
+import api from '../../axios/AxiosFile';
 export const Sidebar = () => {
     const {
         sideBarOpen,
@@ -42,11 +42,7 @@ export const Sidebar = () => {
     async function getCartAll() {
         try {
             const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            var getData = await api.get(`/api/carts/getCart/${loginUser._id}`)
 
             var allData = getData.data.data
             console.log(allData);

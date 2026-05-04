@@ -3,10 +3,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import '../products/AdminProducts.css'
 import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AdminFooter } from '../footer/Footer';
 import { AdminNavbar } from '../navbar/AdminNavbar';
+import api from '../../axios/AxiosFile';
+import { ImageUrl } from '../../backendUrl/ImageUrl';
 export const AdminProducts = () => {
     // alert
     const [openAlert, setOpenAlert] = useState(false)
@@ -129,11 +130,7 @@ export const AdminProducts = () => {
     async function particularProduct(id) {
         try {
             const token = localStorage.getItem('loginToken');
-            const getOneData = await axios.get(`http://localhost:5000/getOneProduct/${id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            const getOneData = await api.get(`/api/products/getOneProduct/${id}`)
             console.log(getOneData.data.data, "==>");
             setGetParticularProduct(getOneData.data.data)
 
@@ -152,19 +149,15 @@ export const AdminProducts = () => {
     async function deleteParticularProduct(id) {
         try {
             const token = localStorage.getItem('loginToken');
-            const deleteOneData = await axios.get(`http://localhost:5000/deleteParticularProduct/${id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            const deleteOneData = await api.get(`/api/products/deleteParticularProduct/${id}`)
             console.log(deleteOneData.data.message, "==>");
             // alert(deleteOneData.data.message)
             if (deleteOneData.data.message === "Product Deleted Successfully") {
+                closeDeleteModal();
                 setAlertContent(deleteOneData.data.message)
                 setOpenAlert(true)
                 setTimeout(() => {
                     setOpenAlert(false)
-                    closeDeleteModal();
                 }, 2000);
             }
             else {
@@ -460,18 +453,28 @@ export const AdminProducts = () => {
 
             try {
                 const token = localStorage.getItem('loginToken');
-                const dataAdd = await axios.post("http://localhost:5000/addProducts", formData, {
+                const dataAdd = await api.post("/api/products/addProducts", formData, {
                     headers: {
-                        Authorization: token,
                         "Content-Type": "multipart/form-data"
                     }
                 })
                 // alert(dataAdd.data.message)
-                setAlertContent(dataAdd.data.message)
-                setOpenAlert(true)
-                setTimeout(() => {
-                    setOpenAlert(false)
-                }, 2000);
+                if (dataAdd.data.message === "Product Added Successfully") {
+                    closeAddModal()
+                    setAlertContent(dataAdd.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+
+                }
+                else {
+                    setAlertContent(dataAdd.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+                }
                 getAllProducts();
             } catch (error) {
                 console.log(error.response.data.message);
@@ -491,12 +494,14 @@ export const AdminProducts = () => {
 
     // add image removeImage function
     function removeImage() {
+        document.getElementById('addProductImage').value = ""
         setAddData({ ...addData, image: "" })
         setAddErrors({ ...addErrors, imageError: "Choose Image" })
     }
 
     // edit image removeImage function
     function removeEditImage(product) {
+        document.getElementById('editProductImage').value = ""
         setGetParticularProduct({ ...getParticularProduct, image: "" })
         setEditErrors({ ...editErrors, imageError: "Choose Image" })
     }
@@ -679,18 +684,14 @@ export const AdminProducts = () => {
             formData.append("image", getParticularProduct.image);
             try {
                 const token = localStorage.getItem('loginToken');
-                const dataEdit = await axios.post("http://localhost:5000/upateProducts", formData, {
-                    headers: {
-                        Authorization: token
-                    }
-                })
+                const dataEdit = await api.post("/api/products/upateProducts", formData)
                 if (dataEdit.data.message === "Product Updated Successfully") {
 
                     setAlertContent(dataEdit.data.message)
+                    closeEditModal()
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
-                        closeEditModal()
                     }, 2000);
                 }
                 else {
@@ -721,11 +722,7 @@ export const AdminProducts = () => {
         setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get(`http://localhost:5000/getAllProducts?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            const getData = await api.get(`/api/products/getAllProducts?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`)
             console.log(getData.data.data, "--->");
 
             // pagination concept
@@ -934,7 +931,7 @@ export const AdminProducts = () => {
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.user[0].email}
+                                                {data.user[0].firstName}.{data.user[0].lastName}
                                             </td>
                                         </tr>
                                     )
@@ -989,6 +986,13 @@ export const AdminProducts = () => {
                     </div>
                 )}
 
+                {/* alert */}
+                {openAlert && (
+                    <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+                        <div class="text-sm font-normal">{alertContent}</div>
+                    </div>
+                )}
+
 
 
                 {/* delete confirmation modal */}
@@ -999,12 +1003,6 @@ export const AdminProducts = () => {
 
                             <div className="flex items-start gap-4">
                                 <div>
-                                    {/* alert */}
-                                    {openAlert && (
-                                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                            <span class="block sm:inline">{alertContent}</span>
-                                        </div>
-                                    )}
                                     <h3 className="text-lg font-bold text-red-600">
                                         Delete Confirmation
                                     </h3>
@@ -1046,7 +1044,7 @@ export const AdminProducts = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {getParticularProduct.image && (
                                     <img
-                                        src={`http://localhost:5000/uploadingImages/${getParticularProduct.image}`}
+                                        src={`${ImageUrl}/${getParticularProduct.image}`}
                                         alt="product"
                                         className="w-full rounded-lg"
                                     />
@@ -1109,11 +1107,7 @@ export const AdminProducts = () => {
 
                             <h2 className="text-xl font-bold mb-4">Edit Product</h2>
                             {/* alert */}
-                            {openAlert && (
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="block sm:inline">{alertContent}</span>
-                                </div>
-                            )}
+
                             <form onSubmit={(event) => { updateProduct(event) }}>
 
                                 <div className="block">
@@ -1225,6 +1219,7 @@ export const AdminProducts = () => {
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        id='editProductImage'
                                         onChange={(event) => {
                                             editValidateImage(event)
                                         }}
@@ -1236,7 +1231,7 @@ export const AdminProducts = () => {
                                         <div className="relative inline-block">
                                             <img src={
                                                 typeof (getParticularProduct.image) === "string"
-                                                    ? `http://localhost:5000/uploadingImages/${getParticularProduct.image}`
+                                                    ? `${ImageUrl}/${getParticularProduct.image}`
                                                     : URL.createObjectURL(getParticularProduct.image)
                                             }
                                                 alt="Thumb"
@@ -1301,12 +1296,6 @@ export const AdminProducts = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Add Product</h2>
-                            {/* alert */}
-                            {openAlert && (
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="block sm:inline">{alertContent}</span>
-                                </div>
-                            )}
 
                             <form onSubmit={(event) => { addProduct(event) }}>
 
@@ -1419,6 +1408,7 @@ export const AdminProducts = () => {
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        id='addProductImage'
                                         onChange={(event) => {
                                             validateImage(event)
                                         }}

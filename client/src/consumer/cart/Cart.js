@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
 
 export const Cart = () => {
 
@@ -58,22 +58,18 @@ export const Cart = () => {
         quantity: quantity
       }
 
-      const updateData = await axios.post(
-        "http://localhost:5000/updateCartQuantity", { data: data },
-        {
-          headers: {
-            Authorization: token
-          }
-        }
+      const updateData = await api.post(
+        "/api/carts/updateCartQuantity", { data: data }
       );
 
       var message = updateData.data.message
       if (message === "quantity updated success") {
-        getCartAll()
+        await getCartAll()
         setSpinnerLoader(false)
       }
       console.log(message);
     } catch (error) {
+      setSpinnerLoader(false)
       console.log(error.response.data.message);
       // alert(error.response.data.message)
       if (error.response.data.message === "Access denied") {
@@ -90,15 +86,11 @@ export const Cart = () => {
     setSpinnerLoader(true)
     try {
       const token = localStorage.getItem('loginToken');
-      var getData = await axios.get(`http://localhost:5000/removeFromCart/${id}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      var getData = await api.get(`/api/carts/removeFromCart/${id}`)
 
       var message = getData.data.message
       if (message === "item deleted successfully") {
-        getCartAll()
+        await getCartAll()
         setSpinnerLoader(false)
       }
       console.log(message);
@@ -119,24 +111,19 @@ export const Cart = () => {
     setSpinnerLoader(true)
     try {
       const token = localStorage.getItem('loginToken');
-      var getData = await axios.get(`http://localhost:5000/getCart/${loginUser._id}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      var getData = await api.get(`/api/carts/getCart/${loginUser._id}`)
 
       var allData = getData.data.data
       console.log(allData);
+
       setCartCount(allData.length)
-
-
       setAllDatas(allData)
-
       calculateTotalAmount(allData);
       setSpinnerLoader(false)
 
     } catch (error) {
-      console.log(error.response.data.message);
+      setSpinnerLoader(false)
+      console.log(error);
       // alert(error.response.data.message)
       if (error.response.data.message === "Access denied") {
         logOut()
@@ -157,8 +144,11 @@ export const Cart = () => {
     var token = localStorage.getItem('loginToken')
     console.log(user, "===>");
 
-    if (user && token) {
+    if ((user && token) && (user.role.toLowerCase() === "user")) {
       setLoginUser(user)
+    }
+    else {
+      navigate('/login')
     }
   }
 
@@ -171,7 +161,7 @@ export const Cart = () => {
   }, [])
 
   useEffect(() => {
-    if (loginUser?._id) {
+    if ((loginUser?._id && loginUser?.role.toLowerCase() === "user")) {
       getCartAll()
     }
   }, [loginUser])

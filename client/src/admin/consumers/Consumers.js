@@ -3,10 +3,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import '../products/AdminProducts.css'
 import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AdminFooter } from '../footer/Footer';
 import { AdminNavbar } from '../navbar/AdminNavbar';
+import api from '../../axios/AxiosFile';
+import { ImageUrl } from '../../backendUrl/ImageUrl';
 export const Consumers = () => {
 
     const {
@@ -54,6 +55,29 @@ export const Consumers = () => {
         securityQuestionError: "",
         securityAnswerError: ""
     });
+
+    const [toggleValue, setToggleValue] = useState("password")
+    const [confirmPasswordToggleValue, setConfirmPasswordToggleValue] = useState("password")
+
+    // showPassword function
+    function showPassword() {
+        if (toggleValue === "password") {
+            setToggleValue("text")
+        }
+        else if (toggleValue === "text") {
+            setToggleValue("password")
+        }
+    }
+
+    // showConfirmPassword function
+    function showConfirmPassword() {
+        if (confirmPasswordToggleValue === "password") {
+            setConfirmPasswordToggleValue("text")
+        }
+        else if (confirmPasswordToggleValue === "text") {
+            setConfirmPasswordToggleValue("password")
+        }
+    }
 
 
     // editValidateFirstName function
@@ -427,24 +451,22 @@ export const Consumers = () => {
             if (getParticularConsumer.images) {
                 formData.append("image", getParticularConsumer.images);
             }
-            const token = localStorage.getItem('loginToken');
-            const updateData = await axios.post(
-                "http://localhost:5000/updateUser",
+            // const token = localStorage.getItem('loginToken');
+            const updateData = await api.post(
+                "/api/consumers/updateUser",
                 formData,
                 {
                     headers: {
-                        Authorization: token,
                         "Content-Type": "multipart/form-data"
                     }
                 }
             );
             if (updateData.data.message === "User updated successfully") {
-
+                closeEditModal()
                 setAlertContent(updateData.data.message)
                 setOpenAlert(true)
                 setTimeout(() => {
                     setOpenAlert(false)
-                    closeEditModal()
                 }, 2000);
             }
             else {
@@ -874,10 +896,9 @@ export const Consumers = () => {
                     forms.append("terms", formData.terms);
                     forms.append("securityAnswer", formData.securityAnswer);
                     forms.append("securityQuestion", formData.securityQuestion);
-                    const token = localStorage.getItem('loginToken');
-                    var result = await axios.post("http://localhost:5000/addUser", forms, {
+                    // const token = localStorage.getItem('loginToken');
+                    var result = await api.post("/api/consumers/addUser", forms, {
                         headers: {
-                            Authorization: token,
                             "Content-Type": "multipart/form-data"
                         }
                     }
@@ -885,11 +906,11 @@ export const Consumers = () => {
                     );
                     console.log(result.data.message);
                     if (result.data.message === "User Added Successfully") {
+                        closeAddModal()
                         getAllConsumers()
                         setAlertContent(result.data.message)
                         setOpenAlert(true)
                         setTimeout(() => {
-                            closeAddModal()
                             setOpenAlert(false)
                         }, 2000);
                     }
@@ -982,11 +1003,7 @@ export const Consumers = () => {
     async function particularConsumer(id) {
         try {
             const token = localStorage.getItem('loginToken');
-            const getOneData = await axios.get(`http://localhost:5000/getOneConsumer/${id}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            const getOneData = await api.get(`/api/consumers/getOneConsumer/${id}`)
             console.log(getOneData.data.data, "==>");
             const data = getOneData.data.data;
 
@@ -1041,11 +1058,7 @@ export const Consumers = () => {
         setSpinnerLoader(true)
         try {
             const token = localStorage.getItem('loginToken');
-            const getData = await axios.get(`http://localhost:5000/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}&category=${category}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            const getData = await api.get(`/api/consumers/getAllConsumers?page=${currentPage}&count=${dynamicPageNumber}&search=${searchData}&category=${category}`)
             console.log(getData.data.totalPage);
 
             // pagination concept
@@ -1149,12 +1162,14 @@ export const Consumers = () => {
 
     // edit image removeImage function
     function removeEditImage(product) {
+        document.getElementById('consumerEditImage').value = ""
         setGetParticularConsumer({ ...getParticularConsumer, images: "" })
         setEditError({ ...editError, imageError: "Choose Image" })
     }
 
     // add image removeImage function
     function removeImage() {
+        document.getElementById('consumerImage').value = ""
         setFormData({ ...formData, image: "" })
         setError({ ...error, imageError: "Choose Image" })
     }
@@ -1336,6 +1351,13 @@ export const Consumers = () => {
                     </div>
                 )}
 
+                {/* alert */}
+                {openAlert && (
+                    <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+                        <div class="text-sm font-normal">{alertContent}</div>
+                    </div>
+                )}
+
                 {/* view consumer modal */}
                 {viewModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/75">
@@ -1350,7 +1372,7 @@ export const Consumers = () => {
                                 </button>
                                 {getParticularConsumer.images ? (
                                     <img
-                                        src={`http://localhost:5000/uploadingImages/${getParticularConsumer.images}`}
+                                        src={`${ImageUrl}/${getParticularConsumer.images}`}
                                         alt="user"
                                         className="w-80 rounded-lg h-80"
                                     />
@@ -1400,12 +1422,6 @@ export const Consumers = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Add Consumer</h2>
-                            {/* alert */}
-                            {openAlert && (
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="block sm:inline">{alertContent}</span>
-                                </div>
-                            )}
 
                             <form onSubmit={(event) => {
                                 submitForm(event)
@@ -1477,6 +1493,7 @@ export const Consumers = () => {
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        id='consumerImage'
                                         onChange={(event) => {
                                             validateImage(event)
                                         }}
@@ -1491,11 +1508,12 @@ export const Consumers = () => {
                                                 alt="Thumb"
                                                 className="w-24 h-24 object-cover rounded-lg border shadow"
                                             />
-                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={() => { removeImage() }}>
+                                            <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow hover:bg-red-600" onClick={(event) => { removeImage() }}>
                                                 <i class="fa-solid fa-xmark"></i>
                                             </button>
 
                                         </div>
+
                                     )}
                                 </div>
                                 <div className="block sm:w-100">
@@ -1513,32 +1531,54 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <div className="block">
+                                <div className="block relative w-full">
+
                                     <input
-                                        type="password"
-                                        className="w-full border rounded px-3 py-2"
-                                        placeholder="Password"
-                                        id="password"
+                                        type={toggleValue}
+                                        placeholder="Enter Password"
                                         value={formData.password}
-                                        onInput={(event) => { validatePassword(event.target.value) }}
-                                    />
-                                    <p className="text-sm text-red-500">
-                                        {error.passwordError}
-                                    </p>
-                                </div>
-                                <div className="block">
-                                    <input
-                                        type="password"
+                                        onInput={(event) => validatePassword(event.target.value)}
                                         className="w-full border rounded px-3 py-2"
-                                        placeholder="Confirm-Password"
-                                        id="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onInput={(event) => { validateConfirmPassword(event.target.value) }}
                                     />
-                                    <p className="text-sm text-red-500 mb-0">
-                                        {error.confirmPasswordError}
-                                    </p>
+
+                                    <button
+                                        type="button"
+                                        className="absolute bg-white top-4 right-5 rounded-full"
+                                        onClick={() => {
+                                            showPassword()
+                                        }}
+                                    >
+                                        {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                                    </button>
+                                    <p className="text-sm text-red-500 mb-0">{error.passwordError}</p>
+
                                 </div>
+
+                                <div className="block relative w-full">
+
+                                    <input
+                                        type={confirmPasswordToggleValue}
+                                        placeholder="Confirm-Password"
+                                        value={formData.confirmPassword}
+                                        onInput={(event) => validateConfirmPassword(event.target.value)}
+                                        className="w-full border rounded px-3 py-2"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="absolute bg-white top-4 right-5 rounded-full"
+                                        onClick={() => {
+                                            showConfirmPassword()
+                                        }}
+                                    >
+                                        {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                                    </button>
+                                    <p className="text-sm text-red-500 mb-0">{error.confirmPasswordError}</p>
+
+                                </div>
+
                                 <div className="block">
                                     <textarea className="w-full border rounded px-3 py-2"
                                         placeholder="Enter address"
@@ -1604,12 +1644,6 @@ export const Consumers = () => {
                             </button>
 
                             <h2 className="text-xl font-bold mb-4">Edit Consumer</h2>
-                            {/* alert */}
-                            {openAlert && (
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                    <span class="block sm:inline">{alertContent}</span>
-                                </div>
-                            )}
 
                             <form onSubmit={(event) => {
                                 updateUser(event)
@@ -1663,6 +1697,7 @@ export const Consumers = () => {
                                     <input
                                         type="file"
                                         className="w-full border rounded px-3 py-2"
+                                        id='consumerEditImage'
                                         onChange={(event) => {
                                             editValidateImage(event)
                                         }}
@@ -1674,7 +1709,7 @@ export const Consumers = () => {
                                         <div className="relative inline-block">
                                             <img src={
                                                 typeof (getParticularConsumer.images) === "string"
-                                                    ? `http://localhost:5000/uploadingImages/${getParticularConsumer.images}`
+                                                    ? `${ImageUrl}/${getParticularConsumer.images}`
                                                     : URL.createObjectURL(getParticularConsumer.images)
                                             }
                                                 alt="Thumb"
@@ -1721,30 +1756,52 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <div className="block">
+                                <div className="block relative w-full">
+
                                     <input
-                                        type="password"
+                                        type={toggleValue}
+                                        placeholder="Enter Password"
+                                        onInput={(event) => editValidatePassword(event.target.value)}
                                         className="w-full border rounded px-3 py-2"
-                                        placeholder="Password"
-                                        id="password"
-                                        onInput={(event) => { editValidatePassword(event.target.value) }}
                                     />
-                                    <p className="text-sm text-red-500">
-                                        {editError.passwordError}
-                                    </p>
+
+                                    <button
+                                        type="button"
+                                        className="absolute bg-white top-4 right-5 rounded-full"
+                                        onClick={() => {
+                                            showPassword()
+                                        }}
+                                    >
+                                        {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                                    </button>
+                                    <p className="text-sm text-red-500 mb-0">{editError.passwordError}</p>
+
                                 </div>
-                                <div className="block">
+
+                                <div className="block relative w-full">
+
                                     <input
-                                        type="password"
-                                        className="w-full border rounded px-3 py-2"
+                                        type={confirmPasswordToggleValue}
                                         placeholder="Confirm-Password"
-                                        id="confirmPassword"
-                                        onInput={(event) => { editValidateConfirmPassword(event.target.value) }}
+                                        onInput={(event) => editValidateConfirmPassword(event.target.value)}
+                                        className="w-full border rounded px-3 py-2"
                                     />
-                                    <p className="text-sm text-red-500 mb-0">
-                                        {editError.confirmPasswordError}
-                                    </p>
+
+                                    <button
+                                        type="button"
+                                        className="absolute bg-white top-4 right-5 rounded-full"
+                                        onClick={() => {
+                                            showConfirmPassword()
+                                        }}
+                                    >
+                                        {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
+
+                                    </button>
+                                    <p className="text-sm text-red-500 mb-0">{editError.confirmPasswordError}</p>
+
                                 </div>
+
                                 <div className="block">
                                     <textarea className="w-full border rounded px-3 py-2"
                                         placeholder="Enter address"

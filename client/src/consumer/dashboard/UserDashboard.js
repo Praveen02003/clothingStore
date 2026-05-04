@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
 import banner1 from '../../assets/banner1.jpg'
 import banner2 from '../../assets/banner2.jpg'
 import banner3 from '../../assets/banner3.jpg'
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
+import { ImageUrl } from '../../backendUrl/ImageUrl';
 
 export const UserDashboard = () => {
 
@@ -60,6 +61,7 @@ export const UserDashboard = () => {
       await getOneProduct(id)
       setViewModalOpen(true)
     } catch (error) {
+      setSpinnerLoader(false)
       console.log(error);
     } finally {
       setSpinnerLoader(false);
@@ -86,11 +88,12 @@ export const UserDashboard = () => {
   async function getOneProduct(id) {
     setSpinnerLoader(true)
     try {
-      const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
+      const getOneData = await api.get(`/api/products/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
       setSpinnerLoader(false)
     } catch (error) {
+      setSpinnerLoader(false)
       console.log(error.response.data.message);
       // alert(error.response.data.message)
       if (error.response.data.message === "Access denied") {
@@ -106,12 +109,13 @@ export const UserDashboard = () => {
   async function getFewProduct() {
     setSpinnerLoader(true)
     try {
-      var getData = await axios.get(`http://localhost:5000/getFewData`)
+      var getData = await api.get(`/api/products/getFewData`)
       console.log(getData.data.data);
 
       setFewDatas(getData.data.data)
       setSpinnerLoader(false)
     } catch (error) {
+      setSpinnerLoader(false)
       console.log(error.response.data.message);
       // alert(error.response.data.message)
       if (error.response.data.message === "Access denied") {
@@ -125,6 +129,8 @@ export const UserDashboard = () => {
 
   // addToCart function
   async function addToCart(id) {
+    console.log("cart");
+    
     setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
@@ -132,22 +138,20 @@ export const UserDashboard = () => {
       var productId = id
       datas.userId = userId
       datas.productId = productId
+      console.log(datas);
+      
 
       try {
         const token = localStorage.getItem('loginToken');
 
-        var getData = await axios.post("http://localhost:5000/cartAdd", { data: datas },
-          {
-            headers: {
-              Authorization: token
-            }
-          }
-        )
+        var getData = await api.post("/api/carts/cartAdd", { data: datas })
+
 
         // alert(getData.data.message);
-        getCartData()
+        await getCartData()
         setSpinnerLoader(false)
       } catch (error) {
+        setSpinnerLoader(false)
         console.log(error.response.data.message);
         // alert(error.response.data.message)
         if (error.response.data.message === "Access denied") {
@@ -159,7 +163,9 @@ export const UserDashboard = () => {
       }
     }
     else {
+      setSpinnerLoader(false)
       alert("Please login first");
+      navigate('/login')
     }
   }
 
@@ -174,19 +180,15 @@ export const UserDashboard = () => {
       try {
         const token = localStorage.getItem('loginToken');
 
-        var getData = await axios.post("http://localhost:5000/getCartData", { data: datas },
-          {
-            headers: {
-              Authorization: token
-            }
-          }
-        )
+        var getData = await api.post("/api/carts/getCartData", { data: datas })
+
         setcartDatas(getData.data.data)
         setCartCount(getData.data.data.length)
         setSpinnerLoader(false)
         console.log(getData.data.data);
 
       } catch (error) {
+        setSpinnerLoader(false)
         console.log(error.response.data.message);
         // alert(error.response.data.message)
         if (error.response.data.message === "Access denied") {
@@ -198,7 +200,9 @@ export const UserDashboard = () => {
       }
     }
     else {
+      setSpinnerLoader(false)
       alert("Please login first");
+      navigate('/login')
     }
   }
 
@@ -218,9 +222,9 @@ export const UserDashboard = () => {
     const randomNumberGenerate = Math.floor(Math.random() * 3);
     console.log(randomNumberGenerate, "===>");
     setRandomNumber(randomNumberGenerate);
-    setTimeout(() => {
-      generate()
-    }, 2000);
+    // setTimeout(() => {
+    //   generate()
+    // }, 2000);
   }
 
   useEffect(() => {
@@ -301,7 +305,7 @@ export const UserDashboard = () => {
               return (
                 <div>
                   <img
-                    src={`http://localhost:5000/uploadingImages/${data.image}`}
+                    src={`${ImageUrl}/${data.image}`}
                     className="w-full h-60 object-contain bg-gray-100 rounded-md"
                   />
 
@@ -348,7 +352,7 @@ export const UserDashboard = () => {
 
               <div className="flex flex-col md:flex-row gap-4">
                 <img
-                  src={`http://localhost:5000/uploadingImages/${particularProduct.image}`}
+                  src={`${ImageUrl}/${particularProduct.image}`}
                   className="w-full md:w-1/2 rounded"
                 />
                 <div className="flex-1">

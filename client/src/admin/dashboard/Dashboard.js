@@ -2,12 +2,12 @@ import React, { use, useContext, useEffect, useState } from "react";
 import "../dashboard/Dashboard.css";
 import { mainContext } from "../../App";
 import { Sidebar } from "../sidebar/Sidebar";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AdminFooter } from "../footer/Footer";
 import { AdminNavbar } from "../navbar/AdminNavbar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import api from "../../axios/AxiosFile";
 
 export const Dashboard = () => {
 
@@ -38,12 +38,8 @@ export const Dashboard = () => {
         // console.log(sort);
 
         try {
-            const token = localStorage.getItem('loginToken');
-            var getData = await axios.get(`http://localhost:5000/getAdminDashBoardDatas?startDates=${startDate}&endDates=${endDate}`, {
-                headers: {
-                    Authorization: token
-                }
-            })
+            // const token = localStorage.getItem('loginToken');
+            var getData = await api.get(`/api/products/getAdminDashBoardDatas?startDates=${startDate}&endDates=${endDate}`)
             console.log(getData.data.data);
             setGetAllAdminDashBoardData(getData.data.data);
             setSpinnerLoader(false)
@@ -73,7 +69,7 @@ export const Dashboard = () => {
                 navigate("/");
             }
             else if (user.role.toLowerCase() === "admin") {
-                var date = new Date();
+                var date = new Date().toLocaleDateString();
                 console.log(date);
                 getAdminDashBoardData(date, date);
             }
@@ -122,7 +118,7 @@ export const Dashboard = () => {
 
                 <AdminNavbar />
 
-                <div className="flex justify-between items-center p-6">
+                <div className="flex justify-between items-center p-8">
                     <h2 className="text-lg font-semibold"> <i className="fa-solid fa-gauge-high"></i> Dashboard Analytics</h2>
                     <div className="flex justify-center">
                         <DatePicker

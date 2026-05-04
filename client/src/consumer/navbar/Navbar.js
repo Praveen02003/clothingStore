@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { mainContext } from '../../App';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 export const Navbar = () => {
     const {

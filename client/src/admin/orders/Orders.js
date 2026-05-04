@@ -2,15 +2,15 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../sidebar/Sidebar'
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { AdminFooter } from '../footer/Footer';
 import { AdminNavbar } from '../navbar/AdminNavbar';
+import api from '../../axios/AxiosFile';
 
 export const Orders = () => {
 
   const {
-    sideBarOpen,
-    setSideBarOpen,
+    open,
+    setOpen,
     loginUser,
     setLoginUser
   } = useContext(mainContext);
@@ -50,6 +50,15 @@ export const Orders = () => {
     setCurrentPage(currentPage - 1)
   }
 
+  // delete modal
+  function openViewOrderModal(id) {
+    setSpinnerLoader(true)
+    viewOrder(id)
+  }
+  function closeViewOrderModal() {
+    setViewOrderModal(false)
+  }
+
 
   // logout function
   function logOut() {
@@ -62,14 +71,12 @@ export const Orders = () => {
   async function getMyOrders() {
     setSpinnerLoader(true)
     try {
-      const token = localStorage.getItem('loginToken');
-      var getData = await axios.get(`http://localhost:5000/getAllOrders?page=${currentPage}&count=${dynamicPageNumber}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      // const token = localStorage.getItem('loginToken');
+      var getData = await api.get(`/api/orders/getAllOrders?page=${currentPage}&count=${dynamicPageNumber}`)
       // pagination concept
       var allData = getData.data.data
+      console.log(allData, "===>");
+
       var totalNumberOfData = getData.data.totalPage
       var totalPagesData = Math.ceil(getData.data.totalPage / dynamicPageNumber)
 
@@ -110,14 +117,14 @@ export const Orders = () => {
     }
   }
 
+
   async function viewOrder(id) {
     setSpinnerLoader(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
-      await getParticularOrderDetails(id);
-
-      setViewOrderModal(true);
+      await getParticularOrderDetails(id)
+      setViewOrderModal(true)
     } catch (error) {
       console.log(error);
     } finally {
@@ -133,17 +140,12 @@ export const Orders = () => {
         status: inputValue,
         id: id
       }
-      var statusUpdate = await axios.post(`http://localhost:5000/updateOrderStatus`, { data: datas }, {
-        headers: {
-          Authorization: token
-        }
-      });
+      var statusUpdate = await api.post(`/api/orders/updateOrderStatus`, { data: datas });
       if (statusUpdate.data.message === "status updated successfully") {
-        getMyOrders()
         setAlertContent(statusUpdate.data.message)
+        closeViewOrderModal()
         setOpenAlert(true)
         setTimeout(() => {
-          setViewOrderModal(false)
           setOpenAlert(false)
         }, 2000);
       }
@@ -154,7 +156,9 @@ export const Orders = () => {
           setOpenAlert(false)
         }, 2000);
       }
+      getMyOrders()
     } catch (error) {
+      setSpinnerLoader(false)
       console.log(error.response.data.message);
       // alert(error.response.data.message)
       if (error.response.data.message === "Access denied") {
@@ -169,11 +173,7 @@ export const Orders = () => {
   async function getParticularOrderDetails(id) {
     try {
       const token = localStorage.getItem('loginToken');
-      var getData = await axios.get(`http://localhost:5000/getParticularOrder/${id}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      var getData = await api.get(`/api/orders/getParticularOrder/${id}`)
 
       var allData = getData.data.data[0]
       console.log(allData);
@@ -209,7 +209,7 @@ export const Orders = () => {
   return (
     <div
       className={`flex-1 transition-all duration-300 
-                ${sideBarOpen ? "ml-64" : "ml-16"}`} >
+                ${open ? "ml-64" : "ml-16"}`} >
 
       {/* sidebar */}
       <Sidebar />
@@ -266,7 +266,7 @@ export const Orders = () => {
                       <td className="px-6 py-4">{data.shippingAddress}</td>
                       <td className="px-6 py-4">
                         <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                          viewOrder(data._id)
+                          openViewOrderModal(data._id)
                         }}>
                           <i className="fa-solid fa-eye"></i>
                         </button>
@@ -324,6 +324,14 @@ export const Orders = () => {
 
           </div>
         )}
+
+        {/* alert */}
+        {openAlert && (
+          <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+            <div class="text-sm font-normal">{alertContent}</div>
+          </div>
+        )}
+
         {/* view order modal */}
         {viewOrderModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -331,7 +339,7 @@ export const Orders = () => {
             <div className="bg-white w-[90%] md:w-[650px] p-6 rounded-lg relative">
 
               <button
-                onClick={() => setViewOrderModal(false)}
+                onClick={() => closeViewOrderModal()}
                 className="absolute top-3 right-3 text-gray-500"
               >
                 <i class="fa-solid fa-circle-xmark"></i>
@@ -341,12 +349,6 @@ export const Orders = () => {
                 <i class="fa-regular fa-folder-open"></i>
                 Order Details
               </h2>
-              {/* alert */}
-              {openAlert && (
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                  <span class="block sm:inline">{alertContent}</span>
-                </div>
-              )}
 
               <div className="space-y-3 text-sm">
                 <div>

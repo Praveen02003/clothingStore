@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../consumer/sidebar/Sidebar';
 import { mainContext } from '../../App';
-import axios from 'axios';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
+import api from '../../axios/AxiosFile';
+import { ImageUrl } from '../../backendUrl/ImageUrl';
 
 export const MyProducts = () => {
 
@@ -287,20 +288,25 @@ export const MyProducts = () => {
       }
       try {
         const token = localStorage.getItem('loginToken');
-        const dataAdd = await axios.post("http://localhost:5000/addProducts", formData, {
-          headers: {
-            Authorization: token
-          }
-        })
+        const dataAdd = await api.post("/api/products/addProducts", formData)
         if (dataAdd.data.message === "Product Added Successfully") {
-          getAllProducts()
-          setSpinnerLoader(false)
+
+          closeAddModal()
+          setAlertContent(dataAdd.data.message)
+          setOpenAlert(true)
+          setTimeout(() => {
+            setOpenAlert(false)
+          }, 2000);
+
         }
-        setAlertContent(dataAdd.data.message)
-        setOpenAlert(true)
-        setTimeout(() => {
-          setOpenAlert(false)
-        }, 2000);
+        else {
+          setAlertContent(dataAdd.data.message)
+          setOpenAlert(true)
+          setTimeout(() => {
+            setOpenAlert(false)
+          }, 2000);
+        }
+        getAllProducts();
       } catch (error) {
         console.log(error.response.data.message);
         // alert(error.response.data.message)
@@ -319,6 +325,7 @@ export const MyProducts = () => {
 
   // add image removeImage function
   function removeImage() {
+    document.getElementById('addProductImage').value = ""
     setAddData({ ...addData, image: "" })
     setAddErrors({ ...addErrors, imageError: "Choose Image" })
   }
@@ -360,11 +367,7 @@ export const MyProducts = () => {
   async function getParticularProduct(id) {
     try {
       const token = localStorage.getItem('loginToken');
-      const getOneData = await axios.get(`http://localhost:5000/getOneProduct/${id}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      const getOneData = await api.get(`/api/products/getOneProduct/${id}`)
 
       console.log(getOneData.data.data, "==>");
       setParticularProductData(getOneData.data.data)
@@ -584,18 +587,14 @@ export const MyProducts = () => {
       formData.append("image", particularProductData.image);
       try {
         const token = localStorage.getItem('loginToken');
-        const dataEdit = await axios.post("http://localhost:5000/upateProducts", formData, {
-          headers: {
-            Authorization: token
-          }
-        })
+        const dataEdit = await api.post("/api/products/upateProducts", formData)
         if (dataEdit.data.message === "Product Updated Successfully") {
 
+          closeEditModal()
           setAlertContent(dataEdit.data.message)
           setOpenAlert(true)
           setTimeout(() => {
             setOpenAlert(false)
-            closeEditModal()
           }, 2000);
         }
         else {
@@ -645,7 +644,7 @@ export const MyProducts = () => {
   async function getOneProduct(id) {
     setSpinnerLoader(true)
     try {
-      const getOneData = await axios.get(`http://localhost:5000/getSpecificProduct/${id}`)
+      const getOneData = await api.get(`/api/products/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
       setSpinnerLoader(false)
@@ -668,11 +667,7 @@ export const MyProducts = () => {
 
     try {
       const token = localStorage.getItem('loginToken');
-      var getData = await axios.get(`http://localhost:5000/getMyProduct/${loginUser._id}?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      var getData = await api.get(`/api/products/getMyProduct/${loginUser._id}?page=${currentPage}&category=${category}&price=${price}&search=${searchData}&count=${dynamicPageNumber}`)
       console.log(getData.data.data, "===>");
 
       // pagination concept
@@ -707,8 +702,11 @@ export const MyProducts = () => {
     var token = localStorage.getItem('loginToken')
     console.log(user, "===>");
 
-    if (user && token) {
+    if ((user && token) && (user.role.toLowerCase() === "user")) {
       setLoginUser(user)
+    }
+    else {
+      navigate('/login')
     }
   }
 
@@ -769,13 +767,8 @@ export const MyProducts = () => {
       try {
         const token = localStorage.getItem('loginToken');
 
-        var getData = await axios.post("http://localhost:5000/cartAdd", { data: datas },
-          {
-            headers: {
-              Authorization: token
-            }
-          }
-        )
+        var getData = await api.post("/api/carts/cartAdd", { data: datas })
+
 
         // alert(getData.data.message);
         getCartData()
@@ -809,19 +802,15 @@ export const MyProducts = () => {
   async function deleteParticularProduct(id) {
     try {
       const token = localStorage.getItem('loginToken');
-      const deleteOneData = await axios.get(`http://localhost:5000/deleteParticularProduct/${id}`, {
-        headers: {
-          Authorization: token
-        }
-      })
+      const deleteOneData = await api.get(`/api/products/deleteParticularProduct/${id}`)
       console.log(deleteOneData.data.message, "==>");
       // alert(deleteOneData.data.message)
       if (deleteOneData.data.message === "Product Deleted Successfully") {
+        closeDeleteModal();
         setAlertContent(deleteOneData.data.message)
         setOpenAlert(true)
         setTimeout(() => {
           setOpenAlert(false)
-          closeDeleteModal();
         }, 2000);
       }
       else {
@@ -857,13 +846,8 @@ export const MyProducts = () => {
       try {
         const token = localStorage.getItem('loginToken');
 
-        var getData = await axios.post("http://localhost:5000/getCartData", { data: datas },
-          {
-            headers: {
-              Authorization: token
-            }
-          }
-        )
+        var getData = await api.post("/api/carts/getCartData", { data: datas })
+
         setcartDatas(getData.data.data)
         setCartCount(getData.data.data.length)
         console.log(getData.data.data);
@@ -1003,7 +987,7 @@ export const MyProducts = () => {
                 <div key={index} className="rounded-lg p-3 shadow-sm">
 
                   <img
-                    src={`http://localhost:5000/uploadingImages/${data.image}`}
+                    src={`${ImageUrl}/${data.image}`}
                     className="w-full h-60 object-contain bg-gray-100 rounded-md"
                   />
 
@@ -1099,6 +1083,13 @@ export const MyProducts = () => {
           </div>
         )}
 
+        {/* alert */}
+        {openAlert && (
+          <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+            <div class="text-sm font-normal">{alertContent}</div>
+          </div>
+        )}
+
 
         {/* view modal */}
 
@@ -1116,7 +1107,7 @@ export const MyProducts = () => {
 
               <div className="flex flex-col md:flex-row gap-4">
                 <img
-                  src={`http://localhost:5000/uploadingImages/${particularProduct.image}`}
+                  src={`${ImageUrl}/${particularProduct.image}`}
                   className="w-full md:w-1/2 rounded"
                 />
                 <div className="flex-1">
@@ -1171,13 +1162,6 @@ export const MyProducts = () => {
               </button>
 
               <h2 className="text-xl font-bold mb-4">Add Product</h2>
-
-              {/* alert */}
-              {openAlert && (
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                  <span class="block sm:inline">{alertContent}</span>
-                </div>
-              )}
 
               <form onSubmit={(event) => { addProduct(event) }}>
 
@@ -1289,6 +1273,7 @@ export const MyProducts = () => {
                 <div className="block">
                   <input
                     type="file"
+                    id='addProductImage'
                     className="w-full border rounded px-3 py-2"
                     onChange={(event) => {
                       validateImage(event)
@@ -1362,12 +1347,7 @@ export const MyProducts = () => {
               </button>
 
               <h2 className="text-xl font-bold mb-4">Edit Product</h2>
-              {/* alert */}
-              {openAlert && (
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                  <span class="block sm:inline">{alertContent}</span>
-                </div>
-              )}
+
               <form onSubmit={(event) => { updateProduct(event) }}>
 
                 <div className="block">
@@ -1490,7 +1470,7 @@ export const MyProducts = () => {
                     <div className="relative inline-block">
                       <img src={
                         typeof (particularProductData.image) === "string"
-                          ? `http://localhost:5000/uploadingImages/${particularProductData.image}`
+                          ? `${ImageUrl}/${particularProductData.image}`
                           : URL.createObjectURL(particularProductData.image)
                       }
                         alt="Thumb"
@@ -1549,12 +1529,7 @@ export const MyProducts = () => {
 
               <div className="flex items-start gap-4">
                 <div>
-                  {/* alert */}
-                  {openAlert && (
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                      <span class="block sm:inline">{alertContent}</span>
-                    </div>
-                  )}
+
                   <h3 className="text-lg font-bold text-red-600">
                     Delete Confirmation
                   </h3>
