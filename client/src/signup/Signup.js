@@ -3,27 +3,15 @@ import '../signup/Signup.css'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../axios/AxiosFile';
 
+
 export const Signup = () => {
 
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState(null)
     const [alertContent, setAlertContent] = useState(null)
+    const [alertBgColor, setAlertBgColor] = useState(null)
 
     const [spinnerLoader, setSpinnerLoader] = useState(false);
-
-    var allErrors = {
-        firstNameError: "",
-        lastNameError: "",
-        emailError: "",
-        mobileError: "",
-        genderError: "",
-        passwordError: "",
-        confirmPasswordError: "",
-        addressError: "",
-        termsError: "",
-        securityQuestionError: "",
-        securityAnswerError: ""
-    };
 
     const navigate = useNavigate();
 
@@ -68,7 +56,8 @@ export const Signup = () => {
             setToggleValue("password")
         }
     }
-    
+
+
     // showConfirmPassword function
     function showConfirmPassword() {
         if (confirmPasswordToggleValue === "password") {
@@ -436,6 +425,7 @@ export const Signup = () => {
                     }
                     else {
                         setSpinnerLoader(false)
+                        setAlertBgColor('red')
                         setAlertContent(result.data.message)
                         setOpenAlert(true)
                         setTimeout(() => {
@@ -443,7 +433,14 @@ export const Signup = () => {
                         }, 2000);
                     }
                 } catch (error) {
-                    alert(error);
+                    setSpinnerLoader(false)
+                    setAlertBgColor('red')
+                    setAlertContent("please try again later")
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+
                 }
             }
         }
@@ -477,12 +474,6 @@ export const Signup = () => {
             <div className="main">
 
                 <h2 className='font-bold text-2xl'>Sign Up</h2>
-
-                {openAlert && (
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="block sm:inline">{alertContent}</span>
-                    </div>
-                )}
 
                 {/* signup form */}
                 <form id="signupForm" onSubmit={(event) => {
@@ -620,6 +611,12 @@ export const Signup = () => {
                 </div>
 
             </div>
+            {/* alert */}
+            {openAlert && (
+                <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
+                    <div class="text-sm font-normal">{alertContent}</div>
+                </div>
+            )}
         </div >
     )
 }

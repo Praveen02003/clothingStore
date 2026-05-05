@@ -76,12 +76,14 @@ export const Address = () => {
                 setSpinnerLoader(false)
 
             } catch (error) {
-                console.log(error);
+                setSpinnerLoader(false)
+                console.log(error?.response?.data?.message);
                 // alert(error.response.data.message)
-                if (error.response.data.message === "Access denied") {
+                var message = error?.response?.data?.message
+                if (message === "Access denied") {
                     logOut()
                 }
-                else if (error.response.data.message === "Invalid token") {
+                else if (message === "Invalid token") {
                     logOut()
                 }
             }
@@ -136,12 +138,13 @@ export const Address = () => {
             setSpinnerLoader(false)
 
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
         }

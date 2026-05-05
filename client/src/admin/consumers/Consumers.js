@@ -463,6 +463,7 @@ export const Consumers = () => {
             );
             if (updateData.data.message === "User updated successfully") {
                 closeEditModal()
+                setAlertBgColor('green')
                 setAlertContent(updateData.data.message)
                 setOpenAlert(true)
                 setTimeout(() => {
@@ -471,6 +472,7 @@ export const Consumers = () => {
             }
             else {
                 setAlertContent(updateData.data.message)
+                setAlertBgColor('red')
                 setOpenAlert(true)
                 setTimeout(() => {
                     setOpenAlert(false)
@@ -481,7 +483,15 @@ export const Consumers = () => {
             console.log(updateData.data.message);
 
         } catch (error) {
-            console.log(error);
+            console.log(error?.response?.data?.message);
+            // alert(error.response.data.message)
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
+                logOut()
+            }
+            else if (message === "Invalid token") {
+                logOut()
+            }
         }
     }
 
@@ -491,14 +501,13 @@ export const Consumers = () => {
         lastName: "",
         email: "",
         mobile: "",
-        image: "",
         gender: "",
         password: "",
         confirmPassword: "",
         address: "",
         terms: "",
         securityQuestion: "",
-        securityAnswer: ""
+        securityAnswer: "",
     });
 
     var [error, setError] = useState({
@@ -506,16 +515,16 @@ export const Consumers = () => {
         lastNameError: "",
         emailError: "",
         mobileError: "",
-        imageError: "",
         genderError: "",
         passwordError: "",
         confirmPasswordError: "",
         addressError: "",
         termsError: "",
         securityQuestionError: "",
-        securityAnswerError: ""
+        securityAnswerError: "",
 
     });
+
 
 
     // validateFirstName function
@@ -872,6 +881,9 @@ export const Consumers = () => {
         if (!formData.address) {
             allErrors.addressError = 'Enter address';
         }
+        if (!formData.captcha) {
+            allErrors.captchaError = "Enter Captcha";
+        }
 
         setError(allErrors);
 
@@ -896,6 +908,7 @@ export const Consumers = () => {
                     forms.append("terms", formData.terms);
                     forms.append("securityAnswer", formData.securityAnswer);
                     forms.append("securityQuestion", formData.securityQuestion);
+                    forms.append("captcha", formData.captcha);
                     // const token = localStorage.getItem('loginToken');
                     var result = await api.post("/api/consumers/addUser", forms, {
                         headers: {
@@ -908,6 +921,7 @@ export const Consumers = () => {
                     if (result.data.message === "User Added Successfully") {
                         closeAddModal()
                         getAllConsumers()
+                        setAlertBgColor('green')
                         setAlertContent(result.data.message)
                         setOpenAlert(true)
                         setTimeout(() => {
@@ -918,13 +932,22 @@ export const Consumers = () => {
                         console.log(result.data, "====>");
 
                         setAlertContent(result.data.message)
+                        setAlertBgColor('red')
                         setOpenAlert(true)
                         setTimeout(() => {
                             setOpenAlert(false)
                         }, 2000);
                     }
                 } catch (error) {
-                    alert(error);
+                    console.log(error?.response?.data?.message);
+                    // alert(error.response.data.message)
+                    var message = error?.response?.data?.message
+                    if (message === "Access denied") {
+                        logOut()
+                    }
+                    else if (message === "Invalid token") {
+                        logOut()
+                    }
                 }
             }
         }
@@ -951,6 +974,7 @@ export const Consumers = () => {
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState("")
     const [alertContent, setAlertContent] = useState("")
+    const [alertBgColor, setAlertBgColor] = useState(null)
 
     const [spinnerLoader, setSpinnerLoader] = useState(false);
 
@@ -1013,15 +1037,15 @@ export const Consumers = () => {
             });
 
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
-
         }
     }
 
@@ -1076,15 +1100,16 @@ export const Consumers = () => {
             setTotalDataCount(totalNumberOfData)
             setSpinnerLoader(false)
         } catch (error) {
-            console.log(error.response.data.message);
+            setSpinnerLoader(false)
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
-
         }
     }
 
@@ -1353,7 +1378,7 @@ export const Consumers = () => {
 
                 {/* alert */}
                 {openAlert && (
-                    <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+                    <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
                         <div class="text-sm font-normal">{alertContent}</div>
                     </div>
                 )}
@@ -1615,6 +1640,7 @@ export const Consumers = () => {
                                     <p className="text-sm text-red-500 mb-0">
                                         {error.termsError}
                                     </p>
+
                                 </div>
 
                                 <button

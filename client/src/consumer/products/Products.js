@@ -47,13 +47,6 @@ export const Products = () => {
   const [price, setPrice] = useState("");
   const [searchData, setSearchData] = useState("");
 
-
-  // alert
-  const [openAlert, setOpenAlert] = useState(false)
-  const [alertColor, setAlertColor] = useState("")
-  const [alertContent, setAlertContent] = useState("")
-
-  
   // logout function
   function logOut() {
     localStorage.removeItem('loginToken')
@@ -94,7 +87,16 @@ export const Products = () => {
       setSpinnerLoader(false)
 
     } catch (error) {
-      console.log("error");
+      setSpinnerLoader(false)
+      console.log(error?.response?.data?.message);
+      // alert(error.response.data.message)
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
+        logOut()
+      }
+      else if (message === "Invalid token") {
+        logOut()
+      }
     }
   }
 
@@ -121,12 +123,13 @@ export const Products = () => {
 
       } catch (error) {
         setSpinnerLoader(false)
-        console.log(error.response.data.message);
+        console.log(error?.response?.data?.message);
         // alert(error.response.data.message)
-        if (error.response.data.message === "Access denied") {
+        var message = error?.response?.data?.message
+        if (message === "Access denied") {
           logOut()
         }
-        else if (error.response.data.message === "Invalid token") {
+        else if (message === "Invalid token") {
           logOut()
         }
       }
@@ -157,12 +160,13 @@ export const Products = () => {
 
       } catch (error) {
         setSpinnerLoader(false)
-        console.log(error.response.data.message);
+        console.log(error?.response?.data?.message);
         // alert(error.response.data.message)
-        if (error.response.data.message === "Access denied") {
+        var message = error?.response?.data?.message
+        if (message === "Access denied") {
           logOut()
         }
-        else if (error.response.data.message === "Invalid token") {
+        else if (message === "Invalid token") {
           logOut()
         }
       }
@@ -196,12 +200,13 @@ export const Products = () => {
       setSpinnerLoader(false)
     } catch (error) {
       setSpinnerLoader(false)
-      console.log(error.response.data.message);
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -440,14 +445,6 @@ export const Products = () => {
 
           </div>
         )}
-
-        {/* alert */}
-        {openAlert && (
-          <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
-            <div class="text-sm font-normal">{alertContent}</div>
-          </div>
-        )}
-
 
         {/* view modal */}
 

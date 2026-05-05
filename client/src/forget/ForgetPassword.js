@@ -16,13 +16,7 @@ export const ForgetPassword = () => {
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState(null)
     const [alertContent, setAlertContent] = useState(null)
-
-    var allErrors = {
-        emailError: "",
-        passwordError: "",
-        confirmPasswordError: "",
-        securityAnswerTypeError: ""
-    };
+    const [alertBgColor, setAlertBgColor] = useState(null)
 
     var [formData, setFormData] = useState({
         email: JSON.parse(localStorage.getItem("resetEmail")) || "",
@@ -30,14 +24,14 @@ export const ForgetPassword = () => {
         confirmPassword: "",
         securityQuestion: "",
         securityAnswer: "",
-        securityAnswerType: ""
+        securityAnswerType: "",
     });
 
     var [error, setError] = useState({
         emailError: "",
         passwordError: "",
         confirmPasswordError: "",
-        securityAnswerTypeError: ""
+        securityAnswerTypeError: "",
     });
 
     var [boolean, setBoolean] = useState(false);
@@ -141,7 +135,6 @@ export const ForgetPassword = () => {
     }
 
     // submitForm function
-
     async function submitForm(event) {
         setSpinnerLoader(true)
         event.preventDefault();
@@ -170,6 +163,7 @@ export const ForgetPassword = () => {
                 } else {
                     console.log(res.data.message);
                     setAlertContent(res.data.message)
+                    setAlertBgColor('red')
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -193,6 +187,7 @@ export const ForgetPassword = () => {
                     setCount(3);
                 } else {
                     setAlertContent(res.data.message)
+                    setAlertBgColor('red')
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -240,6 +235,8 @@ export const ForgetPassword = () => {
                     setSpinnerLoader(false)
                     return;
                 }
+                console.log(formData,"==>");
+                
 
                 const res = await api.post("/api/consumers/forgetPassword", {
                     data: formData,
@@ -248,6 +245,7 @@ export const ForgetPassword = () => {
 
                 if (res.data.message === "Password reset success") {
                     setAlertContent(res.data.message)
+                    setAlertBgColor('green')
                     setOpenAlert(true)
                     localStorage.removeItem("resetEmail")
                     setTimeout(() => {
@@ -259,6 +257,7 @@ export const ForgetPassword = () => {
                 else {
                     setSpinnerLoader(false)
                     setAlertContent(res.data.message)
+                    setAlertBgColor('red')
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -266,8 +265,15 @@ export const ForgetPassword = () => {
                 }
             }
 
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            setSpinnerLoader(false)
+            setAlertContent("please try again later")
+            setAlertBgColor('red')
+            setOpenAlert(true)
+            setTimeout(() => {
+                setOpenAlert(false)
+            }, 2000);
+
         }
     }
 
@@ -300,12 +306,6 @@ export const ForgetPassword = () => {
             <div className="resetForm">
 
                 <h2 className='font-bold text-2xl'>Reset Password</h2>
-                {openAlert && (
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="block sm:inline">{alertContent}</span>
-                    </div>
-                )}
-
 
                 {/* reset form */}
                 <form id="resetForm" onSubmit={(event) => {
@@ -329,11 +329,6 @@ export const ForgetPassword = () => {
                             <p id="securityAnswerTypeError">{error.securityAnswerTypeError}</p>
                         </div>
                     )}
-
-
-
-
-
 
 
                     {/* password */}
@@ -395,7 +390,6 @@ export const ForgetPassword = () => {
                     {count === 3 && (
                         <p id="confirmPasswordError">{error.confirmPasswordError}</p>
                     )}
-
                     {/* submit button */}
                     <button
                         type="submit"
@@ -422,6 +416,12 @@ export const ForgetPassword = () => {
                 </div>
 
             </div>
+            {/* alert */}
+            {openAlert && (
+                <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
+                    <div class="text-sm font-normal">{alertContent}</div>
+                </div>
+            )}
         </div>
     )
 }

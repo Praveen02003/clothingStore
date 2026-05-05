@@ -31,6 +31,7 @@ export const Orders = () => {
   const [openAlert, setOpenAlert] = useState(false)
   const [alertColor, setAlertColor] = useState("")
   const [alertContent, setAlertContent] = useState("")
+  const [alertBgColor, setAlertBgColor] = useState(null)
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,12 +92,14 @@ export const Orders = () => {
       setSpinnerLoader(false)
 
     } catch (error) {
-      console.log(error.response.data.message);
+      setSpinnerLoader(false)
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -144,6 +147,7 @@ export const Orders = () => {
       if (statusUpdate.data.message === "status updated successfully") {
         setAlertContent(statusUpdate.data.message)
         closeViewOrderModal()
+        setAlertBgColor('green')
         setOpenAlert(true)
         setTimeout(() => {
           setOpenAlert(false)
@@ -151,6 +155,7 @@ export const Orders = () => {
       }
       else {
         setAlertContent(statusUpdate.data.message)
+        setAlertBgColor('red')
         setOpenAlert(true)
         setTimeout(() => {
           setOpenAlert(false)
@@ -159,12 +164,13 @@ export const Orders = () => {
       getMyOrders()
     } catch (error) {
       setSpinnerLoader(false)
-      console.log(error.response.data.message);
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -181,12 +187,13 @@ export const Orders = () => {
       setGetParticularOrder(allData)
 
     } catch (error) {
-      console.log(error.response.data.message);
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -327,7 +334,7 @@ export const Orders = () => {
 
         {/* alert */}
         {openAlert && (
-          <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+          <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
             <div class="text-sm font-normal">{alertContent}</div>
           </div>
         )}

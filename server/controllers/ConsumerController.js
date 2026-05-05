@@ -13,7 +13,10 @@ const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const { default: axios } = require('axios')
+
 var secretKey = process.env.JWT_SECRET_KEY
+var captchaSecretKey = process.env.captchaSecretKey
 
 const getAllConsumers = async (req, res) => {
     var page = parseInt(req.query.page) || 1;
@@ -104,7 +107,7 @@ const getAddressDetails = async (req, res) => {
         var userId = req.params.id
         var findData = await consumer.findOne({ _id: userId })
         console.log(findData);
-        
+
         if (findData) {
             return res.json({ message: "data fetched", data: findData });
         }
@@ -199,31 +202,41 @@ const addUsers = async (req, res) => {
             return res.json({ message: "Email Already Exists" });
         }
     } catch (error) {
-        return res.json({ message: error });
+        console.log(error);
+
+        return res.json({ message: "error" });
     }
 }
 
 
 const loginUser = async (req, res) => {
     const data = req.body.data;
+    console.log(data, "==>");
+    var enteredCaptcha = data?.captcha;
+
     try {
-        var getData = await consumer.findOne({ email: data.email })
-        // console.log(getData);
-        if (getData) {
-            var comparePassword = await bcrypt.compare(data.password, getData.password);
-            // console.log(comparePassword, "===>");
-            if (comparePassword) {
-                var generateToken = jwt.sign({ userId: getData._id }, secretKey, {
-                    expiresIn: '1h',
-                });
-                return res.json({ message: "Login Successfully", data: getData, token: generateToken });
+        var verifyCaptcha = await axios.post(`${process.env.verifyCaptchaUrl}?secret=${captchaSecretKey}&response=${enteredCaptcha}`)
+        console.log(verifyCaptcha?.data?.success);
+        var successMessage = verifyCaptcha?.data?.success
+        if (successMessage) {
+            var getData = await consumer.findOne({ email: data.email })
+            // console.log(getData);
+            if (getData) {
+                var comparePassword = await bcrypt.compare(data.password, getData.password);
+                // console.log(comparePassword, "===>");
+                if (comparePassword) {
+                    var generateToken = jwt.sign({ userId: getData._id }, secretKey, {
+                        expiresIn: '1h',
+                    });
+                    return res.json({ message: "Login Successfully", data: getData, token: generateToken });
+                }
+                else {
+                    return res.json({ message: "Password Mismatch" });
+                }
             }
             else {
-                return res.json({ message: "Password Mismatch" });
+                return res.json({ message: "Invalid Credentials" });
             }
-        }
-        else {
-            return res.json({ message: "Invalid Credentials" });
         }
     } catch (error) {
         return res.json({ message: "error" });
@@ -235,6 +248,7 @@ const forgetPassword = async (req, res) => {
     const data = req.body?.data;
     console.log(data);
     const saltRounds = 12;
+
     try {
         if (data.email && data.securityAnswerType && data.password && data.confirmPassword) {
             const user = await consumer.findOne({ email: data.email });

@@ -5,9 +5,34 @@ import { mainContext } from '../../App';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
 import api from '../../axios/AxiosFile';
+import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+var stripePromise = loadStripe("pk_test_51RdllLD7I4XSoqu4vVPY0gLBFcBAxoR9kV8wXEuuC99aqZaTlPXANrY7xY9mNWKb4QIEYlW7yKR3I5pn3INrlKb800J4qTYkCv")
+
+function PaymentSection({ goToPaymentPage, totalAmount, cardError }) {
+    const stripe = useStripe();
+    const elements = useElements();
+
+
+    return (
+        <div>
+            <div className="mt-5 justify-between border border-black p-5">
+                <CardElement />
+            </div>
+            <p>{cardError.cardDataError}</p>
+
+            <button
+                onClick={() => goToPaymentPage(stripe, elements)}
+                className="bg-gray-700 text-white py-2 rounded-lg font-semibold mt-4 w-full"
+            >
+                Pay ${totalAmount}
+            </button>
+        </div>
+    );
+}
 
 export const Billing = () => {
-
     const {
         sideBarOpen,
         setSideBarOpen,
@@ -23,6 +48,10 @@ export const Billing = () => {
 
     const [spinnerLoader, setSpinnerLoader] = useState(false);
 
+    const [error, setError] = useState({
+        cardDataError: ""
+    })
+
     // logout function
     function logOut() {
         localStorage.removeItem('loginToken')
@@ -33,19 +62,46 @@ export const Billing = () => {
     }
 
     // goToPaymentPage function
-    async function goToPaymentPage() {
+    async function goToPaymentPage(stripe, elements) {
         setSpinnerLoader(true)
         console.log(allDatas);
         try {
             const token = localStorage.getItem('loginToken');
             var addressDetails = JSON.parse(localStorage.getItem('updatedAddress'))
-            var orderData = await api.post(`/api/orderHistory/placeOrder`, { data: allDatas, address: addressDetails })
-            // alert(orderData.data.message)
-            if (orderData.data.message === "order placed") {
+
+            var hitPayment = await api.post(`/api/orderHistory/payment`, { totalAmount: totalAmount })
+            // console.log(hitPayment, "==>");
+            const result = await stripe.confirmCardPayment(hitPayment.data.clientSecret, {
+                payment_method: {
+                    card: elements.getElement(CardElement),
+                },
+            });
+            console.log(result);
+            if (result.error) {
+                setError({ ...error, cardDataError: result.error.message })
+                console.log(error.cardDataError);
+                // alert(result.error.message);
                 setSpinnerLoader(false)
-                localStorage.removeItem("updatedAddress")
-                navigate("/consumers/payment")
+                return;
             }
+            else {
+                setSpinnerLoader(false)
+                // alert("payment success")
+                try {
+                    var orderData = await api.post(`/api/orderHistory/placeOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount })
+                    // alert(orderData.data.message)
+                    if (orderData.data.message === "order placed and payment success") {
+                        setSpinnerLoader(false)
+                        localStorage.removeItem("updatedAddress")
+                        navigate("/consumers/payment")
+                    }
+                } catch (error) {
+                    console.log(error);
+
+                }
+            }
+
+
         } catch (error) {
             console.log(error.response.data.message);
             // alert(error.response.data.message)
@@ -95,12 +151,13 @@ export const Billing = () => {
             setSpinnerLoader(false)
 
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
         }
@@ -151,15 +208,17 @@ export const Billing = () => {
 
                 <Navbar />
 
-                {/* billing card section */}
+                {/* billing card */}
 
                 <div className="flex flex-wrap items-center justify-between gap-4 p-4">
 
                     <h2 className="text-lg font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-receipt"></i>
+                        <i className="fa-solid fa-receipt"></i>
                         Bill Information
                     </h2>
                 </div>
+
+
 
                 <div className="bg-white items-center shadow-lg rounded-xl p-6 w-full">
 
@@ -182,12 +241,12 @@ export const Billing = () => {
                                                 <div>
                                                     <p className="font-semibold">{product?.name}</p>
                                                     <p className="text-sm text-gray-500">
-                                                        quantity: {data.quantity} x <i class="fa-solid fa-dollar-sign"></i> {product?.price}
+                                                        quantity: {data.quantity} x <i className="fa-solid fa-dollar-sign"></i> {product?.price}
                                                     </p>
                                                 </div>
 
                                                 <div className="font-bold text-gray-800">
-                                                    <i class="fa-solid fa-dollar-sign"></i> {product?.price * data.quantity}
+                                                    <i className="fa-solid fa-dollar-sign"></i> {product?.price * data.quantity}
                                                 </div>
 
                                             </div>
@@ -201,23 +260,17 @@ export const Billing = () => {
 
                             </div>
 
-                            <div className="flex justify-between items-center mt-4 border-t pt-4">
-                                <h3 className="text-lg font-bold">Total</h3>
-                                <h3 className="text-lg font-bold text-green-600">
-                                    <i class="fa-solid fa-dollar-sign"></i> {totalAmount}
-                                </h3>
-                            </div>
+                            <Elements stripe={stripePromise}>
+                                <PaymentSection
+                                    goToPaymentPage={goToPaymentPage}
+                                    totalAmount={totalAmount}
+                                    cardError={error}
+                                />
+                            </Elements>
+
 
                             <div className="flex flex-col gap-3 mt-6">
 
-                                <button
-                                    onClick={() => {
-                                        goToPaymentPage()
-                                    }}
-                                    className="bg-gray-700 text-white py-2 rounded-lg font-semibold"
-                                >
-                                    Pay <i class="fa-solid fa-dollar-sign"></i>{totalAmount}
-                                </button>
 
                                 <button
                                     onClick={() => navigate("/")}

@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react'
 import '../login/Login.css'
 import { useNavigate } from 'react-router-dom'
 import api from '../axios/AxiosFile';
+import ReCAPTCHA from "react-google-recaptcha";
+import { SiteKey } from '../siteKey/SiteKey';
 
 
 export const Login = () => {
@@ -11,25 +13,22 @@ export const Login = () => {
   const [openAlert, setOpenAlert] = useState(false)
   const [alertColor, setAlertColor] = useState(null)
   const [alertContent, setAlertContent] = useState(null)
-
+  const [alertBgColor, setAlertBgColor] = useState(null)
 
   const [toggleValue, setToggleValue] = useState("password")
 
   const [spinnerLoader, setSpinnerLoader] = useState(false);
 
-  var allErrors = {
-    emailError: "",
-    passwordError: ""
-  };
-
   var [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    captcha: ""
   });
 
   var [error, setError] = useState({
     emailError: "",
-    passwordError: ""
+    passwordError: "",
+    captchaError: ""
   });
 
   var [boolean, setBoolean] = useState(false);
@@ -97,9 +96,13 @@ export const Login = () => {
       allErrors.passwordError = "Enter Password";
     }
 
+    if (!formData.captcha) {
+      allErrors.captchaError = "Enter Captcha";
+    }
+
     setError(allErrors);
 
-    if (formData.email && formData.password) {
+    if (formData.email && formData.password && formData.captcha) {
       console.log(formData);
       try {
         setSpinnerLoader(true)
@@ -128,6 +131,7 @@ export const Login = () => {
         }
         else {
           setSpinnerLoader(false)
+          setAlertBgColor('red')
           setAlertContent(result.data.message)
           setOpenAlert(true)
           setTimeout(() => {
@@ -135,9 +139,33 @@ export const Login = () => {
           }, 2000);
         }
       } catch (error) {
-        alert(error);
+        setSpinnerLoader(false)
+        setAlertBgColor('red')
+        setAlertContent("please try again later")
+        setOpenAlert(true)
+        setTimeout(() => {
+          setOpenAlert(false)
+        }, 2000);
+
       }
     }
+  }
+
+  // captchaChange function
+  function captchChange(event) {
+
+    var allErrors = { ...error }
+    var token = event;
+
+    setFormData({ ...formData, captcha: token })
+
+    if (!token) {
+      allErrors.captchaError = 'Enter Captcha';
+    }
+    else {
+      allErrors.captchaError = "";
+    }
+    setError(allErrors)
   }
 
 
@@ -170,13 +198,6 @@ export const Login = () => {
       <div className="loginForm">
 
         <h2 className='font-bold text-2xl'>Login</h2>
-
-        {/* alert */}
-        {openAlert && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span className="block sm:inline">{alertContent}</span>
-          </div>
-        )}
 
         {/* login form */}
         <form id="loginForm" onSubmit={(event) => {
@@ -213,6 +234,15 @@ export const Login = () => {
 
           <p>{error.passwordError}</p>
 
+          <ReCAPTCHA
+            sitekey={SiteKey}
+            onChange={(event) => {
+              captchChange(event)
+            }}
+          />
+
+          <p>{error.captchaError}</p>
+
           {/* submit button */}
           <button
             type="submit"
@@ -248,6 +278,13 @@ export const Login = () => {
         </div>
 
       </div>
+
+      {/* alert */}
+      {openAlert && (
+        <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
+          <div class="text-sm font-normal">{alertContent}</div>
+        </div>
+      )}
     </div>
   )
 }

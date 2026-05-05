@@ -13,6 +13,7 @@ export const AdminProducts = () => {
     const [openAlert, setOpenAlert] = useState(false)
     const [alertColor, setAlertColor] = useState("")
     const [alertContent, setAlertContent] = useState("")
+    const [alertBgColor, setAlertBgColor] = useState(null)
 
     const [loginUser, setLoginUser] = useState({})
 
@@ -135,12 +136,13 @@ export const AdminProducts = () => {
             setGetParticularProduct(getOneData.data.data)
 
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
         }
@@ -155,6 +157,7 @@ export const AdminProducts = () => {
             if (deleteOneData.data.message === "Product Deleted Successfully") {
                 closeDeleteModal();
                 setAlertContent(deleteOneData.data.message)
+                setAlertBgColor("green")
                 setOpenAlert(true)
                 setTimeout(() => {
                     setOpenAlert(false)
@@ -162,6 +165,7 @@ export const AdminProducts = () => {
             }
             else {
                 setAlertContent(deleteOneData.data.message)
+                setAlertBgColor("red")
                 setOpenAlert(true)
                 setTimeout(() => {
                     setOpenAlert(false)
@@ -170,12 +174,13 @@ export const AdminProducts = () => {
             getAllProducts();
 
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
         }
@@ -462,6 +467,7 @@ export const AdminProducts = () => {
                 if (dataAdd.data.message === "Product Added Successfully") {
                     closeAddModal()
                     setAlertContent(dataAdd.data.message)
+                    setAlertBgColor("green")
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -470,6 +476,7 @@ export const AdminProducts = () => {
                 }
                 else {
                     setAlertContent(dataAdd.data.message)
+                    setAlertBgColor("red")
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -477,15 +484,15 @@ export const AdminProducts = () => {
                 }
                 getAllProducts();
             } catch (error) {
-                console.log(error.response.data.message);
+                console.log(error?.response?.data?.message);
                 // alert(error.response.data.message)
-                if (error.response.data.message === "Access denied") {
+                var message = error?.response?.data?.message
+                if (message === "Access denied") {
                     logOut()
                 }
-                else if (error.response.data.message === "Invalid token") {
+                else if (message === "Invalid token") {
                     logOut()
                 }
-
             }
 
         }
@@ -687,8 +694,9 @@ export const AdminProducts = () => {
                 const dataEdit = await api.post("/api/products/upateProducts", formData)
                 if (dataEdit.data.message === "Product Updated Successfully") {
 
-                    setAlertContent(dataEdit.data.message)
                     closeEditModal()
+                    setAlertContent(dataEdit.data.message)
+                    setAlertBgColor("green")
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -696,6 +704,7 @@ export const AdminProducts = () => {
                 }
                 else {
                     setAlertContent(dataEdit.data.message)
+                    setAlertBgColor("red")
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
@@ -703,19 +712,17 @@ export const AdminProducts = () => {
                 }
                 getAllProducts();
             } catch (error) {
-                console.log(error.response.data.message);
+                console.log(error?.response?.data?.message);
                 // alert(error.response.data.message)
-                if (error.response.data.message === "Access denied") {
+                var message = error?.response?.data?.message
+                if (message === "Access denied") {
                     logOut()
                 }
-                else if (error.response.data.message === "Invalid token") {
+                else if (message === "Invalid token") {
                     logOut()
                 }
             }
-
         }
-
-
     }
 
     async function getAllProducts() {
@@ -740,12 +747,14 @@ export const AdminProducts = () => {
             setTotalDataCount(totalNumberOfData)
             setSpinnerLoader(false)
         } catch (error) {
-            console.log(error.response.data.message);
+            setSpinnerLoader(false)
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            var message = error?.response?.data?.message
+            if (message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (message === "Invalid token") {
                 logOut()
             }
         }
@@ -988,7 +997,7 @@ export const AdminProducts = () => {
 
                 {/* alert */}
                 {openAlert && (
-                    <div class="fixed bottom-5 right-5 flex items-center p-4 bg-white rounded-lg shadow-lg" role="alert">
+                    <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
                         <div class="text-sm font-normal">{alertContent}</div>
                     </div>
                 )}

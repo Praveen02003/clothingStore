@@ -94,12 +94,13 @@ export const UserDashboard = () => {
       setSpinnerLoader(false)
     } catch (error) {
       setSpinnerLoader(false)
-      console.log(error.response.data.message);
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -112,16 +113,17 @@ export const UserDashboard = () => {
       var getData = await api.get(`/api/products/getFewData`)
       console.log(getData.data.data);
 
-      setFewDatas(getData.data.data)
+      setFewDatas(getData?.data?.data)
       setSpinnerLoader(false)
     } catch (error) {
       setSpinnerLoader(false)
-      console.log(error.response.data.message);
+      console.log(error?.response?.data?.message);
       // alert(error.response.data.message)
-      if (error.response.data.message === "Access denied") {
+      var message = error?.response?.data?.message
+      if (message === "Access denied") {
         logOut()
       }
-      else if (error.response.data.message === "Invalid token") {
+      else if (message === "Invalid token") {
         logOut()
       }
     }
@@ -130,7 +132,7 @@ export const UserDashboard = () => {
   // addToCart function
   async function addToCart(id) {
     console.log("cart");
-    
+
     setSpinnerLoader(true)
     if (loginUser) {
       var datas = {}
@@ -139,7 +141,7 @@ export const UserDashboard = () => {
       datas.userId = userId
       datas.productId = productId
       console.log(datas);
-      
+
 
       try {
         const token = localStorage.getItem('loginToken');
@@ -152,12 +154,13 @@ export const UserDashboard = () => {
         setSpinnerLoader(false)
       } catch (error) {
         setSpinnerLoader(false)
-        console.log(error.response.data.message);
+        console.log(error?.response?.data?.message);
         // alert(error.response.data.message)
-        if (error.response.data.message === "Access denied") {
+        var message = error?.response?.data?.message
+        if (message === "Access denied") {
           logOut()
         }
-        else if (error.response.data.message === "Invalid token") {
+        else if (message === "Invalid token") {
           logOut()
         }
       }
@@ -182,19 +185,20 @@ export const UserDashboard = () => {
 
         var getData = await api.post("/api/carts/getCartData", { data: datas })
 
-        setcartDatas(getData.data.data)
-        setCartCount(getData.data.data.length)
+        setcartDatas(getData?.data?.data)
+        setCartCount(getData?.data?.data?.length)
         setSpinnerLoader(false)
-        console.log(getData.data.data);
+        console.log(getData?.data?.data);
 
       } catch (error) {
         setSpinnerLoader(false)
-        console.log(error.response.data.message);
+        console.log(error?.response?.data?.message);
         // alert(error.response.data.message)
-        if (error.response.data.message === "Access denied") {
+        var message = error?.response?.data?.message
+        if (message === "Access denied") {
           logOut()
         }
-        else if (error.response.data.message === "Invalid token") {
+        else if (message === "Invalid token") {
           logOut()
         }
       }
@@ -222,9 +226,9 @@ export const UserDashboard = () => {
     const randomNumberGenerate = Math.floor(Math.random() * 3);
     console.log(randomNumberGenerate, "===>");
     setRandomNumber(randomNumberGenerate);
-    // setTimeout(() => {
-    //   generate()
-    // }, 2000);
+    setTimeout(() => {
+      generate()
+    }, 2000);
   }
 
   useEffect(() => {
@@ -301,7 +305,7 @@ export const UserDashboard = () => {
 
             {/* Product Card */}
 
-            {fewDatas.map((data, index) => {
+            {fewDatas.length > 0 ? fewDatas.map((data, index) => {
               return (
                 <div>
                   <img
@@ -323,7 +327,13 @@ export const UserDashboard = () => {
                   </div>
                 </div>
               )
-            })}
+            }): (
+              <div className="col-span-full flex justify-center items-center py-10">
+                <p className="text-red-600 font-bold text-lg">
+                  No Product Found
+                </p>
+              </div>
+            )}
 
 
           </div>
