@@ -22,18 +22,27 @@ const {
     updateUser,
     addUsers,
     loginUser,
-    forgetPassword
+    forgetPassword,
+    sendMail
 } = require('../controllers/ConsumerController');
 const verifyToken = require("../middleware/VerifyToken");
+const ConsumerAuthentication = require("../middleware/ConsumerAuthentication");
+const AdminAuthentication = require("../middleware/AdminAuthentication");
 
-router.get("/getAllConsumers", verifyToken, getAllConsumers);
-router.get("/getOneConsumer/:id", verifyToken, getOneConsumer);
-router.post("/addUser", verifyToken, upload.single("image"), addUser);
-router.get("/getAddressDetails/:id", verifyToken, getAddressDetails);
-router.post("/updateUser", verifyToken, upload.single("image"), updateUser);
+// admin routes
+router.get("/getAllConsumers", verifyToken, AdminAuthentication, getAllConsumers);
+router.get("/getOneConsumer/:id", verifyToken, AdminAuthentication, getOneConsumer);
+router.post("/addUser", verifyToken, AdminAuthentication, upload.single("image"), addUser);
+router.post("/updateUser", verifyToken, AdminAuthentication, upload.single("image"), updateUser);
+
+// consumer routes
+router.get("/getAddressDetails/:id", verifyToken, ConsumerAuthentication, getAddressDetails);
+
+// common routes
 router.post("/addUsers", addUsers);
 router.post("/loginUser", loginUser);
 router.post("/forgetPassword", forgetPassword);
+router.get("/sendMail", sendMail);
 
 
 module.exports = router

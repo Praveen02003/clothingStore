@@ -267,7 +267,8 @@ export const MyOrders = () => {
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">Customer Name</th>
                                     <th className="px-6 py-3">Ordered Date</th>
-                                    <th className="px-6 py-3">Status</th>
+                                    <th className="px-6 py-3">Order Status</th>
+                                    <th className="px-6 py-3">Payment Status</th>
                                     <th className="px-6 py-3">Total Items</th>
                                     <th className="px-6 py-3">Total Price</th>
                                     <th className="px-6 py-3">Shipping Address</th>
@@ -284,6 +285,7 @@ export const MyOrders = () => {
                                             <td className="px-6 py-4">{user.firstName}.{user.lastName}</td>
                                             <td className="px-6 py-4">{new Date(data.addedOn).toLocaleDateString()}</td>
                                             <td className="px-6 py-4 font-semibold">{data.status}</td>
+                                            <td className="px-6 py-4 font-semibold">{data?.paymentData[0]?.paymentStatus}</td>
                                             <td className="px-6 py-4">{data.orderProduct?.length}</td>
                                             <td className="px-6 py-4">
                                                 <i class="fa-solid fa-dollar-sign"></i> {data.orderHistory.reduce((acc, item) => acc + item.totalPrice, 0)}
@@ -291,13 +293,13 @@ export const MyOrders = () => {
                                             <td className="px-6 py-4">{data.shippingAddress}</td>
                                             <td className="px-6 py-4">
                                                 <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                                                    viewOrder(data._id)
+                                                    viewOrder(data.uniqueId)
                                                 }}>
                                                     <i className="fa-solid fa-eye"></i>
                                                 </button>
                                                 {data.status.toLowerCase() === "placed" && (
                                                     <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                                                        openOrderDeleteModal(data._id)
+                                                        openOrderDeleteModal(data.uniqueId)
                                                     }}>
                                                         <i class="fa-solid fa-trash"></i>
                                                     </button>
@@ -388,8 +390,12 @@ export const MyOrders = () => {
                                     <p className="text-gray-700 text-sm">{getParticularOrder?.orderUser?.[0]?.firstName}.{getParticularOrder?.orderUser?.[0]?.lastName}</p>
                                 </div>
                                 <div>
-                                    <p className="font-bold text-lg text-gray-800">Customer name:</p>
+                                    <p className="font-bold text-lg text-gray-800">Order Status:</p>
                                     <p className="text-gray-700 text-sm">{getParticularOrder?.status}</p>
+                                </div>
+                                <div>
+                                    <p className="font-bold text-lg text-gray-800">Payment Status:</p>
+                                    <p className="text-gray-700 text-sm">{getParticularOrder?.paymentData[0]?.paymentStatus}</p>
                                 </div>
 
                                 <div>

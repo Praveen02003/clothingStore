@@ -15,6 +15,17 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const { default: axios } = require('axios')
 
+const formData = require("form-data");
+const Mailgun = require("mailgun.js");
+
+const mailgun = new Mailgun(formData);
+
+const message = mailgun.client({
+    username: "PraveenTech",
+    key: process.env.mailGunApiKey,
+});
+
+
 var secretKey = process.env.JWT_SECRET_KEY
 var captchaSecretKey = process.env.captchaSecretKey
 
@@ -225,7 +236,7 @@ const loginUser = async (req, res) => {
                 var comparePassword = await bcrypt.compare(data.password, getData.password);
                 // console.log(comparePassword, "===>");
                 if (comparePassword) {
-                    var generateToken = jwt.sign({ userId: getData._id }, secretKey, {
+                    var generateToken = jwt.sign({ userId: getData._id, role: getData.role }, secretKey, {
                         expiresIn: '1h',
                     });
                     return res.json({ message: "Login Successfully", data: getData, token: generateToken });
@@ -289,6 +300,25 @@ const forgetPassword = async (req, res) => {
     }
 }
 
+
+const sendMail = async (req, res) => {
+    try {
+        const result = await message.messages.create(process.env.mailGunDomainName, {
+            from: "gngdbndfgbdfpraveenjp7557@gmail.com",
+            to: 'praveen.aeropilot@gmail.com',
+            subject: "vanakkam",
+            text: "welcome"
+        });
+
+        console.log("result", result);
+        return res.json({ message: "Email send success" })
+    } catch (error) {
+        console.log("error", error);
+        return res.json({ message: "Email send failed" })
+
+    }
+}
+
 module.exports = {
     getAllConsumers,
     getOneConsumer,
@@ -297,5 +327,6 @@ module.exports = {
     updateUser,
     addUsers,
     loginUser,
-    forgetPassword
+    forgetPassword,
+    sendMail
 }

@@ -14,8 +14,29 @@ const Stripe = require("stripe");
 
 const validateStripe = Stripe(process.env.stripeSecretKey);
 
+
+const generateRandomId = async () => {
+    var boolean = true;
+    var generatedId;
+
+    while (boolean) {
+        generatedId = Math.floor(100000 + Math.random() * 900000);
+        var findId = await order.findOne({ uniqueId: generatedId })
+
+        if (findId) {
+            boolean = true
+        }
+        else {
+            boolean = false
+            return generatedId;
+        }
+    }
+}
+
 const placeOrder = async (req, res) => {
     try {
+
+        var generateRandomNumber;
         const data = req.body.data;
         console.log(data, "===>");
 
@@ -26,9 +47,11 @@ const placeOrder = async (req, res) => {
         console.log(amount);
 
         const date = new Date();
-        
+
+        var uniqueId = await generateRandomId()
 
         const createEntry = await order.insertOne({
+            uniqueId: uniqueId,
             userId: req.userId,
             status: "placed",
             shippingAddress: address,
@@ -39,16 +62,13 @@ const placeOrder = async (req, res) => {
 
         const orderId = createEntry._id;
 
-        const createPaymentEntry = await payment.findOne().sort({ addedOn: -1 });
-        console.log(createPaymentEntry, "---------------->");
-        if (createPaymentEntry) {
-            const updatePaymentEntry = await payment.updateOne({ _id: createPaymentEntry._id }, {
-                $set: {
-                    orderId: orderId,
-                    editedOn: date
-                }
-            });
-        }
+        const createPaymentEntry = await payment.insertOne({
+            uniqueId: uniqueId,
+            paymentStatus: "paid",
+            addedOn: date,
+            editedOn: date
+        });
+
 
         for (const element of data) {
             var id = element.productId
@@ -64,6 +84,7 @@ const placeOrder = async (req, res) => {
             );
 
             await orderHistory.insertOne({
+                uniqueId: uniqueId,
                 orderId: orderId,
                 productId: element.productId,
                 quantity: element.quantity,
@@ -78,6 +99,71 @@ const placeOrder = async (req, res) => {
         return res.json({ message: "order placed and payment success" });
 
     } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({ message: error.message });
+    }
+}
+
+const failedOrder = async (req, res) => {
+    try {
+        var generateRandomNumber;
+        const data = req.body.data;
+        console.log(data, "===>");
+
+        const address = req.body.address;
+        console.log(address);
+
+        const amount = req.body.totalAmount;
+        console.log(amount);
+
+        const date = new Date();
+
+        var uniqueId = await generateRandomId()
+
+        const createEntry = await order.insertOne({
+            uniqueId: uniqueId,
+            userId: req.userId,
+            status: "cancelled",
+            shippingAddress: address,
+            addedOn: date,
+            editedOn: date
+        });
+
+
+        const orderId = createEntry._id;
+
+        const createPaymentEntry = await payment.insertOne({
+            uniqueId: uniqueId,
+            paymentStatus: "failed",
+            addedOn: date,
+            editedOn: date
+        });
+
+
+        for (const element of data) {
+            var id = element.productId
+            const findProduct = await product.findOne({ _id: id });
+
+            if (element.quantity > findProduct.stock) {
+                return res.json({ message: "Insufficient stock" });
+            }
+            await orderHistory.insertOne({
+                uniqueId: uniqueId,
+                orderId: orderId,
+                productId: element.productId,
+                quantity: element.quantity,
+                totalPrice: findProduct.price * element.quantity,
+                addedOn: date,
+                editedOn: date
+            });
+        }
+
+        return res.json({ message: "payment failed" });
+
+    } catch (error) {
+        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -90,24 +176,23 @@ const paymentDetails = async (req, res) => {
         const paymentIntent = await validateStripe.paymentIntents.create({
             amount: amount * 100,
             currency: "inr",
+            payment_method_types: ["card"],
         });
-        // console.log(paymentIntent, "==>");
-        const createEntry = await payment.insertOne({
-            paymentStatus: "paid",
-            addedOn: date,
-            editedOn: date
-        })
+        console.log(paymentIntent, "==>");
 
-        res.send({
+        return res.json({
+            id: paymentIntent.id,
             clientSecret: paymentIntent.client_secret,
         });
     } catch (error) {
-        res.status(500).send({
+        return res.status(500).send({
             message: error.message,
         });
     }
 }
+
 module.exports = {
     placeOrder,
-    paymentDetails
+    paymentDetails,
+    failedOrder
 }

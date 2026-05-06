@@ -151,7 +151,7 @@ export const AdminProducts = () => {
     async function deleteParticularProduct(id) {
         try {
             const token = localStorage.getItem('loginToken');
-            const deleteOneData = await api.get(`/api/products/deleteParticularProduct/${id}`)
+            const deleteOneData = await api.get(`/api/products/deleteParticularProducts/${id}`)
             console.log(deleteOneData.data.message, "==>");
             // alert(deleteOneData.data.message)
             if (deleteOneData.data.message === "Product Deleted Successfully") {

@@ -18,6 +18,7 @@ import { MyOrders } from './consumer/myOrders/MyOrders';
 import { Orders } from './admin/orders/Orders';
 import { Billing } from './consumer/billing/Billing';
 import { Address } from './consumer/address/Address';
+import { NotFound } from './notFound/NotFound';
 
 export const mainContext = createContext()
 
@@ -140,6 +141,9 @@ function App() {
           <Route path='/admin/adminProducts' element={<AdminProducts />} />
           <Route path='/admin/consumers' element={<Consumers />} />
           <Route path='/admin/orders' element={<Orders />} />
+
+          {/* notfound route */}
+          <Route path="*" element={<NotFound/>}/>
         </Routes>
       </BrowserRouter>
     </mainContext.Provider>

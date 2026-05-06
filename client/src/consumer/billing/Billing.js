@@ -5,7 +5,7 @@ import { mainContext } from '../../App';
 import { Footer } from '../footer/Footer';
 import { Navbar } from '../navbar/Navbar';
 import api from '../../axios/AxiosFile';
-import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Elements, useElements, useStripe, PaymentElement } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
 var stripePromise = loadStripe("pk_test_51RdllLD7I4XSoqu4vVPY0gLBFcBAxoR9kV8wXEuuC99aqZaTlPXANrY7xY9mNWKb4QIEYlW7yKR3I5pn3INrlKb800J4qTYkCv")
@@ -17,8 +17,8 @@ function PaymentSection({ goToPaymentPage, totalAmount, cardError }) {
 
     return (
         <div>
-            <div className="mt-5 justify-between border border-black p-5">
-                <CardElement />
+            <div className="mt-5 justify-between p-5">
+                <PaymentElement />
             </div>
             <p>{cardError.cardDataError}</p>
 
@@ -48,6 +48,9 @@ export const Billing = () => {
 
     const [spinnerLoader, setSpinnerLoader] = useState(false);
 
+    const [clientSecretKey, setClientSecretKey] = useState("");
+    const [paymentId, setPaymentId] = useState(null);
+
     const [error, setError] = useState({
         cardDataError: ""
     })
@@ -69,12 +72,11 @@ export const Billing = () => {
             const token = localStorage.getItem('loginToken');
             var addressDetails = JSON.parse(localStorage.getItem('updatedAddress'))
 
-            var hitPayment = await api.post(`/api/orderHistory/payment`, { totalAmount: totalAmount })
+            // var hitPayment = await api.post(`/api/orderHistory/payment`, { totalAmount: totalAmount })
             // console.log(hitPayment, "==>");
-            const result = await stripe.confirmCardPayment(hitPayment.data.clientSecret, {
-                payment_method: {
-                    card: elements.getElement(CardElement),
-                },
+            const result = await stripe.confirmPayment({
+                elements,
+                redirect: 'if_required'
             });
             console.log(result);
             if (result.error) {
@@ -84,16 +86,37 @@ export const Billing = () => {
                 setSpinnerLoader(false)
                 return;
             }
-            else {
+            else if (result.paymentIntent.status === "succeeded") {
                 setSpinnerLoader(false)
                 // alert("payment success")
                 try {
-                    var orderData = await api.post(`/api/orderHistory/placeOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount })
+                    var orderData = await api.post(`/api/orderHistory/placeOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount, paymentIntentId: paymentId })
                     // alert(orderData.data.message)
                     if (orderData.data.message === "order placed and payment success") {
                         setSpinnerLoader(false)
                         localStorage.removeItem("updatedAddress")
                         navigate("/consumers/payment")
+                    }
+                    else {
+                        alert("Payment failed")
+                    }
+                } catch (error) {
+                    console.log(error);
+
+                }
+            }
+            else if (result.paymentIntent.status === "canceled") {
+                setSpinnerLoader(false)
+                // alert("payment success")
+                try {
+                    var orderData = await api.post(`/api/orderHistory/failedOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount })
+                    // alert(orderData.data.message)
+                    if (orderData.data.message === "payment failed") {
+                        setSpinnerLoader(false)
+                        localStorage.removeItem("updatedAddress")
+                    }
+                    else {
+                        alert("Payment failed")
                     }
                 } catch (error) {
                     console.log(error);
@@ -102,13 +125,16 @@ export const Billing = () => {
             }
 
 
+
         } catch (error) {
-            console.log(error.response.data.message);
+            console.log(error);
+
+            console.log(error?.response?.data?.message);
             // alert(error.response.data.message)
-            if (error.response.data.message === "Access denied") {
+            if (error?.response?.data?.message === "Access denied") {
                 logOut()
             }
-            else if (error.response.data.message === "Invalid token") {
+            else if (error?.response?.data?.message === "Invalid token") {
                 logOut()
             }
 
@@ -190,6 +216,21 @@ export const Billing = () => {
         }
     }, [loginUser])
 
+    async function getClientKey() {
+        try {
+            const res = await api.post("/api/orderHistory/payment", {
+                totalAmount,
+            });
+
+            setClientSecretKey(res.data.clientSecret);
+            setPaymentId(res.data.id);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+
     return (
         <div className={`flex-1 transition-all duration-300 
         ${sideBarOpen ? "ml-64" : "ml-16"}`}>
@@ -260,13 +301,27 @@ export const Billing = () => {
 
                             </div>
 
-                            <Elements stripe={stripePromise}>
-                                <PaymentSection
-                                    goToPaymentPage={goToPaymentPage}
-                                    totalAmount={totalAmount}
-                                    cardError={error}
-                                />
-                            </Elements>
+
+                            {!clientSecretKey && (
+                                <div className="flex flex-col gap-3 mt-6">
+
+                                    <button
+                                        onClick={() => getClientKey()}
+                                        className="bg-gray-700 text-white py-2 rounded-lg font-semibold mt-4 w-full"
+                                    >
+                                        Pay
+                                    </button>
+                                </div>
+                            )}
+                            {clientSecretKey && (
+                                <Elements stripe={stripePromise} options={{ clientSecret: clientSecretKey }}>
+                                    <PaymentSection
+                                        goToPaymentPage={goToPaymentPage}
+                                        totalAmount={totalAmount}
+                                        cardError={error}
+                                    />
+                                </Elements>
+                            )}
 
 
                             <div className="flex flex-col gap-3 mt-6">

@@ -12,6 +12,7 @@ const verifyToken = (req, res, next) => {
             console.log(decoded, "===>");
 
             req.userId = decoded.userId;
+            req.role = decoded.role;
             next();
         } catch (error) {
             console.log(error);

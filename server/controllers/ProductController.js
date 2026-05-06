@@ -81,7 +81,7 @@ const getOneProduct = async (req, res) => {
 }
 
 
-const deleteParticularProduct = async (req, res) => {
+const deleteParticularProducts = async (req, res) => {
     try {
         var id = req.params.id;
         const data = await product.deleteOne({ _id: id });
@@ -89,6 +89,85 @@ const deleteParticularProduct = async (req, res) => {
         return res.json({ data: data, message: "Product Deleted Successfully" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
+    }
+}
+
+const addProducts = async (req, res) => {
+    const data = req.body;
+    console.log(data, "===>");
+
+    const date = new Date();
+    const imageFile = req.file;
+    console.log(data);
+    console.log(req.userId);
+
+
+    try {
+        const getData = await product.findOne({ name: data.name })
+        if (getData) {
+            return res.json({ message: "Product Already Added" })
+        }
+        else {
+            await product.insertOne({
+                name: data.name,
+                price: data.price,
+                defaultPrice: data.defaultPrice,
+                offer: data.offer,
+                description: data.description,
+                stock: data.stock,
+                color: data.color,
+                size: data.size,
+                image: imageFile.originalname,
+                category: data.category,
+                addedOn: date,
+                editedOn: date,
+                userId: req.userId
+            });
+        }
+        return res.json({ message: "Product Added Successfully" })
+    } catch (error) {
+        console.log(error);
+
+        return res.json({ message: "Product Added Failed" })
+    }
+}
+
+
+const upateProducts = async (req, res) => {
+    const data = req.body;
+    const date = new Date();
+    const imageFile = req.file;
+
+    try {
+        const getData = await product.findOne({ name: data.name });
+
+        if (!getData) {
+            return res.json({ message: "Product not found" });
+        }
+
+        let checkData = {
+            name: data.name,
+            price: data.price,
+            defaultPrice: data.defaultPrice,
+            offer: data.offer,
+            description: data.description,
+            stock: data.stock,
+            color: data.color,
+            size: data.size,
+            category: data.category,
+            editedOn: date
+        };
+
+        if (imageFile) {
+            checkData.image = imageFile.originalname;
+        }
+
+        await product.updateOne({ name: data.name }, checkData);
+
+        return res.json({ message: "Product Updated Successfully" });
+
+    } catch (error) {
+        return res.json({ message: error });
     }
 }
 
@@ -171,10 +250,21 @@ const getAdminDashBoardDatas = async (req, res) => {
 }
 
 
-const addProducts = async (req, res) => {
+const deleteParticularProduct = async (req, res) => {
+    try {
+        var id = req.params.id;
+        const data = await product.deleteOne({ _id: id });
+        // console.log(data);
+        return res.json({ data: data, message: "Product Deleted Successfully" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+}
+
+const addProduct = async (req, res) => {
     const data = req.body;
-    console.log(data,"===>");
-    
+    console.log(data, "===>");
+
     const date = new Date();
     const imageFile = req.file;
     console.log(data);
@@ -212,7 +302,7 @@ const addProducts = async (req, res) => {
 }
 
 
-const upateProducts = async (req, res) => {
+const upateProduct = async (req, res) => {
     const data = req.body;
     const date = new Date();
     const imageFile = req.file;
@@ -249,7 +339,6 @@ const upateProducts = async (req, res) => {
         return res.json({ message: error });
     }
 }
-
 
 const getFewData = async (req, res) => {
     try {
@@ -438,15 +527,19 @@ const getMyProduct = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 }
+
 module.exports = {
     getAllProducts,
     getOneProduct,
-    deleteParticularProduct,
     getAdminDashBoardDatas,
+    deleteParticularProducts,
     addProducts,
     upateProducts,
     getFewData,
     getSpecificProduct,
     getAllProduct,
-    getMyProduct
+    getMyProduct,
+    deleteParticularProduct,
+    addProduct,
+    upateProduct,
 }

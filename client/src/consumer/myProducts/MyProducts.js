@@ -289,7 +289,7 @@ export const MyProducts = () => {
       }
       try {
         const token = localStorage.getItem('loginToken');
-        const dataAdd = await api.post("/api/products/addProducts", formData)
+        const dataAdd = await api.post("/api/products/addProduct", formData)
         if (dataAdd.data.message === "Product Added Successfully") {
 
           closeAddModal()
@@ -366,35 +366,15 @@ export const MyProducts = () => {
       category: ""
     })
   }
-
-  async function getParticularProduct(id) {
-    try {
-      const token = localStorage.getItem('loginToken');
-      const getOneData = await api.get(`/api/products/getOneProduct/${id}`)
-
-      console.log(getOneData.data.data, "==>");
-      setParticularProductData(getOneData.data.data)
-
-    } catch (error) {
-      console.log(error?.response?.data?.message);
-      // alert(error.response.data.message)
-      var message = error?.response?.data?.message
-      if (message === "Access denied") {
-        logOut()
-      }
-      else if (message === "Invalid token") {
-        logOut()
-      }
-    }
-  }
-
+  
   // edit modal
+
   async function openEditModal(id) {
     setSpinnerLoader(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
-      await getParticularProduct(id)
+      await getOneProduct(id)
       setProductEditModal(true)
     } catch (error) {
       console.log(error);
@@ -408,7 +388,7 @@ export const MyProducts = () => {
   }
 
   // edit image removeImage function
-  function removeEditImage(product) {
+  function removeEditImage() {
     setParticularProductData({ ...particularProductData, image: "" })
     setEditErrors({ ...editErrors, imageError: "Choose Image" })
   }
@@ -591,7 +571,7 @@ export const MyProducts = () => {
       formData.append("image", particularProductData.image);
       try {
         const token = localStorage.getItem('loginToken');
-        const dataEdit = await api.post("/api/products/upateProducts", formData)
+        const dataEdit = await api.post("/api/products/upateProduct", formData)
         if (dataEdit.data.message === "Product Updated Successfully") {
 
           closeEditModal()
@@ -654,6 +634,7 @@ export const MyProducts = () => {
       const getOneData = await api.get(`/api/products/getSpecificProduct/${id}`)
       console.log(getOneData.data.data, "==>");
       setParticularProduct(getOneData.data.data)
+      setParticularProductData(getOneData.data.data)
       setSpinnerLoader(false)
 
     } catch (error) {
@@ -1494,7 +1475,7 @@ export const MyProducts = () => {
                         alt="Thumb"
                         className="w-24 h-24 object-cover rounded-lg border shadow"
                       />
-                      <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow" onClick={() => { removeEditImage(getParticularProduct) }}>
+                      <button className="absolute top-1 right-1 bg-red-500 text-white text-xs h-6 px-3 py-3 ms-3 rounded flex items-center justify-center shadow" onClick={() => { removeEditImage() }}>
                         <i class="fa-solid fa-xmark"></i>
                       </button>
 

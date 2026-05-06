@@ -3,7 +3,7 @@ import '../login/Login.css'
 import { useNavigate } from 'react-router-dom'
 import api from '../axios/AxiosFile';
 import ReCAPTCHA from "react-google-recaptcha";
-import { SiteKey } from '../siteKey/SiteKey';
+import { SiteKey } from '../backendUrl/Sitekey';
 
 
 export const Login = () => {

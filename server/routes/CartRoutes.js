@@ -9,12 +9,14 @@ const {
 
 } = require('../controllers/CartController');
 const verifyToken = require("../middleware/VerifyToken");
+const ConsumerAuthentication = require("../middleware/ConsumerAuthentication");
 
-router.post("/updateCartQuantity", verifyToken, updateCartQuantity);
-router.get("/removeFromCart/:id", verifyToken, removeFromCart);
-router.post("/cartAdd", verifyToken, cartAdd);
-router.post("/getCartData", verifyToken, getCartData);
-router.get("/getCart/:id", verifyToken, getCart);
+// consumer
+router.post("/updateCartQuantity", verifyToken, ConsumerAuthentication, updateCartQuantity);
+router.get("/removeFromCart/:id", verifyToken, ConsumerAuthentication, removeFromCart);
+router.post("/cartAdd", verifyToken, ConsumerAuthentication, cartAdd);
+router.post("/getCartData", verifyToken, ConsumerAuthentication, getCartData);
+router.get("/getCart/:id", verifyToken, ConsumerAuthentication, getCart);
 
 
 

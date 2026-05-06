@@ -6,6 +6,10 @@ const orderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true
         },
+        uniqueId: {
+            type: Number,
+            default: true
+        },
         status: {
             type: String,
             default: "placed"

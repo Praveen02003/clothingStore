@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(
     {
-        orderId: {
-            type: mongoose.Schema.Types.ObjectId,
-            
+        uniqueId: {
+            type: Number,
+            default: true
         },
         paymentStatus: {
             type: String,

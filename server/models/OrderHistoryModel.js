@@ -6,6 +6,10 @@ const orderHistorySchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true
         },
+        uniqueId: {
+            type: Number,
+            default: true
+        },
         productId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true
