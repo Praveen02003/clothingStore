@@ -110,9 +110,9 @@ export const Payment = () => {
                     </h2>
                 </div>
 
-                <div className="flex items-center justify-center bg-gray-100 m-5">
+                <div className="flex items-center justify-center m-5">
 
-                    <div className="bg-white shadow-lg rounded-xl p-8 text-center max-w-md w-full">
+                    <div className="bg-white border border-gray-300 rounded-xl p-8 text-center max-w-md w-full">
                         <div className="flex justify-center mb-4">
                             <div className="text-gray-700 rounded-full p-4 text-5xl">
                                 <i class="fa-solid fa-circle-check"></i>

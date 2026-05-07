@@ -6,9 +6,9 @@ const orderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true
         },
-        uniqueId: {
+        orderId: {
             type: Number,
-            default: true
+            required: true
         },
         status: {
             type: String,

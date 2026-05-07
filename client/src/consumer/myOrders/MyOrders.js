@@ -293,13 +293,13 @@ export const MyOrders = () => {
                                             <td className="px-6 py-4">{data.shippingAddress}</td>
                                             <td className="px-6 py-4">
                                                 <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                                                    viewOrder(data.uniqueId)
+                                                    viewOrder(data.orderId)
                                                 }}>
                                                     <i className="fa-solid fa-eye"></i>
                                                 </button>
                                                 {data.status.toLowerCase() === "placed" && (
                                                     <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                                                        openOrderDeleteModal(data.uniqueId)
+                                                        openOrderDeleteModal(data.orderId)
                                                     }}>
                                                         <i class="fa-solid fa-trash"></i>
                                                     </button>

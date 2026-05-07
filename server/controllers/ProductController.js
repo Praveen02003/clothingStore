@@ -201,7 +201,7 @@ const getAdminDashBoardDatas = async (req, res) => {
                 { addedOn: { $gte: convertStartDate } },
                 { addedOn: { $lt: convertEndDate } }
             ]
-        }).countDocuments()
+        }).countDocuments({ role: "user" })
 
         allData['consumerCount'] = consumerCount
         // ordersCount

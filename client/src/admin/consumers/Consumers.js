@@ -33,12 +33,8 @@ export const Consumers = () => {
         image: "",
         mobile: "",
         gender: "",
-        password: "",
-        confirmPassword: "",
         address: "",
-        terms: "",
-        securityQuestion: "",
-        securityAnswer: ""
+        terms: ""
     });
 
     var [editError, setEditError] = useState({
@@ -48,36 +44,9 @@ export const Consumers = () => {
         imageError: "",
         mobileError: "",
         genderError: "",
-        passwordError: "",
-        confirmPasswordError: "",
         addressError: "",
-        termsError: "",
-        securityQuestionError: "",
-        securityAnswerError: ""
+        termsError: ""
     });
-
-    const [toggleValue, setToggleValue] = useState("password")
-    const [confirmPasswordToggleValue, setConfirmPasswordToggleValue] = useState("password")
-
-    // showPassword function
-    function showPassword() {
-        if (toggleValue === "password") {
-            setToggleValue("text")
-        }
-        else if (toggleValue === "text") {
-            setToggleValue("password")
-        }
-    }
-
-    // showConfirmPassword function
-    function showConfirmPassword() {
-        if (confirmPasswordToggleValue === "password") {
-            setConfirmPasswordToggleValue("text")
-        }
-        else if (confirmPasswordToggleValue === "text") {
-            setConfirmPasswordToggleValue("password")
-        }
-    }
 
 
     // editValidateFirstName function
@@ -243,49 +212,6 @@ export const Consumers = () => {
     }
 
 
-    // editValidatePassword function
-    function editValidatePassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.passwordError = 'Enter Password';
-        }
-        else if (inputvalue && inputvalue.length < 8) {
-            allErrors.passwordError = 'Password must be at least 8 characters';
-        }
-        else if (!/\d/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one number";
-        }
-        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one special character";
-        }
-        else {
-            allErrors.passwordError = "";
-        }
-        setGetParticularConsumer({ ...getParticularConsumer, newPassword: inputvalue })
-
-        setEditError(allErrors)
-    }
-
-    // editValidateConfirmPassword
-    function editValidateConfirmPassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.confirmPasswordError = 'Enter Confirm-Password';
-        }
-        else if (getParticularConsumer.newPassword !== inputvalue) {
-            allErrors.confirmPasswordError = "Password do not match";
-        }
-        else {
-            allErrors.confirmPasswordError = "";
-        }
-
-        setGetParticularConsumer({ ...getParticularConsumer, confirmPassword: inputvalue })
-
-        setEditError(allErrors)
-    }
-
     // editValidateAddress
     function editValidateAddress(inputvalue) {
         let allErrors = { ...error };
@@ -314,36 +240,6 @@ export const Consumers = () => {
 
         }
         setGetParticularConsumer({ ...getParticularConsumer, images: event.target.files[0] })
-    }
-
-    // editValidateSecurityQuestion
-    function editValidateSecurityQuestion(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.securityQuestionError = 'Select Security Question';
-        }
-        else {
-            allErrors.securityQuestionError = "";
-        }
-        setGetParticularConsumer({ ...getParticularConsumer, securityQuestion: inputvalue })
-
-        setEditError(allErrors)
-    }
-
-    // editValidateSecurityAnswer
-    function editValidateSecurityAnswer(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.securityAnswerError = 'Enter Answer';
-        }
-        else {
-            allErrors.securityAnswerError = "";
-        }
-        setGetParticularConsumer({ ...getParticularConsumer, securityAnswer: inputvalue })
-
-        setEditError(allErrors)
     }
 
     //  updateUser function 
@@ -378,18 +274,9 @@ export const Consumers = () => {
         }
 
 
-
         if (!data.gender) {
             allErrors.genderError = "Select gender";
         }
-
-        if (!data.securityQuestion) {
-            allErrors.securityQuestionError = "Select Security Question";
-        }
-        if (!data.securityAnswer) {
-            allErrors.securityAnswerError = "Enter answer";
-        }
-
 
         if (!data.address) {
             allErrors.addressError = "Enter address";
@@ -399,28 +286,7 @@ export const Consumers = () => {
             allErrors.termsError = "Accept terms";
         }
 
-        const passwordBoolean = (data.newPassword && (data.newPassword.length > 0));
-        const confirmPasswordBoolean = (data.confirmPassword && (data.confirmPassword.length > 0));
-
-        if (passwordBoolean || confirmPasswordBoolean) {
-
-            if (!passwordBoolean) {
-                allErrors.passwordError = "Enter Password";
-            } else {
-                allErrors.passwordError = "";
-            }
-
-            if (!confirmPasswordBoolean) {
-                allErrors.confirmPasswordError = "Enter Confirm-Password";
-            } else {
-                allErrors.confirmPasswordError = "";
-            }
-
-            if (passwordBoolean && confirmPasswordBoolean && data.newPassword !== data.confirmPassword) {
-                allErrors.confirmPasswordError = "Password do not match";
-            }
-        }
-
+        
         setEditError(allErrors);
 
         const hasError = Object.values(allErrors).some(data => data !== "");
@@ -440,13 +306,6 @@ export const Consumers = () => {
             formData.append("gender", getParticularConsumer.gender);
             formData.append("address", getParticularConsumer.address);
             formData.append("terms", getParticularConsumer.terms);
-            formData.append("securityQuestion", getParticularConsumer.securityQuestion);
-            formData.append("securityAnswer", getParticularConsumer.securityAnswer);
-
-            if (getParticularConsumer.newPassword && getParticularConsumer.confirmPassword) {
-                formData.append("newPassword", getParticularConsumer.newPassword);
-                formData.append("confirmPassword", getParticularConsumer.confirmPassword);
-            }
 
             if (getParticularConsumer.images) {
                 formData.append("image", getParticularConsumer.images);
@@ -461,7 +320,7 @@ export const Consumers = () => {
                     }
                 }
             );
-            if (updateData.data.message === "User updated successfully") {
+            if (updateData.data.message === "User updated successfully and new password send to your email") {
                 closeEditModal()
                 setAlertBgColor('green')
                 setAlertContent(updateData.data.message)
@@ -502,12 +361,8 @@ export const Consumers = () => {
         email: "",
         mobile: "",
         gender: "",
-        password: "",
-        confirmPassword: "",
         address: "",
-        terms: "",
-        securityQuestion: "",
-        securityAnswer: "",
+        terms: ""
     });
 
     var [error, setError] = useState({
@@ -516,13 +371,8 @@ export const Consumers = () => {
         emailError: "",
         mobileError: "",
         genderError: "",
-        passwordError: "",
-        confirmPasswordError: "",
         addressError: "",
-        termsError: "",
-        securityQuestionError: "",
-        securityAnswerError: "",
-
+        termsError: ""
     });
 
 
@@ -706,49 +556,6 @@ export const Consumers = () => {
     }
 
 
-    // validatePassword function
-    function validatePassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.passwordError = 'Enter Password';
-        }
-        else if (inputvalue && inputvalue.length < 8) {
-            allErrors.passwordError = 'Password must be at least 8 characters';
-        }
-        else if (!/\d/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one number";
-        }
-        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one special character";
-        }
-        else {
-            allErrors.passwordError = "";
-        }
-        setFormData({ ...formData, password: inputvalue })
-
-        setError(allErrors)
-    }
-
-    // validateConfirmPassword
-    function validateConfirmPassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.confirmPasswordError = 'Enter Confirm-Password';
-        }
-        else if (formData.password !== inputvalue) {
-            allErrors.confirmPasswordError = "Passwords do not match";
-        }
-        else {
-            allErrors.confirmPasswordError = "";
-        }
-
-        setFormData({ ...formData, confirmPassword: inputvalue })
-
-        setError(allErrors)
-    }
-
     // validateAddress
     function validateAddress(inputvalue) {
         let allErrors = { ...error };
@@ -765,37 +572,6 @@ export const Consumers = () => {
         setError(allErrors)
     }
 
-    // validateSecurityQuestion
-    function validateSecurityQuestion(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.securityQuestionError = 'Select Security Question';
-        }
-        else {
-            allErrors.securityQuestionError = "";
-        }
-
-        setFormData({ ...formData, securityQuestion: inputvalue })
-
-        setError(allErrors)
-    }
-
-    // validateSecurityAnswer
-    function validateSecurityAnswer(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.securityAnswerError = 'Enter Answer';
-        }
-        else {
-            allErrors.securityAnswerError = "";
-        }
-
-        setFormData({ ...formData, securityAnswer: inputvalue })
-
-        setError(allErrors)
-    }
 
     // submitForm function
     async function submitForm(event) {
@@ -844,33 +620,12 @@ export const Consumers = () => {
             }
         }
 
-        if (!formData.securityQuestion) {
-            allErrors.securityQuestionError = 'Select Security Question';
-        }
-        if (!formData.securityAnswer) {
-            allErrors.securityAnswerError = 'Enter answer';
-        }
-
         if (!formData.image) {
             allErrors.imageError = "Choose Image";
         }
 
         if (!formData.gender) {
             allErrors.genderError = "Select Gender";
-        }
-
-        if (!formData.password) {
-            allErrors.passwordError = 'Enter Password';
-        }
-
-
-        if (!formData.confirmPassword) {
-            allErrors.confirmPasswordError = 'Enter Confirm-Password';
-        }
-        if (formData.password && formData.confirmPassword) {
-            if (formData.password !== formData.confirmPassword) {
-                allErrors.confirmPasswordError = "Passwords do not match";
-            }
         }
 
 
@@ -881,73 +636,63 @@ export const Consumers = () => {
         if (!formData.address) {
             allErrors.addressError = 'Enter address';
         }
-        if (!formData.captcha) {
-            allErrors.captchaError = "Enter Captcha";
-        }
 
         setError(allErrors);
 
         const checking = Object.values(allErrors).some(err => err !== "");
 
         if (!checking) {
-            if (formData.password === formData.confirmPassword) {
-                var replacedNumber = formData.mobile.replace(/\D/g, "")
-                setFormData({ ...formData, mobile: replacedNumber })
-                console.log(formData, "===>");
-                try {
-                    var forms = new FormData()
-                    forms.append("firstName", formData.firstName);
-                    forms.append("lastName", formData.lastName);
-                    forms.append("email", formData.email);
-                    forms.append("mobile", formData.mobile);
-                    forms.append("image", formData.image);
-                    forms.append("gender", formData.gender);
-                    forms.append("password", formData.password);
-                    forms.append("confirmPassword", formData.confirmPassword);
-                    forms.append("address", formData.address);
-                    forms.append("terms", formData.terms);
-                    forms.append("securityAnswer", formData.securityAnswer);
-                    forms.append("securityQuestion", formData.securityQuestion);
-                    forms.append("captcha", formData.captcha);
-                    // const token = localStorage.getItem('loginToken');
-                    var result = await api.post("/api/consumers/addUser", forms, {
-                        headers: {
-                            "Content-Type": "multipart/form-data"
-                        }
+            var replacedNumber = formData.mobile.replace(/\D/g, "")
+            setFormData({ ...formData, mobile: replacedNumber })
+            console.log(formData, "===>");
+            try {
+                var forms = new FormData()
+                forms.append("firstName", formData.firstName);
+                forms.append("lastName", formData.lastName);
+                forms.append("email", formData.email);
+                forms.append("mobile", formData.mobile);
+                forms.append("image", formData.image);
+                forms.append("gender", formData.gender);
+                forms.append("address", formData.address);
+                forms.append("terms", formData.terms);
+                // const token = localStorage.getItem('loginToken');
+                var result = await api.post("/api/consumers/addUser", forms, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
                     }
+                }
 
-                    );
-                    console.log(result.data.message);
-                    if (result.data.message === "User Added Successfully") {
-                        closeAddModal()
-                        getAllConsumers()
-                        setAlertBgColor('green')
-                        setAlertContent(result.data.message)
-                        setOpenAlert(true)
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                        }, 2000);
-                    }
-                    else {
-                        console.log(result.data, "====>");
+                );
+                console.log(result.data.message);
+                if (result.data.message === "User Added Successfully and Password Send to Your Email") {
+                    closeAddModal()
+                    getAllConsumers()
+                    setAlertBgColor('green')
+                    setAlertContent(result.data.message)
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+                }
+                else {
+                    console.log(result.data, "====>");
 
-                        setAlertContent(result.data.message)
-                        setAlertBgColor('red')
-                        setOpenAlert(true)
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                        }, 2000);
-                    }
-                } catch (error) {
-                    console.log(error?.response?.data?.message);
-                    // alert(error.response.data.message)
-                    var message = error?.response?.data?.message
-                    if (message === "Access denied") {
-                        logOut()
-                    }
-                    else if (message === "Invalid token") {
-                        logOut()
-                    }
+                    setAlertContent(result.data.message)
+                    setAlertBgColor('red')
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 2000);
+                }
+            } catch (error) {
+                console.log(error?.response?.data?.message);
+                // alert(error.response.data.message)
+                var message = error?.response?.data?.message
+                if (message === "Access denied") {
+                    logOut()
+                }
+                else if (message === "Invalid token") {
+                    logOut()
                 }
             }
         }
@@ -1556,54 +1301,6 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <div className="block relative w-full">
-
-                                    <input
-                                        type={toggleValue}
-                                        placeholder="Enter Password"
-                                        value={formData.password}
-                                        onInput={(event) => validatePassword(event.target.value)}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-
-                                    <button
-                                        type="button"
-                                        className="absolute bg-white top-4 right-5 rounded-full"
-                                        onClick={() => {
-                                            showPassword()
-                                        }}
-                                    >
-                                        {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                                    </button>
-                                    <p className="text-sm text-red-500 mb-0">{error.passwordError}</p>
-
-                                </div>
-
-                                <div className="block relative w-full">
-
-                                    <input
-                                        type={confirmPasswordToggleValue}
-                                        placeholder="Confirm-Password"
-                                        value={formData.confirmPassword}
-                                        onInput={(event) => validateConfirmPassword(event.target.value)}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-
-                                    <button
-                                        type="button"
-                                        className="absolute bg-white top-4 right-5 rounded-full"
-                                        onClick={() => {
-                                            showConfirmPassword()
-                                        }}
-                                    >
-                                        {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                                    </button>
-                                    <p className="text-sm text-red-500 mb-0">{error.confirmPasswordError}</p>
-
-                                </div>
-
                                 <div className="block">
                                     <textarea className="w-full border rounded px-3 py-2"
                                         placeholder="Enter address"
@@ -1615,20 +1312,6 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <select id="security" value={formData.securityQuestion} onChange={(event) => { validateSecurityQuestion(event.target.value) }}>
-                                    <option value="">Select Security Question</option>
-                                    <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
-                                    <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
-                                    <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
-                                </select>
-                                <p id="genderError">{error.securityQuestionError}</p>
-
-                                {formData.securityQuestion && (
-                                    < textarea placeholder="Enter answer" id="answer" value={formData.securityAnswer} onInput={(event) => { validateSecurityAnswer(event.target.value) }} ></textarea>
-                                )}
-                                {formData.securityQuestion && (
-                                    <p id="securityQuestionError">{error.securityAnswerError}</p>
-                                )}
                                 <div className="block">
                                     <input
                                         type="checkbox"
@@ -1782,52 +1465,6 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <div className="block relative w-full">
-
-                                    <input
-                                        type={toggleValue}
-                                        placeholder="Enter Password"
-                                        onInput={(event) => editValidatePassword(event.target.value)}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-
-                                    <button
-                                        type="button"
-                                        className="absolute bg-white top-4 right-5 rounded-full"
-                                        onClick={() => {
-                                            showPassword()
-                                        }}
-                                    >
-                                        {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                                    </button>
-                                    <p className="text-sm text-red-500 mb-0">{editError.passwordError}</p>
-
-                                </div>
-
-                                <div className="block relative w-full">
-
-                                    <input
-                                        type={confirmPasswordToggleValue}
-                                        placeholder="Confirm-Password"
-                                        onInput={(event) => editValidateConfirmPassword(event.target.value)}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-
-                                    <button
-                                        type="button"
-                                        className="absolute bg-white top-4 right-5 rounded-full"
-                                        onClick={() => {
-                                            showConfirmPassword()
-                                        }}
-                                    >
-                                        {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                                    </button>
-                                    <p className="text-sm text-red-500 mb-0">{editError.confirmPasswordError}</p>
-
-                                </div>
-
                                 <div className="block">
                                     <textarea className="w-full border rounded px-3 py-2"
                                         placeholder="Enter address"
@@ -1839,20 +1476,6 @@ export const Consumers = () => {
                                     </p>
                                 </div>
 
-                                <select id="security" value={getParticularConsumer.securityQuestion} onChange={(event) => { editValidateSecurityQuestion(event.target.value) }}>
-                                    <option value="">Select Security Question</option>
-                                    <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
-                                    <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
-                                    <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
-                                </select>
-                                <p id="genderError">{editError.securityQuestionError}</p>
-
-                                {getParticularConsumer.securityQuestion && (
-                                    < textarea placeholder="Enter answer" id="answer" value={getParticularConsumer.securityAnswer} onInput={(event) => { editValidateSecurityAnswer(event.target.value) }} ></textarea>
-                                )}
-                                {getParticularConsumer.securityQuestion && (
-                                    <p id="securityQuestionError">{editError.securityAnswerError}</p>
-                                )}
                                 <div className="block">
                                     <input
                                         type="checkbox"

@@ -14,9 +14,9 @@ const updateOrderStatus = async (req, res) => {
     try {
         const data = req.body.data;
 
-        const findOrder = await order.findOne({ uniqueId: data.id });
+        const findOrder = await order.findOne({ orderId: data.id });
         if (findOrder) {
-            var uodateOrder = await order.updateOne({ uniqueId: data.id }, { $set: { status: data.status } })
+            var uodateOrder = await order.updateOne({ orderId: data.id }, { $set: { status: data.status } })
         }
         else if (!findOrder) {
             return res.status(404).json({ message: "data not found" });
@@ -34,9 +34,9 @@ const deleteOrder = async (req, res) => {
     try {
         const data = req.body.data;
 
-        const findOrder = await order.findOne({ uniqueId: data.id });
+        const findOrder = await order.findOne({ orderId: data.id });
         if (findOrder) {
-            var findOrderHistory = await orderHistory.find({ uniqueId: data.id })
+            var findOrderHistory = await orderHistory.find({ orderId: data.id })
             console.log(findOrderHistory);
             for (const element of findOrderHistory) {
                 var findProduct = await product.findOne({ _id: element.productId })
@@ -44,8 +44,8 @@ const deleteOrder = async (req, res) => {
                 var updateProduct = await product.updateOne({ _id: element.productId }, { $set: { stock: updateQuantity } })
             }
 
-            var deleteOrderHistory = await orderHistory.deleteOne({ uniqueId: data.id })
-            var deleteOrder = await order.deleteOne({ uniqueId: data.id })
+            var deleteOrderHistory = await orderHistory.deleteOne({ orderId: data.id })
+            var deleteOrder = await order.deleteOne({ orderId: data.id })
         }
         else if (!findOrder) {
             return res.status(404).json({ message: "data not found" });
@@ -76,8 +76,8 @@ const getMyOrders = async (req, res) => {
             {
                 $lookup: {
                     from: "orderhistories",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "orderHistory"
                 }
             },
@@ -100,8 +100,8 @@ const getMyOrders = async (req, res) => {
             {
                 $lookup: {
                     from: "payments",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "paymentData"
                 }
             },
@@ -133,8 +133,8 @@ const getAllOrders = async (req, res) => {
             {
                 $lookup: {
                     from: "orderhistories",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "orderHistory"
                 }
             },
@@ -157,8 +157,8 @@ const getAllOrders = async (req, res) => {
             {
                 $lookup: {
                     from: "payments",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "paymentData"
                 }
             },
@@ -192,14 +192,14 @@ const getParticularOrderAdmin = async (req, res) => {
         var getOrders = await order.aggregate([
             {
                 $match: {
-                    uniqueId: orderId
+                    orderId: orderId
                 }
             },
             {
                 $lookup: {
                     from: "orderhistories",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "orderHistory"
                 }
             },
@@ -222,8 +222,8 @@ const getParticularOrderAdmin = async (req, res) => {
             {
                 $lookup: {
                     from: "payments",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "paymentData"
                 }
             },
@@ -233,7 +233,7 @@ const getParticularOrderAdmin = async (req, res) => {
         ]);
         console.log(getOrders);
 
-        const totalOrders = await order.countDocuments({ uniqueId: orderId });
+        const totalOrders = await order.countDocuments({ orderId: orderId });
 
 
         return res.json({ message: "data fetched", data: getOrders, totalPage: totalOrders });
@@ -242,6 +242,7 @@ const getParticularOrderAdmin = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+
 const getParticularOrder = async (req, res) => {
     try {
         const orderId = Number(req.params.id);
@@ -255,14 +256,14 @@ const getParticularOrder = async (req, res) => {
         var getOrders = await order.aggregate([
             {
                 $match: {
-                    uniqueId: orderId
+                    orderId: orderId
                 }
             },
             {
                 $lookup: {
                     from: "orderhistories",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "orderHistory"
                 }
             },
@@ -285,8 +286,8 @@ const getParticularOrder = async (req, res) => {
             {
                 $lookup: {
                     from: "payments",
-                    localField: "uniqueId",
-                    foreignField: "uniqueId",
+                    localField: "orderId",
+                    foreignField: "orderId",
                     as: "paymentData"
                 }
             },
@@ -296,7 +297,7 @@ const getParticularOrder = async (req, res) => {
         ]);
         console.log(getOrders);
 
-        const totalOrders = await order.countDocuments({ uniqueId: orderId });
+        const totalOrders = await order.countDocuments({ orderId: orderId });
 
 
         return res.json({ message: "data fetched", data: getOrders, totalPage: totalOrders });
@@ -305,6 +306,7 @@ const getParticularOrder = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+
 module.exports = {
     updateOrderStatus,
     deleteOrder,

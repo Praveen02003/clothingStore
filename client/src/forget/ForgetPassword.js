@@ -22,16 +22,14 @@ export const ForgetPassword = () => {
         email: JSON.parse(localStorage.getItem("resetEmail")) || "",
         password: "",
         confirmPassword: "",
-        securityQuestion: "",
-        securityAnswer: "",
-        securityAnswerType: "",
+        otp: ""
     });
 
     var [error, setError] = useState({
         emailError: "",
         passwordError: "",
         confirmPasswordError: "",
-        securityAnswerTypeError: "",
+        otpError: ""
     });
 
     var [boolean, setBoolean] = useState(false);
@@ -119,17 +117,17 @@ export const ForgetPassword = () => {
     }
 
     // validateSecurityQuestion function
-    function validateSecurityAnswerType(value) {
+    function validateOtp(value) {
         var allErrors = { ...error }
         var inputValue = value;
 
-        setFormData({ ...formData, securityAnswerType: inputValue })
+        setFormData({ ...formData, otp: inputValue })
 
         if (!inputValue) {
-            allErrors.securityAnswerTypeError = 'Enter Answer';
+            allErrors.otpError = 'Enter Otp';
         }
         else {
-            allErrors.securityAnswerTypeError = "";
+            allErrors.otpError = "";
         }
         setError(allErrors)
     }
@@ -150,16 +148,14 @@ export const ForgetPassword = () => {
                     data: formData
                 });
 
-                if (res.data.message === "Data present") {
+                if (res.data.message === "Otp send to your email") {
                     setCount(2);
-                    console.log(res.data.data, "===>");
-                    var question = res.data.data.securityQuestion
-                    var answer = res.data.data.securityAnswer
-                    console.log(question);
-                    console.log(answer);
-
-                    setFormData({ ...formData, securityQuestion: question, securityAnswer: answer })
-
+                    setAlertContent(res.data.message)
+                    setAlertBgColor('green')
+                    setOpenAlert(true)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                    }, 1000);
                 } else {
                     console.log(res.data.message);
                     setAlertContent(res.data.message)
@@ -173,9 +169,9 @@ export const ForgetPassword = () => {
             }
 
             else if (count === 2) {
-                if (!formData.securityAnswerType) {
+                if (!formData.otp) {
                     setSpinnerLoader(false)
-                    setError({ ...error, securityAnswerTypeError: "Enter Answer" });
+                    setError({ ...error, otpError: "Enter Otp" });
                     return;
                 }
 
@@ -235,8 +231,8 @@ export const ForgetPassword = () => {
                     setSpinnerLoader(false)
                     return;
                 }
-                console.log(formData,"==>");
-                
+                console.log(formData, "==>");
+
 
                 const res = await api.post("/api/consumers/forgetPassword", {
                     data: formData,
@@ -321,12 +317,12 @@ export const ForgetPassword = () => {
                         <p id="emailError">{error.emailError}</p>
                     )}
 
-                    {/* security question */}
+                    {/* otp */}
                     {count === 2 && (
                         <div className='grid grid-col-2'>
-                            <label className='font-bold' for="securityQuestion">{formData.securityQuestion}</label>
-                            <input type="text" placeholder="Enter Answer" id="securityQuestion" value={formData.securityQuestionType} onInput={(event) => { validateSecurityAnswerType(event.target.value) }} />
-                            <p id="securityAnswerTypeError">{error.securityAnswerTypeError}</p>
+                            <label className='font-bold' for="otp">Enter OTP</label>
+                            <input type="number" placeholder="Enter OTP" id="otp" value={formData.otp} onInput={(event) => { validateOtp(event.target.value) }} />
+                            <p id="otpError">{error.otpError}</p>
                         </div>
                     )}
 

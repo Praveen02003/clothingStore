@@ -940,7 +940,7 @@ export const AdminProducts = () => {
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-gray-900">
-                                                {data.user[0].firstName}.{data.user[0].lastName}
+                                                {data?.user[0]?.firstName}.{data?.user[0]?.lastName}
                                             </td>
                                         </tr>
                                     )

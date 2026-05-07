@@ -10,7 +10,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 var stripePromise = loadStripe("pk_test_51RdllLD7I4XSoqu4vVPY0gLBFcBAxoR9kV8wXEuuC99aqZaTlPXANrY7xY9mNWKb4QIEYlW7yKR3I5pn3INrlKb800J4qTYkCv")
 
-function PaymentSection({ goToPaymentPage, totalAmount, cardError }) {
+function PaymentSection({ goToPaymentPage, totalAmount }) {
     const stripe = useStripe();
     const elements = useElements();
 
@@ -20,7 +20,6 @@ function PaymentSection({ goToPaymentPage, totalAmount, cardError }) {
             <div className="mt-5 justify-between p-5">
                 <PaymentElement />
             </div>
-            <p>{cardError.cardDataError}</p>
 
             <button
                 onClick={() => goToPaymentPage(stripe, elements)}
@@ -51,10 +50,6 @@ export const Billing = () => {
     const [clientSecretKey, setClientSecretKey] = useState("");
     const [paymentId, setPaymentId] = useState(null);
 
-    const [error, setError] = useState({
-        cardDataError: ""
-    })
-
     // logout function
     function logOut() {
         localStorage.removeItem('loginToken')
@@ -78,19 +73,18 @@ export const Billing = () => {
                 elements,
                 redirect: 'if_required'
             });
-            console.log(result);
-            if (result.error) {
-                setError({ ...error, cardDataError: result.error.message })
-                console.log(error.cardDataError);
-                // alert(result.error.message);
-                setSpinnerLoader(false)
-                return;
-            }
-            else if (result.paymentIntent.status === "succeeded") {
+            console.log(result, "===>");
+
+            if (result.paymentIntent?.status === "succeeded") {
                 setSpinnerLoader(false)
                 // alert("payment success")
                 try {
-                    var orderData = await api.post(`/api/orderHistory/placeOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount, paymentIntentId: paymentId })
+                    var orderData = await api.post(`/api/orderHistory/placeOrder`, {
+                        data: allDatas,
+                        address: addressDetails,
+                        totalAmount: totalAmount,
+                        paymentIntentDetails: result.paymentIntent
+                    })
                     // alert(orderData.data.message)
                     if (orderData.data.message === "order placed and payment success") {
                         setSpinnerLoader(false)
@@ -105,15 +99,19 @@ export const Billing = () => {
 
                 }
             }
-            else if (result.paymentIntent.status === "canceled") {
+            else {
                 setSpinnerLoader(false)
                 // alert("payment success")
                 try {
-                    var orderData = await api.post(`/api/orderHistory/failedOrder`, { data: allDatas, address: addressDetails, totalAmount: totalAmount })
+                    var orderData = await api.post(`/api/orderHistory/failedOrder`, {
+                        data: allDatas,
+                        address: addressDetails,
+                        totalAmount: totalAmount,
+                        paymentIntentDetails: result.paymentIntent
+                    })
                     // alert(orderData.data.message)
                     if (orderData.data.message === "payment failed") {
                         setSpinnerLoader(false)
-                        localStorage.removeItem("updatedAddress")
                     }
                     else {
                         alert("Payment failed")
@@ -123,7 +121,6 @@ export const Billing = () => {
 
                 }
             }
-
 
 
         } catch (error) {
@@ -318,7 +315,6 @@ export const Billing = () => {
                                     <PaymentSection
                                         goToPaymentPage={goToPaymentPage}
                                         totalAmount={totalAmount}
-                                        cardError={error}
                                     />
                                 </Elements>
                             )}

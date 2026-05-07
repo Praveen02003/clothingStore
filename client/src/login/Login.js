@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import '../login/Login.css'
 import { useNavigate } from 'react-router-dom'
 import api from '../axios/AxiosFile';
@@ -9,6 +9,8 @@ import { SiteKey } from '../backendUrl/Sitekey';
 export const Login = () => {
 
   var navigate = useNavigate();
+
+  const captchaReference = useRef(null);
 
   const [openAlert, setOpenAlert] = useState(false)
   const [alertColor, setAlertColor] = useState(null)
@@ -148,6 +150,8 @@ export const Login = () => {
         }, 2000);
 
       }
+
+      captchaReference.current.reset();
     }
   }
 
@@ -235,6 +239,7 @@ export const Login = () => {
           <p>{error.passwordError}</p>
 
           <ReCAPTCHA
+            ref={captchaReference}
             sitekey={SiteKey}
             onChange={(event) => {
               captchChange(event)

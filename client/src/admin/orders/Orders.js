@@ -275,7 +275,7 @@ export const Orders = () => {
                       <td className="px-6 py-4">{data.shippingAddress}</td>
                       <td className="px-6 py-4">
                         <button className="text-black me-5 font-bold hover:underline" onClick={() => {
-                          openViewOrderModal(data.uniqueId)
+                          openViewOrderModal(data.orderId)
                         }}>
                           <i className="fa-solid fa-eye"></i>
                         </button>
@@ -371,7 +371,7 @@ export const Orders = () => {
                   <select
                     value={getParticularOrder?.status}
                     onChange={(event) => {
-                      updateStatus(event.target.value, getParticularOrder.uniqueId)
+                      updateStatus(event.target.value, getParticularOrder.orderId)
                     }}
                     className="border p-2 rounded mt-1"
                   >

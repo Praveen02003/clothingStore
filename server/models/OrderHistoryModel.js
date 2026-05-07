@@ -3,12 +3,8 @@ const mongoose = require('mongoose');
 const orderHistorySchema = new mongoose.Schema(
     {
         orderId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true
-        },
-        uniqueId: {
             type: Number,
-            default: true
+            required: true
         },
         productId: {
             type: mongoose.Schema.Types.ObjectId,

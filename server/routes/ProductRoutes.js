@@ -35,7 +35,7 @@ const ConsumerAuthentication = require("../middleware/ConsumerAuthentication");
 const AdminAuthentication = require("../middleware/AdminAuthentication");
 
 // admin routes
-router.get("/getAdminDashBoardDatas", AdminAuthentication, verifyToken, getAdminDashBoardDatas);
+router.get("/getAdminDashBoardDatas", verifyToken, AdminAuthentication, getAdminDashBoardDatas);
 router.get("/getAllProducts", verifyToken, AdminAuthentication, getAllProducts);
 router.get("/getOneProduct/:id", verifyToken, AdminAuthentication, getOneProduct);
 router.get("/deleteParticularProducts/:id", verifyToken, AdminAuthentication, deleteParticularProducts);

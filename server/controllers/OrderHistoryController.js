@@ -35,8 +35,6 @@ const generateRandomId = async () => {
 
 const placeOrder = async (req, res) => {
     try {
-
-        var generateRandomNumber;
         const data = req.body.data;
         console.log(data, "===>");
 
@@ -46,29 +44,37 @@ const placeOrder = async (req, res) => {
         const amount = req.body.totalAmount;
         console.log(amount);
 
+        var paymentIntentDetails = req.body.paymentIntentDetails;
+        console.log(paymentIntentDetails, "======>");
+
+
         const date = new Date();
 
-        var uniqueId = await generateRandomId()
+        var orderId = await generateRandomId()
+
+
+        const createPaymentEntry = await payment.insertOne({
+            orderId: orderId,
+            userId: req.userId,
+            paymentIntentId: paymentIntentDetails.id,
+            paymentMethodId: paymentIntentDetails.payment_method,
+            totalAmount: paymentIntentDetails.amount,
+            currency: paymentIntentDetails.currency,
+            status: paymentIntentDetails.status,
+            paymentStatus: "paid",
+            originalAmount: amount,
+            addedOn: date,
+            editedOn: date
+        });
 
         const createEntry = await order.insertOne({
-            uniqueId: uniqueId,
+            orderId: orderId,
             userId: req.userId,
             status: "placed",
             shippingAddress: address,
             addedOn: date,
             editedOn: date
         });
-
-
-        const orderId = createEntry._id;
-
-        const createPaymentEntry = await payment.insertOne({
-            uniqueId: uniqueId,
-            paymentStatus: "paid",
-            addedOn: date,
-            editedOn: date
-        });
-
 
         for (const element of data) {
             var id = element.productId
@@ -84,7 +90,6 @@ const placeOrder = async (req, res) => {
             );
 
             await orderHistory.insertOne({
-                uniqueId: uniqueId,
                 orderId: orderId,
                 productId: element.productId,
                 quantity: element.quantity,
@@ -114,15 +119,18 @@ const failedOrder = async (req, res) => {
         const address = req.body.address;
         console.log(address);
 
+        var paymentIntentDetails = req.body.paymentIntentDetails;
+        console.log(paymentIntentDetails);
+
         const amount = req.body.totalAmount;
         console.log(amount);
 
         const date = new Date();
 
-        var uniqueId = await generateRandomId()
+        var orderId = await generateRandomId()
 
         const createEntry = await order.insertOne({
-            uniqueId: uniqueId,
+            orderId: orderId,
             userId: req.userId,
             status: "cancelled",
             shippingAddress: address,
@@ -130,11 +138,15 @@ const failedOrder = async (req, res) => {
             editedOn: date
         });
 
-
-        const orderId = createEntry._id;
-
         const createPaymentEntry = await payment.insertOne({
-            uniqueId: uniqueId,
+            orderId: orderId,
+            userId: req.userId,
+            paymentIntentId: paymentIntentDetails?.id || "",
+            paymentMethodId: paymentIntentDetails?.payment_method || "",
+            totalAmount: paymentIntentDetails?.amount || 0,
+            originalAmount: amount,
+            currency: paymentIntentDetails?.currency || "",
+            status: paymentIntentDetails?.status || "failed",
             paymentStatus: "failed",
             addedOn: date,
             editedOn: date
@@ -149,7 +161,6 @@ const failedOrder = async (req, res) => {
                 return res.json({ message: "Insufficient stock" });
             }
             await orderHistory.insertOne({
-                uniqueId: uniqueId,
                 orderId: orderId,
                 productId: element.productId,
                 quantity: element.quantity,
@@ -176,7 +187,9 @@ const paymentDetails = async (req, res) => {
         const paymentIntent = await validateStripe.paymentIntents.create({
             amount: amount * 100,
             currency: "inr",
-            payment_method_types: ["card"],
+            automatic_payment_methods: {
+                enabled: true,
+            },
         });
         console.log(paymentIntent, "==>");
 
@@ -185,6 +198,8 @@ const paymentDetails = async (req, res) => {
             clientSecret: paymentIntent.client_secret,
         });
     } catch (error) {
+        console.log(error);
+
         return res.status(500).send({
             message: error.message,
         });

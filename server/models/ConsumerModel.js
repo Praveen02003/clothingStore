@@ -38,20 +38,16 @@ const consumerSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        securityQuestion: {
-            type: String,
-            required: true
-        },
-        securityAnswer: {
-            type: String,
-            required: true
-        },
         address: {
             type: String,
             required: true
         },
         images: {
             type: String
+        },
+        otp: {
+            type: Number,
+            default: null
         },
         addedOn: {
             type: Date,

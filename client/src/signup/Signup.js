@@ -21,12 +21,8 @@ export const Signup = () => {
         email: "",
         mobile: "",
         gender: "",
-        password: "",
-        confirmPassword: "",
         address: "",
         terms: "",
-        securityQuestion: "",
-        securityAnswer: ""
     });
 
     var [error, setError] = useState({
@@ -35,38 +31,9 @@ export const Signup = () => {
         emailError: "",
         mobileError: "",
         genderError: "",
-        passwordError: "",
-        confirmPasswordError: "",
         addressError: "",
         termsError: "",
-        securityQuestionError: "",
-        securityAnswerError: ""
-
     });
-
-    const [toggleValue, setToggleValue] = useState("password")
-    const [confirmPasswordToggleValue, setConfirmPasswordToggleValue] = useState("password")
-
-    // showPassword function
-    function showPassword() {
-        if (toggleValue === "password") {
-            setToggleValue("text")
-        }
-        else if (toggleValue === "text") {
-            setToggleValue("password")
-        }
-    }
-
-
-    // showConfirmPassword function
-    function showConfirmPassword() {
-        if (confirmPasswordToggleValue === "password") {
-            setConfirmPasswordToggleValue("text")
-        }
-        else if (confirmPasswordToggleValue === "text") {
-            setConfirmPasswordToggleValue("password")
-        }
-    }
 
 
     // validateFirstName function
@@ -231,50 +198,6 @@ export const Signup = () => {
         setError(allErrors)
     }
 
-
-    // validatePassword function
-    function validatePassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.passwordError = 'Enter Password';
-        }
-        else if (inputvalue && inputvalue.length < 8) {
-            allErrors.passwordError = 'Password must be at least 8 characters';
-        }
-        else if (!/\d/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one number";
-        }
-        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(inputvalue)) {
-            allErrors.passwordError = "Password must contain at least one special character";
-        }
-        else {
-            allErrors.passwordError = "";
-        }
-        setFormData({ ...formData, password: inputvalue })
-
-        setError(allErrors)
-    }
-
-    // validateConfirmPassword
-    function validateConfirmPassword(inputvalue) {
-        let allErrors = { ...error };
-
-        if (!inputvalue) {
-            allErrors.confirmPasswordError = 'Enter Confirm-Password';
-        }
-        else if (formData.password !== inputvalue) {
-            allErrors.confirmPasswordError = "Passwords do not match";
-        }
-        else {
-            allErrors.confirmPasswordError = "";
-        }
-
-        setFormData({ ...formData, confirmPassword: inputvalue })
-
-        setError(allErrors)
-    }
-
     // validateAddress
     function validateAddress(inputvalue) {
         let allErrors = { ...error };
@@ -374,20 +297,6 @@ export const Signup = () => {
             allErrors.genderError = "Select Gender";
         }
 
-        if (!formData.password) {
-            allErrors.passwordError = 'Enter Password';
-        }
-
-
-        if (!formData.confirmPassword) {
-            allErrors.confirmPasswordError = 'Enter Confirm-Password';
-        }
-        if (formData.password && formData.confirmPassword) {
-            if (formData.password !== formData.confirmPassword) {
-                allErrors.confirmPasswordError = "Passwords do not match";
-            }
-        }
-
 
         if (!formData.terms) {
             allErrors.termsError = "Accept terms and condition";
@@ -396,52 +305,44 @@ export const Signup = () => {
         if (!formData.address) {
             allErrors.addressError = 'Enter address';
         }
-        if (!formData.securityQuestion) {
-            allErrors.securityQuestionError = 'Select Security Question';
-        }
-        if (!formData.securityAnswer) {
-            allErrors.securityAnswerError = 'Enter answer';
-        }
 
         setError(allErrors);
 
         const checking = Object.values(allErrors).some(err => err !== "");
 
         if (!checking) {
-            if (formData.password === formData.confirmPassword) {
-                var replacedNumber = formData.mobile.replace(/\D/g, "")
-                setFormData({ ...formData, mobile: replacedNumber })
-                console.log(formData, "===>");
-                try {
-                    setSpinnerLoader(true)
-                    var result = await api.post("/api/consumers/addUsers", { data: formData });
-                    console.log(result.data.message);
-                    if (result.data.message === "Signup Successfully") {
-                        setSpinnerLoader(false)
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                            navigate('/login');
-                        }, 1000);
-                    }
-                    else {
-                        setSpinnerLoader(false)
-                        setAlertBgColor('red')
-                        setAlertContent(result.data.message)
-                        setOpenAlert(true)
-                        setTimeout(() => {
-                            setOpenAlert(false)
-                        }, 2000);
-                    }
-                } catch (error) {
+            var replacedNumber = formData.mobile.replace(/\D/g, "")
+            setFormData({ ...formData, mobile: replacedNumber })
+            console.log(formData, "===>");
+            try {
+                setSpinnerLoader(true)
+                var result = await api.post("/api/consumers/addUsers", { data: formData });
+                console.log(result.data.message);
+                if (result.data.message === "Signup Successfully and Password Send to Your Email") {
+                    setSpinnerLoader(false)
+                    setTimeout(() => {
+                        setOpenAlert(false)
+                        navigate('/login');
+                    }, 1000);
+                }
+                else {
                     setSpinnerLoader(false)
                     setAlertBgColor('red')
-                    setAlertContent("please try again later")
+                    setAlertContent(result.data.message)
                     setOpenAlert(true)
                     setTimeout(() => {
                         setOpenAlert(false)
                     }, 2000);
-
                 }
+            } catch (error) {
+                setSpinnerLoader(false)
+                setAlertBgColor('red')
+                setAlertContent("please try again later")
+                setOpenAlert(true)
+                setTimeout(() => {
+                    setOpenAlert(false)
+                }, 2000);
+
             }
         }
     }
@@ -507,77 +408,9 @@ export const Signup = () => {
                     </select>
                     <p id="genderError">{error.genderError}</p>
 
-                    {/* password */}
-                    <div className="relative w-full">
-
-                        <input
-                            type={toggleValue}
-                            placeholder="Enter Password"
-                            value={formData.password}
-                            onInput={(event) => validatePassword(event.target.value)}
-                            className="w-full border p-2 pr-10"
-                        />
-
-                        <button
-                            type="button"
-                            className="absolute bg-white top-4 right-5 rounded-full"
-                            onClick={() => {
-                                showPassword()
-                            }}
-                        >
-                            {toggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                        </button>
-
-                    </div>
-
-                    <p>{error.passwordError}</p>
-
-                    {/*  confirm-password */}
-                    <div className="relative w-full">
-
-                        <input
-                            type={confirmPasswordToggleValue}
-                            placeholder="Confirm-Password"
-                            value={formData.confirmPassword}
-                            onInput={(event) => validateConfirmPassword(event.target.value)}
-                            className="w-full border p-2 pr-10"
-                        />
-
-                        <button
-                            type="button"
-                            className="absolute bg-white top-4 right-5 rounded-full"
-                            onClick={() => {
-                                showConfirmPassword()
-                            }}
-                        >
-                            {confirmPasswordToggleValue === "password" ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
-
-                        </button>
-
-                    </div>
-
-                    <p>{error.confirmPasswordError}</p>
-
                     {/* address */}
                     <textarea placeholder="Enter address" id="address" value={formData.address} onInput={(event) => { validateAddress(event.target.value) }} ></textarea>
                     <p id="addressError">{error.addressError}</p>
-
-                    {/* gender */}
-                    <select id="security" value={formData.securityQuestion} onChange={(event) => { validateSecurityQuestion(event.target.value) }}>
-                        <option value="">Select Security Question</option>
-                        <option value="which mobile brand you like most?">Which Mobile Brand You Like Most?</option>
-                        <option value="which car brand you like most?">Which Car Brand You Like Most?</option>
-                        <option value="how many mobiles you have?">How Many Mobiles You Have?</option>
-                    </select>
-                    <p id="genderError">{error.securityQuestionError}</p>
-
-                    {formData.securityQuestion && (
-                        < textarea placeholder="Enter answer" id="answer" value={formData.securityAnswer} onInput={(event) => { validateSecurityAnswer(event.target.value) }} ></textarea>
-                    )}
-                    {formData.securityQuestion && (
-                        <p id="securityQuestionError">{error.securityAnswerError}</p>
-                    )}
 
                     {/* terms */}
                     <div className="termsRow">

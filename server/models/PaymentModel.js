@@ -2,13 +2,31 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(
     {
-        uniqueId: {
+        orderId: {
             type: Number,
-            default: true
+            required: true
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true
+        },
+        paymentIntentId: {
+            type: String,
+        },
+        paymentMethodId: {
+            type: String,
+        },
+        originalAmount: {
+            type: Number,
+        },
+        totalAmount: {
+            type: Number,
+        },
+        currency: {
+            type: String,
         },
         paymentStatus: {
             type: String,
-            required: true
         },
         addedOn: {
             type: Date,
