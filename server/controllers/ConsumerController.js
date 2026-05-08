@@ -37,18 +37,58 @@ const generateRandomId = async () => {
     return generatedId;
 }
 
+
 const sendMail = async (email, password) => {
     try {
         const result = await message.messages.create(process.env.mailGunDomainName, {
             from: "cartify@gmail.com",
             to: email,
-            subject: "Password",
-            text: "Welcome to Carify Thanks for Your Support",
+            subject: "Your Login Account Details from Cartify",
             html: `
-            <div>
-                <h4>This is Your Password Login Using this ${password}</h4>
-                <a href="http://localhost:3000/login">Login</a>
-            </div> `
+                    <div>
+                        <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid rgb(128, 121, 121);">
+                            
+                            <div style="background-color: #1b2b4e;padding:5px;text-align:center;">
+                                <h1 style="color:white;font-size:26px;">
+                                    Cartify
+                                </h1>
+                            </div>
+
+                            
+                            <div style="padding:30px;">
+                                <p style="font-size:16px;color:#111827;">Hi User,</p>
+                                <p style="font-size:16px;color:#111827;">Login Details</p>
+
+                                <p style="font-size:15px;color:#4b5563;">
+                                    Thanks for your support
+                                </p>
+                                <p style="font-size:15px;color:#4b5563;">
+                                    Your account has created successfully to Use This Password to Login.
+                                </p>
+
+                                <div style="background:#071e4843;padding:18px;border-radius:10px;margin-top:20px;">
+                                    <p style="margin:0;font-size:15px;color:#111827;">
+                                        <span style="font-weight: bold;">Your Password:</span> ${password}
+                                    </p>
+                                </div>
+
+                                <div style="text-align:center;margin-top:28px;">
+                                    <a href="http://localhost:3000/login"
+                                        style="background-color: #1b2b4e;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;display:inline-block;font-size:15px;">
+                                        Login
+                                    </a>
+                                </div>
+                                <p style="font-size:15px;color:#4b5563;text-align: end;">
+                                    Sincerly from,
+                                </p>
+                                <p style="font-size:15px;color:#4b5563;text-align: end;">
+                                    Cartify
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                `
         });
         return result
     } catch (error) {
@@ -56,17 +96,47 @@ const sendMail = async (email, password) => {
     }
 }
 
+
 const sendForgetPasswordMail = async (email, otp) => {
     try {
         const result = await message.messages.create(process.env.mailGunDomainName, {
             from: "cartify@gmail.com",
             to: email,
-            subject: "Password",
-            text: "Welcome to Carify Thanks for Your Support",
+            subject: "Password Reset OTP",
             html: `
-            <div>
-                <h4>This is Your OTP ${otp}</h4>
-            </div> `
+                    <div>
+                        <div style="max-width:600px;margin:auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid rgb(128, 121, 121);">
+
+                            <div style="background-color: #1b2b4e;padding:5px;text-align:center;">
+                                <h1 style="color:white;font-size:26px;">
+                                    Cartify
+                                </h1>
+                            </div>
+                            
+                            <div style="padding:30px;">
+                                <p style="font-size:16px;color:#111827;">Hi User,</p>
+                                <p style="font-size:16px;color:#111827;">Your OTP</p>
+                                <p style="font-size:15px;color:#4b5563;">
+                                    Use This OTP to Reset New Password.
+                                </p>
+
+                                <div style="background:#071e4843;padding:18px;border-radius:10px;margin-top:20px;">
+                                    <p style="margin:0;font-size:15px;color:#111827;">
+                                        <span style="font-weight: bold;">Your OTP :</span> ${otp}
+                                    </p>
+                                </div>
+
+                                <p style="font-size:15px;color:#4b5563;text-align: end;">
+                                    Sincerly from,
+                                </p>
+                                <p style="font-size:15px;color:#4b5563;text-align: end;">
+                                    Cartify
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                `
         });
         return result
     } catch (error) {
@@ -379,6 +449,7 @@ const forgetPassword = async (req, res) => {
         return res.json({ message: "server error" });
     }
 }
+
 
 module.exports = {
     getAllConsumers,

@@ -9,6 +9,58 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import api from "../../axios/AxiosFile";
 
+import { Bar, Pie } from "react-chartjs-2";
+import "chart.js/auto";
+
+function RevenueChart({ getAllAdminDashBoardData }) {
+    const data = {
+        labels: ["Revenue"],
+        datasets: [
+            {
+                label: "Total Purchase",
+                data: [getAllAdminDashBoardData?.totalPurchase || 0]
+            }
+        ]
+    };
+
+    return <Bar data={data} />;
+}
+
+function CountChart({ getAllAdminDashBoardData }) {
+    const data = {
+        labels: ["Consumers Counts", "Products Counts", "Orders Counts"],
+        datasets: [
+            {
+                label: "Counts",
+                data: [
+                    getAllAdminDashBoardData?.consumerCount || 0,
+                    getAllAdminDashBoardData?.productCount || 0,
+                    getAllAdminDashBoardData?.ordersCount || 0,
+                ]
+            }
+        ]
+    };
+
+    return <Pie data={data} />;
+}
+
+function OrderStatusCountChart({ getAllAdminDashBoardData }) {
+    const data = {
+        labels: ["Payment Success","Payment Failed"],
+        datasets: [
+            {
+                label: "Counts",
+                data: [
+                    getAllAdminDashBoardData?.orderSuccessCount || 0,
+                    getAllAdminDashBoardData?.orderFailedCount || 0
+                ]
+            }
+        ]
+    };
+
+    return <Pie data={data} />;
+}
+
 export const Dashboard = () => {
 
     const [startDates, setStartDates] = useState();
@@ -171,6 +223,22 @@ export const Dashboard = () => {
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-calculator"></i> Total Purchase</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black"><i class="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}</p>
+                    </div>
+                </div>
+
+                {/* chart section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
+                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
+                        <CountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
+                    </div>
+
+                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
+                        <RevenueChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
+                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
+                        <OrderStatusCountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
                     </div>
                 </div>
 
