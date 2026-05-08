@@ -10,18 +10,29 @@ const payment = require('../models/PaymentModel')
 
 const { MongoClient, ObjectId } = require('mongodb');
 
-const Stripe = require("stripe");
+const stripe = require("stripe");
 
-const validateStripe = Stripe(process.env.stripeSecretKey);
+const validateStripe = stripe(process.env.stripeSecretKey);
 
 
 const generateRandomId = async () => {
     var boolean = true;
     var generatedId;
 
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var alphaNumericCharacters = '';
+
+    async function generate(length) {
+        for (let i = 0; i < length; i++) {
+            var randomCalculate = characters.charAt(Math.floor(Math.random() * characters.length));
+            alphaNumericCharacters = alphaNumericCharacters + randomCalculate;
+        }
+        return alphaNumericCharacters;
+    }
+
     while (boolean) {
-        generatedId = Math.floor(100000 + Math.random() * 900000);
-        var findId = await order.findOne({ uniqueId: generatedId })
+        generatedId = await generate(6);
+        var findId = await order.findOne({ orderId: generatedId })
 
         if (findId) {
             boolean = true
@@ -141,11 +152,11 @@ const failedOrder = async (req, res) => {
         const createPaymentEntry = await payment.insertOne({
             orderId: orderId,
             userId: req.userId,
-            paymentIntentId: paymentIntentDetails?.id || "",
-            paymentMethodId: paymentIntentDetails?.payment_method || "",
+            paymentIntentId: paymentIntentDetails?.id || null,
+            paymentMethodId: paymentIntentDetails?.payment_method || null,
             totalAmount: paymentIntentDetails?.amount || 0,
-            originalAmount: amount,
-            currency: paymentIntentDetails?.currency || "",
+            originalAmount: amount || null,
+            currency: paymentIntentDetails?.currency || null,
             status: paymentIntentDetails?.status || "failed",
             paymentStatus: "failed",
             addedOn: date,
@@ -206,8 +217,24 @@ const paymentDetails = async (req, res) => {
     }
 }
 
+
+const getPaymentDetailsFromStripe = async (req, res) => {
+    try {
+        var paymentIntentId = "pi_3TUSCtD7I4XSoqu41uUediW3";
+        const paymentIntent = await validateStripe.paymentIntents.retrieve(paymentIntentId);
+
+        // console.log(paymentIntent);
+        return res.json({ message: "Data Fetched from Stripe", data: paymentIntent })
+    } catch (error) {
+        // console.log(error);
+
+        return res.json({ message: "Unable to Fetch Data from Stripe", error: error })
+    }
+}
+
 module.exports = {
     placeOrder,
     paymentDetails,
-    failedOrder
+    failedOrder,
+    getPaymentDetailsFromStripe
 }

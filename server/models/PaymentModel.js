@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const paymentSchema = new mongoose.Schema(
     {
         orderId: {
-            type: Number,
+            type: String,
             required: true
         },
         userId: {
@@ -12,21 +12,27 @@ const paymentSchema = new mongoose.Schema(
         },
         paymentIntentId: {
             type: String,
+            required: false
         },
         paymentMethodId: {
             type: String,
+            required: false
         },
         originalAmount: {
             type: Number,
+            required: false
         },
         totalAmount: {
             type: Number,
+            required: false
         },
         currency: {
             type: String,
+            required: false
         },
         paymentStatus: {
             type: String,
+            required: false
         },
         addedOn: {
             type: Date,

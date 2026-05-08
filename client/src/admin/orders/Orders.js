@@ -390,11 +390,11 @@ export const Orders = () => {
 
                 <div>
                   <p className="font-bold text-lg text-gray-800">Order Date:</p>
-                  <p className="text-gray-700 text-sm">{new Date(getParticularOrder.addedOn).toLocaleDateString()}</p>
+                  <p className="text-gray-700 text-sm">{new Date(getParticularOrder?.addedOn).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="font-bold text-lg text-gray-800">Shipping Address:</p>
-                  <p className="text-gray-700 text-sm">{getParticularOrder.shippingAddress}</p>
+                  <p className="text-gray-700 text-sm">{getParticularOrder?.shippingAddress}</p>
                 </div>
 
               </div>

@@ -23,7 +23,6 @@ const {
     addUsers,
     loginUser,
     forgetPassword,
-    sendMail
 } = require('../controllers/ConsumerController');
 const verifyToken = require("../middleware/VerifyToken");
 const ConsumerAuthentication = require("../middleware/ConsumerAuthentication");
@@ -42,7 +41,6 @@ router.get("/getAddressDetails/:id", verifyToken, ConsumerAuthentication, getAdd
 router.post("/addUsers", addUsers);
 router.post("/loginUser", loginUser);
 router.post("/forgetPassword", forgetPassword);
-router.get("/sendMail", sendMail);
 
 
 module.exports = router

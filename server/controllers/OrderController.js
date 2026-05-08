@@ -181,7 +181,7 @@ const getAllOrders = async (req, res) => {
 
 const getParticularOrderAdmin = async (req, res) => {
     try {
-        const orderId = Number(req.params.id);
+        const orderId = req.params.id;
         console.log(orderId);
 
 
@@ -245,7 +245,7 @@ const getParticularOrderAdmin = async (req, res) => {
 
 const getParticularOrder = async (req, res) => {
     try {
-        const orderId = Number(req.params.id);
+        const orderId = req.params.id;
         console.log(orderId);
 
 

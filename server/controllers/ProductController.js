@@ -9,6 +9,7 @@ const orderHistory = require('../models/OrderHistoryModel')
 const consumer = require('../models/ConsumerModel')
 
 const { MongoClient, ObjectId } = require('mongodb');
+const payment = require('../models/PaymentModel')
 
 const getAllProducts = async (req, res) => {
     try {
@@ -215,6 +216,27 @@ const getAdminDashBoardDatas = async (req, res) => {
         )
 
         allData['ordersCount'] = ordersCount
+        console.log(allData);
+
+        // orderSuccessCount
+        var orderSuccessCount = await payment.find({
+            $and: [
+                { addedOn: { $gte: convertStartDate } },
+                { addedOn: { $lt: convertEndDate } }
+            ]
+        }).countDocuments({ paymentStatus: "paid" })
+
+        allData['orderSuccessCount'] = orderSuccessCount
+        console.log(allData);
+
+        // orderFailedCount
+        var orderFailedCount = await payment.find({
+            $and: [
+                { addedOn: { $gte: convertStartDate } },
+                { addedOn: { $lt: convertEndDate } }
+            ]
+        }).countDocuments({ paymentStatus: "failed" })
+        allData['orderFailedCount'] = orderFailedCount
         console.log(allData);
 
         // totalPurchase
