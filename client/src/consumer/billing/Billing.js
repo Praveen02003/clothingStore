@@ -252,7 +252,7 @@ export const Billing = () => {
 
                     <h2 className="text-lg font-bold flex items-center gap-2">
                         <i className="fa-solid fa-receipt"></i>
-                        Bill Information
+                        {/* Bill Information */}
                     </h2>
                 </div>
 
