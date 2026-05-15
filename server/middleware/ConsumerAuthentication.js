@@ -1,3 +1,4 @@
+// ConsumerAuthentication function
 const ConsumerAuthentication = (req, res, next) => {
     console.log(req.role);
     

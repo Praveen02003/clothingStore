@@ -292,7 +292,7 @@ export const ForgetPassword = () => {
         authUser();
     }, [])
     return (
-        <div id='mainForm'>
+        <div id='resetMainForm'>
             {spinnerLoader && (
                 <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
                     <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
@@ -414,7 +414,7 @@ export const ForgetPassword = () => {
             </div>
             {/* alert */}
             {openAlert && (
-                <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
+                <div class={`fixed bottom-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
                     <div class="text-sm font-normal">{alertContent}</div>
                 </div>
             )}

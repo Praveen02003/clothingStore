@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// consumerModel
 const consumerSchema = new mongoose.Schema(
     {
         firstName: {

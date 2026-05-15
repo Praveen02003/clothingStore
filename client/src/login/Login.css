@@ -29,14 +29,14 @@
 }
 
 /* form part style */
-form {
+#loginForm {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
 /* input part style */
-input {
+#loginForm input {
     box-sizing: border-box;
     width: 100%;
     padding: 10px;
@@ -49,26 +49,26 @@ input {
 
 
 /* error message style */
-p {
+#loginForm p {
     font-size: 12px;
     color: red;
 }
 
 /* link part style */
-.link {
+#mainForm .link {
     text-align: center;
     margin-top: 15px;
     font-size: 14px;
 }
 
-.link a {
+#mainForm .link a {
     color: #667eea;
     text-decoration: none;
     font-weight: 500;
     margin-left: 5px;
 }
 
-.link a:hover {
+#mainForm .link a:hover {
     text-decoration: underline;
 }
 
@@ -90,16 +90,16 @@ p {
         padding: 20px;
         max-width: 70%;
     }
-    input {
+    #loginForm input {
         font-size: 15px;
     }
 
-    button {
+    #loginForm button {
         font-size: 15px;
         padding: 11px;
     }
 
-    .link {
+    #mainForm .link {
         font-size: 13px;
     }
 

@@ -25,7 +25,7 @@
 }
 
 /* form part style */
-form {
+#signupForm {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -34,7 +34,7 @@ form {
 }
 
 /* inside form div part */
-form div {
+#signupForm div {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -42,8 +42,7 @@ form div {
 }
 
 /* inside form div input part */
-form div input {
-    flex: 1;
+#signupForm div input {
     width: 100%;
     padding: 10px;
     border-radius: 6px;
@@ -54,8 +53,8 @@ form div input {
 }
 
 /* style all input and select part */
-input,
-select {
+#signupForm input,
+#signupForm select {
     width: 100%;
     padding: 10px;
     border-radius: 6px;
@@ -65,20 +64,20 @@ select {
 }
 
 /* label part style */
-label {
+#signupForm label {
     font-size: 14px;
     color: #333;
 }
 
 /* terms part style */
-.termsRow {
+#signupForm .termsRow {
     display: flex;
     align-items: center;
     gap: 8px;
     line-height: 1;
 }
 
-.termsRow input[type="checkbox"] {
+#signupForm .termsRow #terms {
     width: 16px;
     height: 16px;
     margin: 0;
@@ -87,7 +86,7 @@ label {
     cursor: pointer;
 }
 
-.termsRow label {
+#signupFor .termsRow label {
     font-size: 14px;
     color: #333;
     cursor: pointer;
@@ -97,7 +96,7 @@ label {
 }
 
 /* style the checked checkbox only */
-.termsRow input,
+#signupFor .termsRow input,
 textarea,
 input[type="checkbox"] {
     width: auto;
@@ -105,7 +104,7 @@ input[type="checkbox"] {
 }
 
 /* inputGroup style part */
-.inputGroup {
+#signupForm .inputGroup {
     position: relative;
     display: flex;
     align-items: center;
@@ -113,7 +112,7 @@ input[type="checkbox"] {
     width: 100%;
 }
 
-.inputGroup span {
+#signupForm .inputGroup span {
     position: absolute;
     left: 10px;
     top: 50%;
@@ -122,7 +121,7 @@ input[type="checkbox"] {
     font-size: 14px;
 }
 
-.inputGroup input {
+#signupForm .inputGroup input {
     flex: 1;
     margin-top: 0;
     height: 38px;
@@ -131,28 +130,28 @@ input[type="checkbox"] {
 }
 
 /* mobileError style part */
-#mobileError {
+#signupForm #mobileError {
     margin-top: 4px;
     font-size: 12px;
     color: red;
 }
 
-form div:nth-child(4) {
+#signupForm div:nth-child(4) {
     flex-direction: row;
     align-items: center;
     gap: 8px;
 }
 
-form div:nth-child(4) input {
+#signupForm div:nth-child(4) input {
     flex: 1;
 }
 
-form div:nth-last-child(2) input {
+#signupForm div:nth-last-child(2) input {
     width: auto;
 }
 
 /* style error message part */
-p {
+#signupForm p {
     font-size: 12px;
     color: red;
 }
@@ -169,12 +168,12 @@ p {
 }
 
 /* link part */
-.link {
+.main .link {
     text-align: center;
     margin-top: 12px;
 }
 
-.link a {
+.main .link a {
     color: #4facfe;
     text-decoration: none;
     font-weight: 500;
