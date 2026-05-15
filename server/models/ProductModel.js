@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// productModel
 const productSchema = new mongoose.Schema(
     {
         name: {
@@ -49,7 +50,8 @@ const productSchema = new mongoose.Schema(
             required: true
         },
         rating: {
-            type: Number
+            type: Number,
+            default: 5
         },
         addedOn: {
             type: Date,

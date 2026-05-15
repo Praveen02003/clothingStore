@@ -225,7 +225,7 @@ export const Login = () => {
 
             <button
               type="button"
-              className="absolute bg-white top-4 right-5 rounded-full"
+              className="absolute sm:top-2 md:top-2 right-5"
               onClick={() => {
                 showPassword()
               }}
@@ -238,13 +238,19 @@ export const Login = () => {
 
           <p>{error.passwordError}</p>
 
-          <ReCAPTCHA
-            ref={captchaReference}
-            sitekey={SiteKey}
-            onChange={(event) => {
-              captchChange(event)
-            }}
-          />
+
+
+          <div className="overflow-hidden">
+            <div className="transform scale-75 origin-left sm:scale-100">
+              <ReCAPTCHA
+                ref={captchaReference}
+                sitekey={SiteKey}
+                onChange={(event) => {
+                  captchChange(event)
+                }}
+              />
+            </div>
+          </div>
 
           <p>{error.captchaError}</p>
 
@@ -258,8 +264,8 @@ export const Login = () => {
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
             ) : (
               <div>
-                <i className="fa-solid fa-right-to-bracket"></i>
-                Login
+                <i className="fa-solid fa-right-to-bracket"></i> Login
+
               </div>
             )}
           </button>
@@ -286,8 +292,8 @@ export const Login = () => {
 
       {/* alert */}
       {openAlert && (
-        <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
-          <div class="text-sm font-normal">{alertContent}</div>
+        <div className={`fixed bottom-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
+          <div className="text-sm font-normal">{alertContent}</div>
         </div>
       )}
     </div>

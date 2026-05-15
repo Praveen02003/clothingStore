@@ -11,10 +11,11 @@ const payment = require('../models/PaymentModel')
 const { MongoClient, ObjectId } = require('mongodb');
 
 const stripe = require("stripe");
+const logger = require('../logger/Logger.js')
 
 const validateStripe = stripe(process.env.stripeSecretKey);
 
-
+// generateRandomId function
 const generateRandomId = async () => {
     var boolean = true;
     var generatedId;
@@ -44,6 +45,7 @@ const generateRandomId = async () => {
     }
 }
 
+// placeOrder function
 const placeOrder = async (req, res) => {
     try {
         const data = req.body.data;
@@ -92,6 +94,12 @@ const placeOrder = async (req, res) => {
             const findProduct = await product.findOne({ _id: id });
 
             if (element.quantity > findProduct.stock) {
+
+                logger.info("Insufficient stock", {
+                    functionName: "placeOrder",
+                    userId: req.userId,
+                });
+
                 return res.json({ message: "Insufficient stock" });
             }
             var calculateStock = findProduct.stock - element.quantity
@@ -112,15 +120,26 @@ const placeOrder = async (req, res) => {
 
         await cart.deleteMany({ userId: req.userId });
 
+        logger.info("order placed and payment success", {
+            functionName: "placeOrder",
+            userId: req.userId,
+        });
+
         return res.json({ message: "order placed and payment success" });
 
     } catch (error) {
         console.log(error);
 
+        logger.error(error, {
+            functionName: "placeOrder",
+            userId: req.userId,
+        });
+
         return res.status(500).json({ message: error.message });
     }
 }
 
+// failedOrder function
 const failedOrder = async (req, res) => {
     try {
         var generateRandomNumber;
@@ -169,6 +188,12 @@ const failedOrder = async (req, res) => {
             const findProduct = await product.findOne({ _id: id });
 
             if (element.quantity > findProduct.stock) {
+
+                logger.info("Insufficient stock", {
+                    functionName: "failedOrder",
+                    userId: req.userId,
+                });
+
                 return res.json({ message: "Insufficient stock" });
             }
             await orderHistory.insertOne({
@@ -181,15 +206,26 @@ const failedOrder = async (req, res) => {
             });
         }
 
+        logger.info("payment failed", {
+            functionName: "failedOrder",
+            userId: req.userId,
+        });
+
         return res.json({ message: "payment failed" });
 
     } catch (error) {
         console.log(error);
 
+        logger.error(error, {
+            functionName: "failedOrder",
+            userId: req.userId,
+        });
+
         return res.status(500).json({ message: error.message });
     }
 }
 
+// paymentDetails function
 const paymentDetails = async (req, res) => {
     var date = new Date();
     try {
@@ -204,12 +240,23 @@ const paymentDetails = async (req, res) => {
         });
         console.log(paymentIntent, "==>");
 
+        logger.info("paymentData Fetched", {
+            functionName: "paymentDetails",
+            userId: req.userId,
+        });
+
         return res.json({
             id: paymentIntent.id,
             clientSecret: paymentIntent.client_secret,
+            message: "paymentData Fetched"
         });
     } catch (error) {
         console.log(error);
+
+        logger.error(error, {
+            functionName: "paymentDetails",
+            userId: req.userId,
+        });
 
         return res.status(500).send({
             message: error.message,
@@ -217,17 +264,26 @@ const paymentDetails = async (req, res) => {
     }
 }
 
-
+// getPaymentDetailsFromStripe function
 const getPaymentDetailsFromStripe = async (req, res) => {
     try {
         var paymentIntentId = "pi_3TUSCtD7I4XSoqu41uUediW3";
         const paymentIntent = await validateStripe.paymentIntents.retrieve(paymentIntentId);
 
         // console.log(paymentIntent);
-        return res.json({ message: "Data Fetched from Stripe", data: paymentIntent })
+        return res.json({ message: "paymentData Fetched from Stripe", data: paymentIntent })
+
+        logger.info("paymentData Fetched from Stripe", {
+            functionName: "getPaymentDetailsFromStripe",
+            userId: req.userId,
+        });
+
     } catch (error) {
         // console.log(error);
-
+        logger.error(error, {
+            functionName: "getPaymentDetailsFromStripe",
+            userId: req.userId,
+        });
         return res.json({ message: "Unable to Fetch Data from Stripe", error: error })
     }
 }

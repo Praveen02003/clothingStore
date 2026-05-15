@@ -123,11 +123,11 @@ function App() {
           {/* authentication routes */}
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
+          <Route path='/consumer/resetPassword' element={<ForgetPassword />} />
 
           {/* consumers routes */}
           <Route path='/' element={<UserDashboard />} />
           <Route path='/consumers/products' element={<Products />} />
-          <Route path='/consumer/resetPassword' element={<ForgetPassword />} />
           <Route path='/consumers/cart' element={<Cart />} />
           <Route path='/consumers/myProducts' element={<MyProducts />} />
           <Route path='/consumers/checkOut' element={<Checkout />} />

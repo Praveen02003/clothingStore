@@ -366,7 +366,7 @@ export const MyProducts = () => {
       category: ""
     })
   }
-  
+
   // edit modal
 
   async function openEditModal(id) {
@@ -1084,8 +1084,10 @@ export const MyProducts = () => {
 
         {/* alert */}
         {openAlert && (
-          <div class={`fixed bottom-5 right-5 flex items-center p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`} role="alert">
-            <div class="text-sm font-normal">{alertContent}</div>
+          <div class={`fixed bottom-5 w-full flex justify-center`}>
+            <div class={`p-4 bg-${alertBgColor}-600 rounded-lg shadow-lg text-white`}>
+              <div class={`text-sm font-normal`}>{alertContent}</div>
+            </div>
           </div>
         )}
 
