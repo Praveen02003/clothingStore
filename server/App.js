@@ -5,6 +5,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 
 const connectDb = require('./config/Db');
+const logger = require('./logger/Logger');
 
 dotenv.config();
 
@@ -19,6 +20,20 @@ connectDb();
 
 app.use("/images", express.static("public/images"));
 
+app.use((req, res, next) => {
+    var startTime = Date.now();
+    res.on('finish', () => {
+        var endTime = Date.now();
+        logger.log({
+            level: (res.statusCode === 200) ? "info" : "error",
+            method: req.method,
+            api: req.originalUrl,
+            statusCode: res.statusCode,
+            travelTime: endTime - startTime + "ms",
+        });
+    })
+    next();
+});
 // routes
 app.use("/api/consumers", require("./routes/ConsumerRoutes"));
 app.use("/api/products", require("./routes/ProductRoutes"));

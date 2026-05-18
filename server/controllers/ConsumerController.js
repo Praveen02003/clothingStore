@@ -17,8 +17,6 @@ const { default: axios } = require('axios')
 
 const formData = require("form-data");
 const Mailgun = require("mailgun.js");
-const logger = require('../logger/Logger.js')
-
 const mailgun = new Mailgun(formData);
 
 const message = mailgun.client({
@@ -171,20 +169,8 @@ const getAllConsumers = async (req, res) => {
         const allConsumers = await consumer.find(categorySort).sort({ addedOn: -1 }).skip(skipPage).limit(limitItem);
         const totalConsumers = await consumer.countDocuments(categorySort);
         console.log(allConsumers);
-
-        logger.info("consumerData Fetched", {
-            functionName: "getAllConsumers",
-            userId: req.userId,
-        });
-
         return res.json({ data: allConsumers, totalPage: totalConsumers, message: "consumerData Fetched" });
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "getAllConsumers",
-            userId: req.userId,
-        });
-
         return res.status(500).json({ error: error.message });
     }
 }
@@ -195,20 +181,8 @@ const getOneConsumer = async (req, res) => {
         const id = req.params.id
         const getOneConsumer = await consumer.findOne({ _id: id });
         console.log(getOneConsumer);
-
-        logger.info("consumerData Fetched", {
-            functionName: "getOneConsumer",
-            userId: req.userId,
-        });
-
         return res.json({ data: getOneConsumer, message: "consumerData Fetched" });
     } catch (err) {
-
-        logger.error(error, {
-            functionName: "getOneConsumer",
-            userId: req.userId,
-        });
-
         return res.status(500).json({ error: err.message });
     }
 }
@@ -252,40 +226,17 @@ const addUser = async (req, res) => {
                     editedOn: date
                 })
 
-                logger.info("User Added Successfully and Password Send to Your Email", {
-                    functionName: "addUser",
-                    userId: req.userId,
-                });
-
                 return res.json({ message: "User Added Successfully and Password Send to Your Email" });
             }
             else {
-
-                logger.info("User Added Failed and Password Failed to Send to Your Email", {
-                    functionName: "addUser",
-                    userId: req.userId,
-                });
-
                 return res.json({ message: "User Added Failed and Password Failed to Send to Your Email" });
             }
 
         }
         else {
-
-            logger.info("User Already Exists", {
-                functionName: "addUser",
-                userId: req.userId,
-            });
-
             return res.json({ message: "User Already Exists" });
         }
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "addUser",
-            userId: req.userId,
-        });
-
         return res.json({ message: "User Added Failed", data: error });
     }
 }
@@ -298,21 +249,9 @@ const getAddressDetails = async (req, res) => {
         console.log(findData);
 
         if (findData) {
-
-            logger.info("Addressdata fetched", {
-                functionName: "getAddressDetails",
-                userId: req.userId,
-            });
-
             return res.json({ message: "Addressdata fetched", data: findData });
         }
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "getAddressDetails",
-            userId: req.userId,
-        });
-
         return res.status(500).json({ message: error.message });
     }
 }
@@ -329,11 +268,6 @@ const updateUser = async (req, res) => {
         const existingUser = await consumer.findOne({ email: data.email });
 
         if (!existingUser) {
-            logger.info("User not found", {
-                functionName: "updateUser",
-                userId: req.userId,
-            });
-
             return res.json({ message: "User not found" });
         }
         var generatedPassword = await generateRandomId()
@@ -364,31 +298,13 @@ const updateUser = async (req, res) => {
                 { email: data.email },
                 { $set: updateData }
             );
-
-            logger.info("User updated successfully and new password send to your email", {
-                functionName: "updateUser",
-                userId: req.userId,
-            });
-
             return res.json({ message: "User updated successfully and new password send to your email" });
         }
         else {
-
-            logger.info("User updated failed and new password failed to send to your email", {
-                functionName: "updateUser",
-                userId: req.userId,
-            });
-
             return res.json({ message: "User updated failed and new password failed to send to your email" });
         }
 
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "updateUser",
-            userId: req.userId,
-        });
-
         return res.json({ message: "error" });
     }
 }
@@ -428,35 +344,16 @@ const addUsers = async (req, res) => {
                     addedOn: date,
                     editedOn: date
                 })
-
-                logger.info("Signup Successfully and Password Send to Your Email", {
-                    functionName: "addUsers",
-                });
-
                 return res.json({ message: "Signup Successfully and Password Send to Your Email" });
             }
             else {
-
-                logger.info("Signup Failed and Password Failed to Send to Your Email", {
-                    functionName: "addUsers",
-                });
-
                 return res.json({ message: "Signup Failed and Password Failed to Send to Your Email" });
             }
         }
         else {
-
-            logger.info("Email Already Exists, Please Use Another Email", {
-                functionName: "addUsers",
-            });
-
             return res.json({ message: "Email Already Exists, Please Use Another Email" });
         }
     } catch (error) {
-        logger.error(error, {
-            functionName: "addUsers",
-        });
-
         console.log(error);
 
         return res.json({ message: "error" });
@@ -486,35 +383,17 @@ const loginUser = async (req, res) => {
                     var generateToken = jwt.sign({ userId: getData._id, role: getData.role }, secretKey, {
                         expiresIn: '1h',
                     });
-
-                    logger.info("Login Successfully", {
-                        functionName: "loginUser",
-                    });
-
                     return res.json({ message: "Login Successfully", data: getData, token: generateToken });
                 }
                 else {
-                    logger.info("Password Mismatch", {
-                        functionName: "loginUser",
-                    });
-
                     return res.json({ message: "Password Mismatch" });
                 }
             }
             else {
-                logger.info("Invalid Credentials", {
-                    functionName: "loginUser",
-                });
-
                 return res.json({ message: "Invalid Credentials" });
             }
         }
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "loginUser",
-        });
-
         return res.json({ message: "error" });
     }
 }
@@ -529,9 +408,6 @@ const forgetPassword = async (req, res) => {
         if (data.email && data.otp && data.password && data.confirmPassword) {
             const user = await consumer.findOne({ email: data.email });
             if (!user) {
-                logger.info("Invalid credentials", {
-                    functionName: "forgetPassword",
-                });
                 return res.json({ message: "Invalid credentials" });
             }
 
@@ -539,43 +415,19 @@ const forgetPassword = async (req, res) => {
                 var hashPassword = await bcrypt.hash(data.password, saltRounds)
                 const updatePassword = await consumer.updateOne({ email: data.email }, { $set: { password: hashPassword } });
 
-                logger.info("Password reset success", {
-                    functionName: "forgetPassword",
-                });
-
                 return res.json({ message: "Password reset success" });
             } else {
-
-                logger.info("Invalid lastName", {
-                    functionName: "forgetPassword",
-                });
-
                 return res.json({ message: "Invalid lastName" });
             }
         }
         else if (data.email && data.otp) {
             const user = await consumer.findOne({ email: data.email });
             if (!user) {
-
-                logger.info("Invalid credentials", {
-                    functionName: "forgetPassword",
-                });
-
                 return res.json({ message: "Invalid credentials" });
             }
             if (Number(user.otp) === Number(data.otp)) {
-
-                logger.info("Validate success", {
-                    functionName: "forgetPassword",
-                });
-
                 return res.json({ message: "Validate success" });
             } else {
-
-                logger.info("Invalid Otp", {
-                    functionName: "forgetPassword",
-                });
-
                 return res.json({ message: "Invalid Otp" });
             }
         }
@@ -589,29 +441,17 @@ const forgetPassword = async (req, res) => {
                 console.log(sendPassword.status);
                 if (sendPassword.status === 200) {
                     var updateOtp = await consumer.updateOne({ _id: user._id }, { $set: { otp: generatedOtp } })
-                    logger.info("Otp send to your email", {
-                        functionName: "forgetPassword",
-                    });
                     return res.json({ message: "Otp send to your email" });
                 }
                 else {
-                    logger.info("Otp failed to send to your email", {
-                        functionName: "forgetPassword",
-                    });
                     return res.json({ message: "Otp failed to send to your email" });
                 }
             } else {
-                logger.info("Invalid credentials", {
-                    functionName: "forgetPassword",
-                });
                 return res.json({ message: "Invalid credentials" });
             }
         }
 
     } catch (error) {
-        logger.error(error, {
-            functionName: "forgetPassword",
-        });
         return res.json({ message: "server error" });
     }
 }

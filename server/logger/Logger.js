@@ -23,10 +23,10 @@ const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: combine(
         timestamp({
-            format: 'YYYY-MM-DD hh:mm:ss.SSS A',
+            format: () => new Date().toISOString()
         }),
         align(),
-        printf((info) => `${info.timestamp} ${info.level} ${info.functionName} ${info.message} ${info.userId}`)
+        printf((info) => `${info.timestamp} ${info.level} ${info.method} ${info.api} ${info.statusCode} ${info.travelTime}`)
     ),
     transports: [
         infoTransport,
