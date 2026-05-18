@@ -12,8 +12,6 @@ const { MongoClient, ObjectId } = require('mongodb');
 
 const payment = require('../models/PaymentModel')
 
-const logger = require('../logger/Logger.js')
-
 // getAllProducts function
 const getAllProducts = async (req, res) => {
     try {
@@ -66,21 +64,9 @@ const getAllProducts = async (req, res) => {
         ])
 
         var totalProducts = await product.countDocuments(categorySort);
-
-        logger.info("productData Fetched", {
-            functionName: "getAllProducts",
-            userId: req.userId,
-        });
-
         return res.json({ data: data, totalPage: totalProducts, message: "productData Fetched" });
 
     } catch (error) {
-
-        logger.error(error, {
-            functionName: "getAllProducts",
-            userId: req.userId,
-        });
-
         return res.status(500).json({ error: error.message });
     }
 }
@@ -91,16 +77,8 @@ const getOneProduct = async (req, res) => {
         var id = req.params.id;
         const data = await product.findOne({ _id: id });
         // console.log(data);
-        logger.info("productData Fetched", {
-            functionName: "getOneProduct",
-            userId: req.userId,
-        });
         return res.json({ data: data, message: "productData Fetched" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "getOneProduct",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -111,16 +89,8 @@ const deleteParticularProducts = async (req, res) => {
         var id = req.params.id;
         const data = await product.deleteOne({ _id: id });
         // console.log(data);
-        logger.info("Product Deleted Successfully", {
-            functionName: "deleteParticularProducts",
-            userId: req.userId,
-        });
         return res.json({ data: data, message: "Product Deleted Successfully" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "deleteParticularProducts",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -139,10 +109,6 @@ const addProducts = async (req, res) => {
     try {
         const getData = await product.findOne({ name: data.name })
         if (getData) {
-            logger.info("Product Already Added", {
-                functionName: "addProducts",
-                userId: req.userId,
-            });
             return res.json({ message: "Product Already Added" })
         }
         else {
@@ -162,16 +128,8 @@ const addProducts = async (req, res) => {
                 userId: req.userId
             });
         }
-        logger.info("Product Added Successfully", {
-            functionName: "addProducts",
-            userId: req.userId,
-        });
         return res.json({ message: "Product Added Successfully" })
     } catch (error) {
-        logger.error(error, {
-            functionName: "addProducts",
-            userId: req.userId,
-        });
         console.log(error);
 
         return res.json({ message: "Product Added Failed" })
@@ -188,10 +146,6 @@ const upateProducts = async (req, res) => {
         const getData = await product.findOne({ name: data.name });
 
         if (!getData) {
-            logger.info("Product not found", {
-                functionName: "upateProducts",
-                userId: req.userId,
-            });
             return res.json({ message: "Product not found" });
         }
 
@@ -213,17 +167,9 @@ const upateProducts = async (req, res) => {
         }
 
         await product.updateOne({ name: data.name }, checkData);
-        logger.info("Product Updated Successfully", {
-            functionName: "upateProducts",
-            userId: req.userId,
-        });
         return res.json({ message: "Product Updated Successfully" });
 
     } catch (error) {
-        logger.error(error, {
-            functionName: "upateProducts",
-            userId: req.userId,
-        });
         return res.json({ message: error });
     }
 }
@@ -319,18 +265,8 @@ const getAdminDashBoardDatas = async (req, res) => {
 
         allData['totalPurchase'] = totalPurchase.length > 0 ? totalPurchase[0].totalRevenue : 0
         console.log(allData);
-
-        logger.info("adminDashboardData Fetched", {
-            functionName: "getAdminDashBoardDatas",
-            userId: req.userId,
-        });
-
         return res.json({ data: allData, message: "adminDashboardData Fetched" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "getAdminDashBoardDatas",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -341,16 +277,8 @@ const deleteParticularProduct = async (req, res) => {
         var id = req.params.id;
         const data = await product.deleteOne({ _id: id });
         // console.log(data);
-        logger.info("Product Deleted Successfully", {
-            functionName: "deleteParticularProduct",
-            userId: req.userId,
-        });
         return res.json({ data: data, message: "Product Deleted Successfully" });
     } catch (err) {
-        logger.error(error, {
-            functionName: "deleteParticularProduct",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: err.message });
     }
 }
@@ -369,10 +297,6 @@ const addProduct = async (req, res) => {
     try {
         const getData = await product.findOne({ name: data.name })
         if (getData) {
-            logger.info("Product Already Added", {
-                functionName: "addProduct",
-                userId: req.userId,
-            });
             return res.json({ message: "Product Already Added" })
         }
         else {
@@ -392,17 +316,9 @@ const addProduct = async (req, res) => {
                 userId: req.userId
             });
         }
-        logger.info("Product Added Successfully", {
-            functionName: "addProduct",
-            userId: req.userId,
-        });
         return res.json({ message: "Product Added Successfully" })
     } catch (error) {
         console.log(error);
-        logger.error(error, {
-            functionName: "addProduct",
-            userId: req.userId,
-        });
         return res.json({ message: "Product Added Failed" })
     }
 }
@@ -417,10 +333,6 @@ const upateProduct = async (req, res) => {
         const getData = await product.findOne({ name: data.name });
 
         if (!getData) {
-            logger.info("Product not found", {
-                functionName: "upateProduct",
-                userId: req.userId,
-            });
             return res.json({ message: "Product not found" });
         }
 
@@ -442,18 +354,9 @@ const upateProduct = async (req, res) => {
         }
 
         await product.updateOne({ name: data.name }, checkData);
-        logger.info("Product Updated Successfully", {
-            functionName: "upateProduct",
-            userId: req.userId,
-        });
-
         return res.json({ message: "Product Updated Successfully" });
 
     } catch (error) {
-        logger.error(error, {
-            functionName: "upateProduct",
-            userId: req.userId,
-        });
         return res.json({ message: error });
     }
 }
@@ -476,16 +379,8 @@ const getFewData = async (req, res) => {
             { $limit: 6 }
         ])
         // console.log(data);
-        logger.info("productData Fetched", {
-            functionName: "getFewData",
-            userId: req.userId,
-        });
         return res.json({ data: data, message: "productData Fetched" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "getFewData",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -496,16 +391,8 @@ const getSpecificProduct = async (req, res) => {
         var id = req.params.id;
         const data = await product.findOne({ _id: id });
         // console.log(data);
-        logger.info("productData Fetched", {
-            functionName: "getSpecificProduct",
-            userId: req.userId,
-        });
         return res.json({ data: data, message: "productData Fetched" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "getSpecificProduct",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -562,17 +449,9 @@ const getAllProduct = async (req, res) => {
         ])
 
         var totalProducts = await product.countDocuments(categorySort);
-        logger.info("productData Fetched", {
-            functionName: "getAllProduct",
-            userId: req.userId,
-        });
         return res.json({ data: data, totalPage: totalProducts, message: "productData Fetched" });
 
     } catch (err) {
-        logger.error(error, {
-            functionName: "getAllProduct",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: err.message });
     }
 }
@@ -663,16 +542,8 @@ const getMyProduct = async (req, res) => {
         console.log(data);
         var totalProducts = await product.countDocuments(categorySort);
         console.log(totalProducts);
-        logger.info("productData Fetched", {
-            functionName: "getMyProduct",
-            userId: req.userId,
-        });
         return res.json({ data: data, totalPage: totalProducts, message: "productData Fetched" });
     } catch (error) {
-        logger.error(error, {
-            functionName: "getMyProduct",
-            userId: req.userId,
-        });
         return res.status(500).json({ error: error.message });
     }
 }
