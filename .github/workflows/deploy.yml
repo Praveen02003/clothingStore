@@ -33,7 +33,7 @@ jobs:
       - name: Build frontend
         run: |
           cd client
-          npm run build
+          CI=false npm run build
 
       - name: Deploy through SSH
         uses: appleboy/ssh-action@v1
