@@ -72,7 +72,7 @@ const removeFromCart = async (req, res) => {
 
 // cartAdd function
 const cartAdd = async (req, res) => {
-    console.log("hi");
+    // console.log("hi");
     console.log(req,"========================>");
 
     try {
