@@ -56,4 +56,4 @@ jobs:
             cd ../server
             npm install
 
-            pm2 restart clothing-backend
+            pm2 restart clothingStoreBackend
