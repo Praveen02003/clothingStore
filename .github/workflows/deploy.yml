@@ -1,0 +1,59 @@
+name: ClothingStore Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Install backend dependencies
+        run: |
+          cd server
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd client
+          npm run build
+
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@v1
+
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+
+          script: |
+            cd /var/www/clothingStore
+
+            git pull origin main
+
+            cd client
+            npm install
+            npm run build
+
+            cd ../server
+            npm install
+
+            pm2 restart clothing-backend
