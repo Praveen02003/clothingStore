@@ -128,8 +128,9 @@ export const Address = () => {
 
             var allData = getData.data.data
             console.log(allData);
+            var cartLength = allData?.length;
 
-            if (allData.length > 0) {
+            if (cartLength > 0) {
                 setAllDatas(allData)
             }
             else {

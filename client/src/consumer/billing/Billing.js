@@ -164,7 +164,9 @@ export const Billing = () => {
             var allData = getData.data.data
             console.log(allData);
 
-            if (allData.length > 0) {
+            var allDataLength = allData?.length;
+
+            if (allDataLength > 0) {
                 setAllDatas(allData)
                 calculateTotalAmount(allData)
             }
