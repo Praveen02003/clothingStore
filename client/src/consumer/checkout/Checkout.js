@@ -65,7 +65,9 @@ export const Checkout = () => {
             var allData = getData.data.data
             console.log(allData);
 
-            if (allData.length > 0) {
+            var length = allData?.length;
+
+            if (length > 0) {
                 setAllDatas(allData)
                 calculateTotalAmount(allData)
             }

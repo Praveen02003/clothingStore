@@ -124,7 +124,8 @@ export const Consumers = () => {
             }
             else {
                 let domainparts = split_email[1].split(".");
-                let extension = domainparts[domainparts.length - 1];
+                var domainLength = domainparts.length
+                let extension = domainparts[domainLength - 1];
 
                 if (!extension) {
                     allErrors.emailError = "Extension cannot be empty";
@@ -146,6 +147,7 @@ export const Consumers = () => {
 
         var finalnumber = "";
         var formattednumber = "";
+        var finalnumberLength = "";
 
         if (!inputvalue) {
             allErrors.mobileError = "Enter Mobile Number";
@@ -157,18 +159,19 @@ export const Consumers = () => {
         let numbers = inputvalue.split("").filter(item => (item >= '0') && (item <= '9')).join("");
 
         finalnumber = numbers.slice(0, 10);
+        finalnumberLength = finalnumber.length
 
-        if (finalnumber.length > 6) {
+        if (finalnumberLength > 6) {
             formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3, 6) + "-" + finalnumber.slice(6);
         }
-        else if (finalnumber.length > 3) {
+        else if (finalnumberLength > 3) {
             formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3);
         }
         else {
             formattednumber = finalnumber;
         }
 
-        if (inputvalue && finalnumber.length < 10) {
+        if (inputvalue && finalnumberLength < 10) {
             allErrors.mobileError = "Mobile Number must be 10 digits";
         } else {
             allErrors.mobileError = "";
@@ -286,7 +289,7 @@ export const Consumers = () => {
             allErrors.termsError = "Accept terms";
         }
 
-        
+
         setEditError(allErrors);
 
         const hasError = Object.values(allErrors).some(data => data !== "");
@@ -474,6 +477,7 @@ export const Consumers = () => {
 
         var finalnumber = "";
         var formattednumber = "";
+        var finalnumberLength = "";
 
         if (!inputvalue) {
             allErrors.mobileError = "Enter Mobile Number";
@@ -485,18 +489,18 @@ export const Consumers = () => {
         let numbers = inputvalue.split("").filter(item => (item >= '0') && (item <= '9')).join("");
 
         finalnumber = numbers.slice(0, 10);
-
-        if (finalnumber.length > 6) {
+        finalnumberLength = finalnumber?.length
+        if (finalnumberLength > 6) {
             formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3, 6) + "-" + finalnumber.slice(6);
         }
-        else if (finalnumber.length > 3) {
+        else if (finalnumberLength > 3) {
             formattednumber = "(" + finalnumber.slice(0, 3) + ") " + finalnumber.slice(3);
         }
         else {
             formattednumber = finalnumber;
         }
 
-        if (inputvalue && finalnumber.length < 10) {
+        if (inputvalue && finalnumberLength < 10) {
             allErrors.mobileError = "Mobile Number must be 10 digits";
         } else {
             allErrors.mobileError = "";
@@ -759,10 +763,11 @@ export const Consumers = () => {
 
     const convertMobileNumber = (inputValue) => {
         var mobileNumbers = inputValue.replace(/\D/g, "").slice(0, 10);
+        var mobileNumberLength = mobileNumbers?.length;
 
-        if (mobileNumbers.length > 6) {
+        if (mobileNumberLength > 6) {
             return "(" + mobileNumbers.slice(0, 3) + ") " + mobileNumbers.slice(3, 6) + "-" + mobileNumbers.slice(6);
-        } else if (mobileNumbers.length > 3) {
+        } else if (mobileNumberLength > 3) {
             return "(" + mobileNumbers.slice(0, 3) + ") " + mobileNumbers.slice(3);
         }
         return mobileNumbers;

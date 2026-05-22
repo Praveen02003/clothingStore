@@ -57,3 +57,4 @@ jobs:
             npm install
 
             pm2 restart clothingStoreBackend
+            

@@ -119,7 +119,9 @@ export const Cart = () => {
       var allData = getData.data.data
       console.log(allData);
 
-      setCartCount(allData.length)
+      var length = allData?.length;
+
+      setCartCount(length)
       setAllDatas(allData)
       calculateTotalAmount(allData);
       setSpinnerLoader(false)
