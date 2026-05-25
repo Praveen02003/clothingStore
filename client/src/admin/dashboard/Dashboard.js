@@ -12,6 +12,21 @@ import api from "../../axios/AxiosFile";
 import { Bar, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 
+
+const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: "right",
+            labels: {
+                boxWidth: 40,
+                padding: 15
+            }
+        }
+    }
+};
+
 function RevenueChart({ getAllAdminDashBoardData }) {
     const data = {
         labels: ["Revenue"],
@@ -23,7 +38,7 @@ function RevenueChart({ getAllAdminDashBoardData }) {
         ]
     };
 
-    return <Bar data={data} />;
+    return <Bar data={data} options={options} />;
 }
 
 function CountChart({ getAllAdminDashBoardData }) {
@@ -41,12 +56,14 @@ function CountChart({ getAllAdminDashBoardData }) {
         ]
     };
 
-    return <Pie data={data} />;
+    return (
+        <Pie data={data} options={options} />
+    );
 }
 
 function OrderStatusCountChart({ getAllAdminDashBoardData }) {
     const data = {
-        labels: ["Payment Success","Payment Failed"],
+        labels: ["Payment Success", "Payment Failed"],
         datasets: [
             {
                 label: "Counts",
@@ -58,7 +75,9 @@ function OrderStatusCountChart({ getAllAdminDashBoardData }) {
         ]
     };
 
-    return <Pie data={data} />;
+    return (
+        <Pie data={data} options={options} />
+    );
 }
 
 export const Dashboard = () => {
@@ -85,6 +104,7 @@ export const Dashboard = () => {
         navigate('/login')
     }
 
+    // getAdminDashBoardData function
     async function getAdminDashBoardData(startDate = "", endDate = "") {
         setSpinnerLoader(true)
         // console.log(sort);
@@ -112,7 +132,7 @@ export const Dashboard = () => {
 
 
 
-
+    // authUser function
     function authUser() {
         var user = JSON.parse(localStorage.getItem('loginUser'))
         var token = localStorage.getItem('loginToken')
@@ -188,8 +208,6 @@ export const Dashboard = () => {
                         />
 
                     </div>
-
-                    {/* <input type="date" className="w-60 border border-black rounded-md px-3 py-2 text-sm" onChange={(event) => { getAdminDashBoardData(event.target.value) }} /> */}
                 </div>
 
 
@@ -222,23 +240,129 @@ export const Dashboard = () => {
 
                     <div className="bg-white rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-calculator"></i> Total Purchase</h2>
-                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black"><i class="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-2 text-black"><i className="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}</p>
                     </div>
                 </div>
 
                 {/* chart section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
-                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 p-5">
+                    <h1 className="font-bold text-2xl">Consumers,Products & Orders Counts</h1>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded">
                         <CountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
                     </div>
 
-                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
-                        <RevenueChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
+                    <div className="overflow-x-auto px-4 md:px-20 mt-6">
+                        <table className="w-80 max-w-7xl mx-auto">
+                            <thead className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                                <tr>
+                                    <th className="pl-0 px-3 py-4">Name</th>
+                                    <th className="px-3 py-4">Counts</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="text-sm divide-y">
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Consumers
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        {getAllAdminDashBoardData.consumerCount || 0}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Products
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        {getAllAdminDashBoardData.productCount || 0}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Orders
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        {getAllAdminDashBoardData.ordersCount || 0}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
-                    <div className="h-80 flex items-center justify-center bg-white rounded p-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 p-5">
+                    <h1 className="font-bold text-2xl">Total Revenue</h1>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded p-10">
+                        <RevenueChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
+                    </div>
+
+                    <div className="overflow-x-auto px-4 md:px-20 mt-6">
+                        <table className="w-80 max-w-7xl mx-auto">
+                            <thead
+                                className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                                <tr>
+                                    <th className="pl-0 px-3 py-4">Name</th>
+                                    <th className="px-3 py-4">Revenue Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="text-sm divide-y">
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Total Purchase
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        <i class="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 p-5">
+                    <h1 className="font-bold text-2xl">Payment Success & Failed Counts</h1>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded">
                         <OrderStatusCountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
+                    </div>
+
+                    <div className="overflow-x-auto px-4 md:px-20 mt-6">
+                        <table className="w-80 max-w-7xl mx-auto">
+                            <thead className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                                <tr>
+                                    <th className="pl-0 px-3 py-4">Name</th>
+                                    <th className="px-3 py-4">Counts</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="text-sm divide-y">
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Payment Success
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        {getAllAdminDashBoardData.orderSuccessCount || 0}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                        Payment Failed
+                                    </td>
+                                    <td className="px-3 py-4 text-black font-bold">
+                                        {getAllAdminDashBoardData.orderFailedCount || 0}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
