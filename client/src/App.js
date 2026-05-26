@@ -32,6 +32,16 @@ function App() {
     JSON.parse(localStorage.getItem("consumerSidebarOpen")) || false
   )
 
+  // consumer dark mode 
+  const [displayModeContent, setDisplayModeContent] = useState(
+    localStorage.getItem("theme") || "Light"
+  )
+
+  // admin dark mode 
+  const [adminDisplayModeContent, setAdminDisplayModeContent] = useState(
+    localStorage.getItem("adminTheme") || "Light"
+  )
+
   // modal opens
   const [viewModal, setViewModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
@@ -64,9 +74,19 @@ function App() {
 
 
   useEffect(() => {
+    // sidebar
     localStorage.setItem("sidebarOpen", JSON.stringify(open));
     localStorage.setItem("consumerSidebarOpen", JSON.stringify(sideBarOpen));
   }, [])
+  useEffect(() => {
+    // consumer dark mode
+    localStorage.setItem("theme", displayModeContent)
+  }, [displayModeContent])
+
+  useEffect(() => {
+    // admin dark mode
+    localStorage.setItem("adminTheme", adminDisplayModeContent)
+  }, [adminDisplayModeContent])
   return (
     // routes
     <mainContext.Provider value={{
@@ -115,7 +135,13 @@ function App() {
       setUpdatedAddress,
 
       cartCount,
-      setCartCount
+      setCartCount,
+
+      displayModeContent,
+      setDisplayModeContent,
+
+      adminDisplayModeContent,
+      setAdminDisplayModeContent
 
     }}>
       <BrowserRouter>
@@ -143,7 +169,7 @@ function App() {
           <Route path='/admin/orders' element={<Orders />} />
 
           {/* notfound route */}
-          <Route path="*" element={<NotFound/>}/>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </mainContext.Provider>

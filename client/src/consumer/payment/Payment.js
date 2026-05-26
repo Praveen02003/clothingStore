@@ -12,7 +12,9 @@ export const Payment = () => {
         sideBarOpen,
         setSideBarOpen,
         loginUser,
-        setLoginUser
+        setLoginUser,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate()
@@ -98,7 +100,7 @@ export const Payment = () => {
             )}
 
 
-            <div className="flex flex-col flex-1">
+            <div className={`${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
 
                 <Navbar />
 
@@ -112,7 +114,7 @@ export const Payment = () => {
 
                 <div className="flex items-center justify-center m-5">
 
-                    <div className="bg-white border border-gray-300 rounded-xl p-8 text-center max-w-md w-full">
+                    <div className="bg-white border-2 border-black rounded-xl p-8 text-center max-w-md w-full">
                         <div className="flex justify-center mb-4">
                             <div className="text-gray-700 rounded-full p-4 text-5xl">
                                 <i class="fa-solid fa-circle-check"></i>

@@ -16,7 +16,9 @@ export const Address = () => {
         updatedAddress,
         setUpdatedAddress,
         cartCount,
-        setCartCount
+        setCartCount,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate()
@@ -184,15 +186,14 @@ export const Address = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
 
                 {/* navbar */}
                 <Navbar />
 
                 {/* address form */}
                 <div className="flex flex-1 items-center justify-center">
-
-                    <div className="w-full max-w-md bg-white shadow-md rounded px-8 py-10 mt-10">
+                    <div className="w-full max-w-md bg-white shadow-md rounded px-8 py-10 mt-10 border-2 border-black">
 
                         <h2 className="text-lg font-bold mb-4 text-center">
                             Address Details
@@ -218,7 +219,7 @@ export const Address = () => {
                             </label>
                         </div>
 
-                        <button className="w-full bg-gray-500 text-white py-2 rounded mb-3" onClick={() => {
+                        <button className="w-full bg-gray-700 text-white py-2 rounded mb-3" onClick={() => {
                             updateAddressDetails()
                         }}>
                             update address
