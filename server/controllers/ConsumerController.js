@@ -265,7 +265,7 @@ const updateUser = async (req, res) => {
     const imageFile = req.file;
 
     try {
-        const existingUser = await consumer.findOne({ email: data.email });
+        const existingUser = await consumer.findOne({ _id: data.id });
 
         if (!existingUser) {
             return res.json({ message: "User not found" });
@@ -295,7 +295,7 @@ const updateUser = async (req, res) => {
             }
 
             await consumer.updateOne(
-                { email: data.email },
+                { _id: data.id },
                 { $set: updateData }
             );
             return res.json({ message: "User updated successfully and new password send to your email" });

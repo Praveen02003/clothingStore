@@ -7,7 +7,9 @@ export const Sidebar = () => {
         sideBarOpen,
         setSideBarOpen,
         cartCount,
-        setCartCount
+        setCartCount,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate();
@@ -75,11 +77,11 @@ export const Sidebar = () => {
     return (
         <div>
             {/* sidebar */}
-            <div className={`fixed top-0 left-0 h-full bg-gray-800 z-50 
+            <div className={`fixed top-0 left-0 h-full ${displayModeContent === "Light" ? 'bg-gray-700' : 'bg-gray-800'} z-50 
                 transition-all duration-300 
                 ${sideBarOpen ? "w-64" : "w-16"}`}>
 
-                <div className={`flex items-center px-4 h-16 bg-gray-900  ${sideBarOpen ? "justify-between" : "justify-center"}`}>
+                <div className={`flex items-center px-4 h-16 ${displayModeContent === "Light" ? 'bg-gray-600' : 'bg-gray-900'}  ${sideBarOpen ? "justify-between" : "justify-center"}`}>
 
                     {sideBarOpen && (
                         <h1 className="text-white font-bold flex items-center gap-2">
@@ -104,18 +106,18 @@ export const Sidebar = () => {
 
                 {/* sidebar menus */}
                 <nav className="p-2 space-y-2">
-                    <a href="/" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/" ? "bg-gray-600" : ""} rounded`}>
+                    <a href="/" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/" ? "bg-gray-500" : ""} rounded`}>
                         <i className="fa-solid fa-house text-2xl"></i>
                         {sideBarOpen && "Home"}
                     </a>
 
-                    <a href="/consumers/products" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/products" ? "bg-gray-600" : ""} rounded`}>
+                    <a href="/consumers/products" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/products" ? "bg-gray-500" : ""} rounded`}>
                         <i className="fa-solid fa-shirt text-2xl"></i>
                         {sideBarOpen && "Products"}
                     </a>
 
                     {loginUser && (
-                        <a href="/consumers/cart" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/cart" ? "bg-gray-600" : ""} rounded`}>
+                        <a href="/consumers/cart" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/cart" ? "bg-gray-500" : ""} rounded`}>
                             <div className="relative">
                                 <i className="fa-solid fa-cart-shopping text-2xl"></i>
 
@@ -128,13 +130,13 @@ export const Sidebar = () => {
                         </a>
                     )}
                     {loginUser && (
-                        <a href="/consumers/myProducts" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/myProducts" ? "bg-gray-600" : ""} rounded`}>
+                        <a href="/consumers/myProducts" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/myProducts" ? "bg-gray-500" : ""} rounded`}>
                             <i class="fa-solid fa-chart-simple text-2xl"></i>
                             {sideBarOpen && "My Products"}
                         </a>
                     )}
                     {loginUser && (
-                        <a href="/consumers/myOrders" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/myOrders" ? "bg-gray-600" : ""} rounded`}>
+                        <a href="/consumers/myOrders" className={`flex items-center gap-3 px-2 py-2 text-white ${location.pathname === "/consumers/myOrders" ? "bg-gray-500" : ""} rounded`}>
                             <i class="fa-solid fa-folder-closed text-2xl"></i>
                             {sideBarOpen && "My Orders"}
                         </a>

@@ -22,6 +22,10 @@ const getAllProducts = async (req, res) => {
         var limitItem = parseInt(req.query.count) || 5;
         const skipPage = (page - 1) * limitItem;
 
+        console.log(page);
+        console.log(limitItem);
+        console.log(skipPage);
+
         var category = req.query.category;
         if (category) {
             categorySort.category = category
@@ -36,7 +40,7 @@ const getAllProducts = async (req, res) => {
             priceSort.price = -1
         }
         else {
-            priceSort.addedOn = -1
+            priceSort._id = -1
         }
 
         var searchData = req.query.search;
@@ -62,11 +66,15 @@ const getAllProducts = async (req, res) => {
             { $skip: skipPage },
             { $limit: limitItem }
         ])
+        // console.log(data);
+
 
         var totalProducts = await product.countDocuments(categorySort);
         return res.json({ data: data, totalPage: totalProducts, message: "productData Fetched" });
 
     } catch (error) {
+        console.log(error);
+
         return res.status(500).json({ error: error.message });
     }
 }
@@ -141,9 +149,11 @@ const upateProducts = async (req, res) => {
     const data = req.body;
     const date = new Date();
     const imageFile = req.file;
+    console.log(data);
+
 
     try {
-        const getData = await product.findOne({ name: data.name });
+        const getData = await product.findOne({ _id: data.id });
 
         if (!getData) {
             return res.json({ message: "Product not found" });
@@ -166,7 +176,7 @@ const upateProducts = async (req, res) => {
             checkData.image = imageFile.originalname;
         }
 
-        await product.updateOne({ name: data.name }, checkData);
+        await product.updateOne({ _id: data.id }, checkData);
         return res.json({ message: "Product Updated Successfully" });
 
     } catch (error) {
@@ -330,7 +340,7 @@ const upateProduct = async (req, res) => {
     const imageFile = req.file;
 
     try {
-        const getData = await product.findOne({ name: data.name });
+        const getData = await product.findOne({ _id: data.id });
 
         if (!getData) {
             return res.json({ message: "Product not found" });
@@ -353,7 +363,7 @@ const upateProduct = async (req, res) => {
             checkData.image = imageFile.originalname;
         }
 
-        await product.updateOne({ name: data.name }, checkData);
+        await product.updateOne({  _id: data.id }, checkData);
         return res.json({ message: "Product Updated Successfully" });
 
     } catch (error) {
@@ -407,6 +417,10 @@ const getAllProduct = async (req, res) => {
         var limitItem = parseInt(req.query.count) || 5;
         const skipPage = (page - 1) * limitItem;
 
+        console.log(page);
+        console.log(limitItem);
+        console.log(skipPage);
+
         var category = req.query.category;
         if (category) {
             categorySort.category = category
@@ -421,7 +435,7 @@ const getAllProduct = async (req, res) => {
             priceSort.price = -1
         }
         else {
-            priceSort.addedOn = -1
+            priceSort._id = -1
         }
 
         var searchData = req.query.search;
@@ -470,6 +484,11 @@ const getMyProduct = async (req, res) => {
         var limitItem = parseInt(req.query.count) || 5;
         const skipPage = (page - 1) * limitItem;
 
+        console.log(page);
+        console.log(limitItem);
+        console.log(skipPage);
+
+
         var category = req.query.category;
         // console.log(category, "====>");
         if (category !== null && category) {
@@ -484,7 +503,7 @@ const getMyProduct = async (req, res) => {
             priceSort = { price: -1 }
         }
         else {
-            priceSort = { addedOn: -1 }
+            priceSort = { _id: -1 }
         }
 
         var searchData = req.query.search;

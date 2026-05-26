@@ -17,7 +17,9 @@ export const MyProducts = () => {
     userProductAddModal,
     setUserProductAddModal,
     cartCount,
-    setCartCount
+    setCartCount,
+    displayModeContent,
+    setDisplayModeContent
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -510,6 +512,7 @@ export const MyProducts = () => {
     setParticularProductData({ ...particularProductData, description: inputValue })
   }
 
+  // updateProduct function
   async function updateProduct(event) {
     event.preventDefault()
     var errorObject = {}
@@ -559,6 +562,7 @@ export const MyProducts = () => {
     if (!boolean) {
       console.log(particularProductData);
       const formData = new FormData();
+      formData.append("id", particularProductData._id);
       formData.append("name", particularProductData.name);
       formData.append("price", particularProductData.price);
       formData.append("defaultPrice", particularProductData.defaultPrice);
@@ -903,11 +907,11 @@ export const MyProducts = () => {
         </div>
       )}
 
-      <div className="flex flex-col flex-1">
+      <div className={`flex flex-col flex-1 ${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'}`}>
 
         <Navbar />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+        <div className={`flex flex-wrap items-center justify-between gap-4 p-4`}>
 
           <h2 className="text-lg font-bold flex items-center gap-2">
             <i className="fa-solid fa-shirt text-2xl"></i>
@@ -976,21 +980,21 @@ export const MyProducts = () => {
         </div>
 
         {/* Product Grid */}
-        <div className="bg-white p-10">
+        <div className="p-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Product Card */}
 
             {allDatas.length > 0 ? (allDatas.map((data, index) => {
               return (
-                <div key={index} className="rounded-lg p-3 shadow-sm">
+                <div key={index} className={`border-2 border-black rounded-sm`}>
 
                   <img
                     src={`${ImageUrl}/${data.image}`}
-                    className="w-full h-60 object-contain bg-gray-100 rounded-md"
+                    className="w-full h-80 bg-gray-100"
                   />
 
-                  <div className="mt-3 flex justify-between items-start">
+                  <div className="mt-3 flex justify-between items-start p-5">
                     <div className="flex-1">
 
                       <h3
@@ -1048,7 +1052,7 @@ export const MyProducts = () => {
 
         {/* pagination */}
         {allDatas.length > 0 && (
-          <div className="flex justify-between items-center border-t p-4 bg-white">
+          <div className="flex justify-between items-center border-t p-4">
 
             <div className="sm:flex justify-between items-center w-full">
               <h2 className="flex items-center gap-1 whitespace-nowrap">
@@ -1135,6 +1139,9 @@ export const MyProducts = () => {
                   </div>
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Category : <span className='text-green-600'>{particularProduct.category}</span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Stock : <span className='text-gray-600'>{particularProduct.stock}</span></p>
                   </div>
 
                   <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded" onClick={() => {

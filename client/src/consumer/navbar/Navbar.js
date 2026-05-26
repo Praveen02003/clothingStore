@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { mainContext } from '../../App';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,10 +8,17 @@ export const Navbar = () => {
         setLoginUser,
         userProductAddModal,
         setUserProductAddModal,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
-
     const navigate = useNavigate()
+
+    // darkMode function 
+    function darkMode() {
+        var getTheme = (displayModeContent === "Light") ? "Dark" : "Light"
+        setDisplayModeContent(getTheme)
+    }
 
     // logout function
     function logOut() {
@@ -31,9 +38,9 @@ export const Navbar = () => {
     function goToSignupPage() {
         navigate('/signup')
     }
-    return (
-        <div className="flex items-center justify-between p-6 bg-gray-700 border-b px-4">
 
+    return (
+        <div className={`flex items-center justify-between p-6 ${displayModeContent === "Light" ? 'bg-gray-700' : 'bg-gray-800'} border-b px-4`}>
             <div className="flex items-center gap-4">
                 <h1 className="text-white font-bold"> <i className="fa-solid fa-truck-fast text-2xl"></i> Cartify</h1>
             </div>
@@ -54,9 +61,26 @@ export const Navbar = () => {
                         </button>
                     </div>
                 )}
+
+                <div>
+                    <button className="bg-white rounded text-black font-bold px-5 py-1" onClick={() => {
+                        darkMode()
+                    }}>
+                        {displayModeContent === "Light"
+                            ?
+                            <div>
+                                <i className="fa-solid fa-moon text-xl"></i> Dark
+                            </div>
+                            :
+                            <div>
+                                <i className="fa-regular fa-moon text-xl"></i> Light
+                            </div>}
+                    </button>
+                </div>
+
                 {loginUser && (
                     <div>
-                        <button className="bg-red-500 px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4" onClick={() => {
+                        <button className={`${displayModeContent === "Light" ? 'bg-red-500' : 'bg-red-600'} px-3 py-2 rounded text-white font-bold text-sm md:me-8 lg:px-4`} onClick={() => {
                             logOut()
                         }}>
                             <i className="fa-solid fa-right-from-bracket"></i> Log Out

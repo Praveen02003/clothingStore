@@ -18,7 +18,9 @@ export const UserDashboard = () => {
     loginUser,
     setLoginUser,
     cartCount,
-    setCartCount
+    setCartCount,
+    displayModeContent,
+    setDisplayModeContent
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -82,9 +84,7 @@ export const UserDashboard = () => {
     navigate('/login')
   }
 
-
-
-
+  // getOneProduct function
   async function getOneProduct(id) {
     setSpinnerLoader(true)
     try {
@@ -261,7 +261,7 @@ export const UserDashboard = () => {
       )}
 
 
-      <div className="flex flex-col flex-1">
+      <div className={`${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
 
         {/* navbar section */}
         <Navbar />
@@ -294,7 +294,7 @@ export const UserDashboard = () => {
         </div>
 
         {/* Product Grid */}
-        <div className="bg-white p-10">
+        <div className={`p-10`}>
           <div className='relative grid grid-cols-2'>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Our Products
@@ -307,13 +307,13 @@ export const UserDashboard = () => {
 
             {fewDatas.length > 0 ? fewDatas.map((data, index) => {
               return (
-                <div>
+                <div className={`border-2 border-black rounded-sm`} key={index}>
                   <img
                     src={`${ImageUrl}/${data.image}`}
-                    className="w-full h-60 object-contain bg-gray-100 rounded-md"
+                    className="w-full h-80 bg-gray-100"
                   />
 
-                  <div className="mt-3 flex justify-between">
+                  <div className="mt-3 flex justify-between p-5">
                     <div>
                       <h3 className="text-sm font-bold hover:underline cursor-pointer" onClick={() => {
                         openViewModal(data._id)
@@ -327,20 +327,18 @@ export const UserDashboard = () => {
                   </div>
                 </div>
               )
-            }): (
+            }) : (
               <div className="col-span-full flex justify-center items-center py-10">
                 <p className="text-red-600 font-bold text-lg">
                   No Product Found
                 </p>
               </div>
             )}
-
-
           </div>
         </div>
 
-        <div className="flex justify-center mb-6">
-          <a href="/consumers/products" className="w-60 flex justify-center items-center bg-blue-500 px-4 py-4 text-center font-bold text-white rounded">
+        <div className="flex justify-center mt-10">
+          <a href="/consumers/products" className={`w-60 flex justify-center items-center ${displayModeContent === "Light" ? 'bg-blue-500' : 'bg-blue-900'} px-4 py-4 text-center font-bold text-white rounded`}>
             see more <i className="fa-solid fa-arrow-right-long ml-2"></i>
           </a>
         </div>
@@ -389,6 +387,9 @@ export const UserDashboard = () => {
                   </div>
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Category : <span className='text-green-600'>{particularProduct.category}</span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Stock : <span className='text-gray-600'>{particularProduct.stock}</span></p>
                   </div>
 
                   <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded" onClick={() => {

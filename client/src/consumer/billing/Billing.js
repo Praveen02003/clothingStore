@@ -36,7 +36,9 @@ export const Billing = () => {
         sideBarOpen,
         setSideBarOpen,
         loginUser,
-        setLoginUser
+        setLoginUser,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate()
@@ -244,7 +246,7 @@ export const Billing = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
 
                 <Navbar />
 
@@ -260,7 +262,7 @@ export const Billing = () => {
 
 
 
-                <div className="bg-white items-center shadow-lg rounded-xl p-6 w-full">
+                <div className="items-center rounded-xl p-20 w-full">
 
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
                         Billing Details
@@ -327,14 +329,14 @@ export const Billing = () => {
 
                                 <button
                                     onClick={() => navigate("/")}
-                                    className="border py-2 rounded-lg font-semibold"
+                                    className="border-2 border-black py-2 rounded-lg font-semibold"
                                 >
                                     Back to home
                                 </button>
 
                                 <a
                                     href="/consumers/myOrders"
-                                    className="text-center border py-2 rounded-lg font-semibold"
+                                    className="text-center border-2 border-black py-2 rounded-lg font-semibold"
                                 >
                                     View my orders
                                 </a>

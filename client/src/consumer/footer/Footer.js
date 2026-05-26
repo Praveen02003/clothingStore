@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { mainContext } from '../../App'
 
 export const Footer = () => {
+    const {
+        displayModeContent,
+        setDisplayModeContent
+    } = useContext(mainContext)
     return (
-        <div className='mt-20'>
+        <div>
             {/* footer section */}
-            <footer className="mt-20 p-10 bg-gray-700">
+            <footer className={`mt-20 p-10 ${displayModeContent === "Light" ? 'bg-gray-700' : 'bg-gray-800'}`}>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-5">
 

@@ -12,7 +12,9 @@ export const Orders = () => {
     open,
     setOpen,
     loginUser,
-    setLoginUser
+    setLoginUser,
+    adminDisplayModeContent,
+    setAdminDisplayModeContent
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -227,7 +229,7 @@ export const Orders = () => {
         </div>
       )}
 
-      <div className="flex flex-col flex-1">
+      <div className={`flex flex-col flex-1 ${adminDisplayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} `}>
 
         <AdminNavbar />
 
@@ -300,7 +302,7 @@ export const Orders = () => {
 
         {/* pagination */}
         {myOrderDatas.length > 0 && (
-          <div className="flex justify-between items-center border-t p-4 bg-white">
+          <div className="flex justify-between items-center border-t p-4">
 
             <div className="sm:flex justify-between items-center w-full">
               <h2 className="flex items-center gap-1 whitespace-nowrap">

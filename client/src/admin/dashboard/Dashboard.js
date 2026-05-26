@@ -89,7 +89,9 @@ export const Dashboard = () => {
         open,
         setOpen,
         getAllAdminDashBoardData,
-        setGetAllAdminDashBoardData
+        setGetAllAdminDashBoardData,
+        adminDisplayModeContent,
+        setAdminDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate();
@@ -188,7 +190,8 @@ export const Dashboard = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`${adminDisplayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
+
 
                 <AdminNavbar />
 
@@ -196,6 +199,7 @@ export const Dashboard = () => {
                     <h2 className="text-lg font-semibold"> <i className="fa-solid fa-gauge-high"></i> Dashboard Analytics</h2>
                     <div className="flex justify-center">
                         <DatePicker
+                            className="border-black border-2 p-2 rounded-lg"
                             selectsRange
                             startDate={startDates}
                             endDate={endDates}
@@ -214,7 +218,7 @@ export const Dashboard = () => {
                 {/* cards */}
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                    <div className="bg-white rounded-lg shadow p-4">
+                    <div className="bg-white border-black border-2 rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-user-tie"></i> Consumers Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.consumerCount || 0}</p>
                         <a className="mt-3 text-blue-600 hover:underline font-bold" href="/admin/consumers">
@@ -222,7 +226,7 @@ export const Dashboard = () => {
                         </a>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow p-4">
+                    <div className="bg-white border-black border-2 rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-shirt"></i> Products Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.productCount || 0}</p>
                         <a className="mt-30 text-blue-600 hover:underline font-bold" href="/admin/adminProducts">
@@ -230,7 +234,7 @@ export const Dashboard = () => {
                         </a>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow p-4">
+                    <div className="bg-white border-black border-2 rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-ranking-star text-2xl"></i> Orders Count</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black">{getAllAdminDashBoardData.ordersCount || 0}</p>
                         <a className="mt-30 text-blue-600 hover:underline font-bold" href="/admin/orders">
@@ -238,7 +242,7 @@ export const Dashboard = () => {
                         </a>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow p-4">
+                    <div className="bg-white border-black border-2 rounded-lg shadow p-4">
                         <h2 className="text-base sm:text-lg font-semibold"> <i className="fa-solid fa-calculator"></i> Total Purchase</h2>
                         <p className="text-xl sm:text-2xl font-bold mt-2 text-black"><i className="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}</p>
                     </div>
@@ -250,41 +254,49 @@ export const Dashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2">
-                    <div className="h-96 w-full flex items-center justify-center bg-white rounded">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded border-black border-2 ms-3 p-4">
                         <CountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
                     </div>
 
-                    <div className="overflow-x-auto px-4 md:px-20 mt-6">
-                        <table className="w-80 max-w-7xl mx-auto">
-                            <thead className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                    <div className="overflow-x-auto md:px-20 mt-6">
+                         <table className="w-full border-collapse border-2 border-black">
+                            <thead className="text-slate-900 text-left text-sm font-semibold whitespace-nowrap text-center">
                                 <tr>
-                                    <th className="pl-0 px-3 py-4">Name</th>
-                                    <th className="px-3 py-4">Counts</th>
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Name
+                                    </th>
+
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Counts
+                                    </th>
                                 </tr>
                             </thead>
 
-                            <tbody className="text-sm divide-y">
+                            <tbody className="text-sm text-center">
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Consumers
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         {getAllAdminDashBoardData.consumerCount || 0}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Products
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         {getAllAdminDashBoardData.productCount || 0}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Orders
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         {getAllAdminDashBoardData.ordersCount || 0}
                                     </td>
                                 </tr>
@@ -298,26 +310,31 @@ export const Dashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2">
-                    <div className="h-96 w-full flex items-center justify-center bg-white rounded p-10">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded border-black border-2 ms-3 p-10">
                         <RevenueChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
                     </div>
 
                     <div className="overflow-x-auto px-4 md:px-20 mt-6">
-                        <table className="w-80 max-w-7xl mx-auto">
-                            <thead
-                                className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                        <table className="w-full border-collapse border-2 border-black">
+                            <thead className="text-slate-900 text-left text-sm font-semibold whitespace-nowrap text-center">
                                 <tr>
-                                    <th className="pl-0 px-3 py-4">Name</th>
-                                    <th className="px-3 py-4">Revenue Amount</th>
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Name
+                                    </th>
+
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Revenue Amount
+                                    </th>
                                 </tr>
                             </thead>
 
-                            <tbody className="text-sm divide-y">
+                            <tbody className="text-sm text-center">
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Total Purchase
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         <i class="fa-solid fa-dollar-sign"></i> {getAllAdminDashBoardData.totalPurchase || 0}
                                     </td>
                                 </tr>
@@ -331,33 +348,41 @@ export const Dashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2">
-                    <div className="h-96 w-full flex items-center justify-center bg-white rounded">
+                    <div className="h-96 w-full flex items-center justify-center bg-white rounded border-black border-2 ms-3 p-4">
                         <OrderStatusCountChart getAllAdminDashBoardData={getAllAdminDashBoardData} />
                     </div>
 
                     <div className="overflow-x-auto px-4 md:px-20 mt-6">
-                        <table className="w-80 max-w-7xl mx-auto">
-                            <thead className="text-slate-900 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap">
+                        <table className="w-full border-collapse border-2 border-black">
+                            <thead className="text-slate-900 text-left text-sm font-semibold whitespace-nowrap text-center">
                                 <tr>
-                                    <th className="pl-0 px-3 py-4">Name</th>
-                                    <th className="px-3 py-4">Counts</th>
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Name
+                                    </th>
+
+                                    <th className="border-2 border-black px-3 py-4">
+                                        Counts
+                                    </th>
                                 </tr>
                             </thead>
 
-                            <tbody className="text-sm divide-y">
+                            <tbody className="text-sm text-center">
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Payment Success
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         {getAllAdminDashBoardData.orderSuccessCount || 0}
                                     </td>
                                 </tr>
+
                                 <tr>
-                                    <td className="pl-0 px-3 py-4 font-medium text-black whitespace-nowrap">
+                                    <td className="border-2 border-black px-3 py-4 font-medium text-black whitespace-nowrap">
                                         Payment Failed
                                     </td>
-                                    <td className="px-3 py-4 text-black font-bold">
+
+                                    <td className="border-2 border-black px-3 py-4 text-black font-bold">
                                         {getAllAdminDashBoardData.orderFailedCount || 0}
                                     </td>
                                 </tr>

@@ -17,7 +17,9 @@ export const Products = () => {
     userProductAddModal,
     setUserProductAddModal,
     cartCount,
-    setCartCount
+    setCartCount,
+    displayModeContent,
+    setDisplayModeContent
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -307,11 +309,11 @@ export const Products = () => {
         </div>
       )}
 
-      <div className="flex flex-col flex-1">
+      <div className={`flex flex-col flex-1 ${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} `}>
 
         <Navbar />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+        <div className={`flex flex-wrap items-center justify-between gap-4 p-4`}>
 
           <h2 className="text-lg font-bold flex items-center gap-2">
             <i className="fa-solid fa-shirt text-2xl"></i>
@@ -355,7 +357,7 @@ export const Products = () => {
               <option value="highest">Highest</option>
             </select>
 
-            <button className='bg-blue-500 px-4 py-2 rounded text-white' onClick={() => {
+            <button className={`${displayModeContent === "Light" ? 'bg-blue-500' : 'bg-blue-700'}  px-4 py-2 rounded text-white`} onClick={() => {
               applyFilter()
             }}>
               Apply
@@ -372,20 +374,20 @@ export const Products = () => {
         </div>
 
         {/* Product Grid */}
-        <div className="bg-white p-10">
+        <div className={`p-10`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Product Card */}
 
             {allDatas.length > 0 ? (allDatas.map((data, index) => {
               return (
-                <div key={index}>
+                <div className={`border-2 border-black rounded-sm`} key={index}>
                   <img
                     src={`${ImageUrl}/${data.image}`}
-                    className="w-full h-60 object-contain bg-gray-100 rounded-md"
+                    className="w-full h-80 bg-gray-100"
                   />
 
-                  <div className="mt-3 flex justify-between">
+                  <div className="mt-3 flex justify-between p-5">
                     <div>
                       <h3 className="text-sm font-bold hover:underline cursor-pointer" onClick={() => {
                         openViewModal(data._id)
@@ -412,7 +414,7 @@ export const Products = () => {
 
         {/* pagination */}
         {allDatas.length > 0 && (
-          <div className="flex justify-between items-center border-t p-4 bg-white">
+          <div className={`flex justify-between items-center border-t p-4 ${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'}`}>
 
             <div className="sm:flex justify-between items-center w-full">
               <h2 className="flex items-center gap-1 whitespace-nowrap">
@@ -489,6 +491,9 @@ export const Products = () => {
                   </div>
                   <div className="mt-4">
                     <p className="font-bold text-black text-xl">Category : <span className='text-green-600'>{particularProduct.category}</span></p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-bold text-black text-xl">Stock : <span className='text-gray-600'>{particularProduct.stock}</span></p>
                   </div>
 
                   <button className="mt-6 w-full bg-indigo-600 text-white py-2 rounded" onClick={() => {

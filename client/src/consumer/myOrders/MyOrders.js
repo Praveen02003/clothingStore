@@ -12,7 +12,9 @@ export const MyOrders = () => {
         sideBarOpen,
         setSideBarOpen,
         loginUser,
-        setLoginUser
+        setLoginUser,
+        displayModeContent,
+        setDisplayModeContent
     } = useContext(mainContext);
 
     // alert
@@ -245,7 +247,7 @@ export const MyOrders = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`flex flex-col flex-1 ${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'}`}>
 
                 <Navbar />
 
@@ -325,7 +327,7 @@ export const MyOrders = () => {
 
                 {/* pagination */}
                 {myOrderDatas.length > 0 && (
-                    <div className="flex justify-between items-center border-t p-4 bg-white">
+                    <div className="flex justify-between items-center border-t p-4">
 
                         <div className="sm:flex justify-between items-center w-full">
                             <h2 className="flex items-center gap-1 whitespace-nowrap">

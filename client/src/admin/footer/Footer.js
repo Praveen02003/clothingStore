@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { mainContext } from '../../App'
 
 export const AdminFooter = () => {
+    const {
+        adminDisplayModeContent,
+        setAdminDisplayModeContent
+    } = useContext(mainContext)
     return (
-        <div className='mt-20'>
+        <div className='mt-10'>
             {/* footer section */}
-            <footer className="mt-20 p-10 bg-gray-700 mt-20">
+            <footer className={`mt-20 p-10 ${adminDisplayModeContent === "Light" ? 'bg-gray-700' : 'bg-gray-800'} mt-20`}>
 
                 <div className="grid grid-cols-1 mb-5 md:grid-cols-4 gap-8">
 
@@ -40,7 +45,7 @@ export const AdminFooter = () => {
                     </div>
                 </div>
 
-                <hr/>
+                <hr />
 
                 <div className="mt-5 pt-4 text-sm text-white text-center font-bold">
                     Powered by Cartify

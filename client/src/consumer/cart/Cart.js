@@ -14,7 +14,9 @@ export const Cart = () => {
     loginUser,
     setLoginUser,
     cartCount,
-    setCartCount
+    setCartCount,
+    displayModeContent,
+    setDisplayModeContent
   } = useContext(mainContext);
 
   const navigate = useNavigate()
@@ -185,7 +187,7 @@ export const Cart = () => {
         </div>
       )}
 
-      <div className="flex flex-col flex-1">
+      <div className={`${displayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} flex flex-col flex-1`}>
 
         <Navbar />
 
@@ -197,12 +199,12 @@ export const Cart = () => {
           </h2>
         </div>
 
-        <div className="p-4">
+        <div className={`p-4`}>
           <div className="max-h-96 overflow-y-auto overflow-x-auto shadow-md rounded-lg">
 
             <table className="w-full text-sm text-left text-gray-500">
 
-              <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
+              <thead className="sticky top-0 z-10 text-xs text-gray-100 uppercase bg-gray-500 shadow">
                 <tr className='text-center bg-gray-600 text-white'>
                   <th className="px-6 py-3">S.no</th>
                   <th className="px-6 py-3">Product Name</th>

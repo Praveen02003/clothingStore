@@ -69,7 +69,9 @@ export const AdminProducts = () => {
         getParticularProduct,
         setGetParticularProduct,
         particularProductId,
-        setParticularProductId
+        setParticularProductId,
+        adminDisplayModeContent,
+        setAdminDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate()
@@ -679,6 +681,7 @@ export const AdminProducts = () => {
         if (!boolean) {
             console.log(getParticularProduct);
             const formData = new FormData();
+            formData.append("id", getParticularProduct._id);
             formData.append("name", getParticularProduct.name);
             formData.append("price", getParticularProduct.price);
             formData.append("defaultPrice", getParticularProduct.defaultPrice);
@@ -811,14 +814,14 @@ export const AdminProducts = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`flex flex-col flex-1 ${adminDisplayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} `}>
 
                 <AdminNavbar />
 
                 <div className="flex flex-wrap items-center justify-between gap-4 p-4">
 
                     <h2 className="text-lg font-semibold flex items-center gap-2">
-                        <i className="fa-brands fa-product-hunt"></i>
+                        <i class="fa-solid fa-shirt"></i>
                         Products
                     </h2>
 
@@ -883,10 +886,6 @@ export const AdminProducts = () => {
                 </div>
 
                 {/* products table */}
-                <div className="flex items-center h-16 bg-white border-b px-4">
-                    <h2 className="font-semibold">Products Table</h2>
-                </div>
-
                 <div className="p-4">
                     <div className="max-h-96 overflow-y-auto overflow-x-auto shadow-md rounded-lg">
 
@@ -961,7 +960,7 @@ export const AdminProducts = () => {
 
                 {/* pagination */}
                 {allProducts.length > 0 && (
-                    <div className="flex justify-between items-center border-t p-4 bg-white">
+                    <div className="flex justify-between items-center border-t p-4">
 
                         <div className="sm:flex justify-between items-center w-full">
                             <h2 className="flex items-center gap-1 whitespace-nowrap">

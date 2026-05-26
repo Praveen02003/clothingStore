@@ -21,6 +21,8 @@ export const Consumers = () => {
         setGetParticularConsumer,
         particularConsumerId,
         setParticularConsumerId,
+        adminDisplayModeContent,
+        setAdminDisplayModeContent
     } = useContext(mainContext);
 
     const navigate = useNavigate();
@@ -302,6 +304,7 @@ export const Consumers = () => {
         try {
             const formData = new FormData();
 
+            formData.append("id", getParticularConsumer._id);
             formData.append("firstName", getParticularConsumer.firstName);
             formData.append("lastName", getParticularConsumer.lastName);
             formData.append("email", getParticularConsumer.email);
@@ -971,7 +974,7 @@ export const Consumers = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1">
+            <div className={`flex flex-col flex-1 ${adminDisplayModeContent === "Light" ? 'bg-gray-100' : 'bg-gray-300'} `}>
 
                 <AdminNavbar />
 
@@ -1027,7 +1030,7 @@ export const Consumers = () => {
 
                         <table className="w-full text-sm text-left text-gray-500">
 
-                            <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
+                            <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-500 shadow">
                                 <tr className='text-center bg-gray-600 text-white'>
                                     <th className="px-6 py-3">S.no</th>
                                     <th className="px-6 py-3">First Name</th>
@@ -1092,7 +1095,7 @@ export const Consumers = () => {
 
                 {/* pagination */}
                 {allConsumers.length > 0 && (
-                    <div className="flex justify-between items-center border-t p-4 bg-white">
+                    <div className="flex justify-between items-center border-t p-4">
 
                         <div className="sm:flex justify-between items-center w-full">
                             <h2 className="flex items-center gap-1 whitespace-nowrap">
