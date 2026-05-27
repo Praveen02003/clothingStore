@@ -20,10 +20,16 @@ export const Footer = () => {
                     <div>
                         <h3 className="font-semibold mb-3 text-white">Cartify Tabs</h3>
                         <ul className="space-y-2 text-sm text-white">
-                            <li><a href='/'>Home</a></li>
-                            <li>About</li>
-                            <li><a href='/consumers/products'>Product</a></li>
-                            <li>Cart</li>
+                            <li>
+                                <a href="/">
+                                    Home
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/consumers/products">
+                                    Products
+                                </a>
+                            </li>
                         </ul>
                     </div>
 

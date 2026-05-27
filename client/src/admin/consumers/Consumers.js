@@ -1032,12 +1032,12 @@ export const Consumers = () => {
 
                             <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-500 shadow">
                                 <tr className='text-center bg-gray-600 text-white'>
-                                    <th className="px-6 py-3">S.no</th>
-                                    <th className="px-6 py-3">First Name</th>
-                                    <th className="px-6 py-3">Last Name</th>
-                                    <th className="px-6 py-3">Email</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Action</th>
+                                    <th className="px-6 py-3 border">S.no</th>
+                                    <th className="px-6 py-3 border">First Name</th>
+                                    <th className="px-6 py-3 border">Last Name</th>
+                                    <th className="px-6 py-3 border">Email</th>
+                                    <th className="px-6 py-3 border">Status</th>
+                                    <th className="px-6 py-3 border">Action</th>
                                 </tr>
                             </thead>
 
@@ -1047,26 +1047,26 @@ export const Consumers = () => {
                                         return (
                                             <tr className="bg-white text-center border-b hover:bg-gray-50" key={index}>
 
-                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                     {index + 1}
                                                 </td>
 
-                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                     {data.firstName}
                                                 </td>
-                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                     {data.lastName}
                                                 </td>
 
-                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                     {data.email}
                                                 </td>
 
-                                                <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                     {data.status}
                                                 </td>
 
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 border border-black">
                                                     <button className="text-black me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
                                                         <i className="fa-solid fa-eye"></i>
                                                     </button>

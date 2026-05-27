@@ -20,10 +20,8 @@ export const AdminFooter = () => {
                     <div>
                         <h3 className="font-semibold mb-3 text-white">Cartify Tabs</h3>
                         <ul className="space-y-2 text-sm text-white">
-                            <li>Home</li>
-                            <li>About</li>
-                            <li>Product</li>
-                            <li>Cart</li>
+                            <li><a href="/admin/dashBoard">Home</a></li>
+                            <li><a href="/admin/adminProducts">Products</a></li>
                         </ul>
                     </div>
 
