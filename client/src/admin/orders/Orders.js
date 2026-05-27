@@ -248,15 +248,15 @@ export const Orders = () => {
 
               <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
                 <tr className="text-center bg-gray-600 text-white">
-                  <th className="px-6 py-3">S.no</th>
-                  <th className="px-6 py-3">Customer Name</th>
-                  <th className="px-6 py-3">Ordered Date</th>
-                  <th className="px-6 py-3">Order Status</th>
-                  <th className="px-6 py-3">Payment Status</th>
-                  <th className="px-6 py-3">Total Items</th>
-                  <th className="px-6 py-3">Total Price</th>
-                  <th className="px-6 py-3">Shipping Address</th>
-                  <th className="px-6 py-3">Action</th>
+                  <th className="px-6 py-3 border">S.no</th>
+                  <th className="px-6 py-3 border">Customer Name</th>
+                  <th className="px-6 py-3 border">Ordered Date</th>
+                  <th className="px-6 py-3 border">Order Status</th>
+                  <th className="px-6 py-3 border">Payment Status</th>
+                  <th className="px-6 py-3 border">Total Items</th>
+                  <th className="px-6 py-3 border">Total Price</th>
+                  <th className="px-6 py-3 border">Shipping Address</th>
+                  <th className="px-6 py-3 border">Action</th>
                 </tr>
               </thead>
 
@@ -265,17 +265,17 @@ export const Orders = () => {
                   var user = data.orderUser[0]
                   return (
                     <tr className="bg-white text-center border-b font-bold" key={index}>
-                      <td className="px-6 py-4">{index + 1}</td>
-                      <td className="px-6 py-4">{user.firstName}.{user.lastName}</td>
-                      <td className="px-6 py-4">{new Date(data.addedOn).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 font-semibold">{data.status}</td>
-                      <td className="px-6 py-4 font-semibold">{data.paymentData[0]?.paymentStatus}</td>
-                      <td className="px-6 py-4">{data.orderProduct?.length}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 border border-black">{index + 1}</td>
+                      <td className="px-6 py-4 border border-black">{user.firstName}.{user.lastName}</td>
+                      <td className="px-6 py-4 border border-black">{new Date(data.addedOn).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 font-semibold border border-black">{data.status}</td>
+                      <td className="px-6 py-4 font-semibold border border-black">{data.paymentData[0]?.paymentStatus}</td>
+                      <td className="px-6 py-4 border border-black">{data.orderProduct?.length}</td>
+                      <td className="px-6 py-4 border border-black">
                         <i class="fa-solid fa-dollar-sign"></i> {data.orderHistory.reduce((acc, item) => acc + item.totalPrice, 0)}
                       </td>
-                      <td className="px-6 py-4">{data.shippingAddress}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 border border-black">{data.shippingAddress}</td>
+                      <td className="px-6 py-4 border border-black">
                         <button className="text-black me-5 font-bold hover:underline" onClick={() => {
                           openViewOrderModal(data.orderId)
                         }}>

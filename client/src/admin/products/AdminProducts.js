@@ -893,13 +893,13 @@ export const AdminProducts = () => {
 
                             <thead className="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 shadow">
                                 <tr className='bg-gray-600 text-white'>
-                                    <th className="px-6 py-3">S.no</th>
-                                    <th className="px-6 py-3">Name</th>
-                                    <th className="px-6 py-3">Price</th>
-                                    <th className="px-6 py-3">Stock</th>
-                                    <th className="px-6 py-3">Category</th>
-                                    <th className="px-6 py-3">Action</th>
-                                    <th className="px-6 py-3">Added By</th>
+                                    <th className="px-6 py-3 border">S.no</th>
+                                    <th className="px-6 py-3 border">Name</th>
+                                    <th className="px-6 py-3 border">Price</th>
+                                    <th className="px-6 py-3 border">Stock</th>
+                                    <th className="px-6 py-3 border">Category</th>
+                                    <th className="px-6 py-3 border">Action</th>
+                                    <th className="px-6 py-3 border">Added By</th>
                                 </tr>
                             </thead>
 
@@ -908,26 +908,26 @@ export const AdminProducts = () => {
                                     return (
                                         <tr className="bg-white border-b hover:bg-gray-50" key={index}>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 {index + 1}
                                             </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 {data.name}
                                             </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 <i class="fa-solid fa-dollar-sign"></i> {data.price}
                                             </td>
 
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 {data.stock}
                                             </td>
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 {data.category}
                                             </td>
 
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 border border-black">
                                                 <button className="text-green-900 me-5 font-bold hover:underline" onClick={() => openViewModal(data._id)}>
                                                     <i className="fa-solid fa-eye"></i>
                                                 </button>
@@ -938,7 +938,7 @@ export const AdminProducts = () => {
                                                     <i className="fa-solid fa-trash"></i>
                                                 </button>
                                             </td>
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-6 py-4 font-semibold text-gray-900 border border-black">
                                                 {data?.user[0]?.firstName}.{data?.user[0]?.lastName}
                                             </td>
                                         </tr>
